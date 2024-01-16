@@ -59,7 +59,8 @@ namespace Test_Script1
                             vKeyframes[0].Rotation = 1;
                             bool isXFlip = (vKeyframes[0].TopLeft.X - vKeyframes[0].TopRight.X) * Math.Cos(vKeyframes[0].Rotation) > 0, isYFlip = (vKeyframes[0].TopRight.Y - vKeyframes[0].BottomRight.Y) * Math.Cos(vKeyframes[0].Rotation) > 0;
                             vKeyframes[0].Rotation = rotationSave;
-                            int extraTransform = 0;
+                            int theLastOne = 0;
+
                             int effectCount = vEvent.Effects.Count;
                             for (int i = effectCount - 1; i >= 0; i--)
                             {
@@ -71,13 +72,16 @@ namespace Test_Script1
                                     }
                                     else
                                     {
-                                        extraTransform += 1;
+                                        if (theLastOne < i + 1)
+                                        {
+                                            theLastOne = i + 1;
+                                        }
                                     }
                                 }
                             }
 
                             effect1 = new Effect(plugin1);
-                            vEvent.Effects.Insert(extraTransform, effect1);
+                            vEvent.Effects.Insert(theLastOne, effect1);
                             
                             OFXEffect ofx1 = effect1.OFXEffect;
                             OFXBooleanParameter transformUniform = (OFXBooleanParameter)ofx1["uniform"];
@@ -97,7 +101,7 @@ namespace Test_Script1
                                 transformCenter.Value = Pos;
                             }
 
-                            if (extraTransform > 0)
+                            if (theLastOne > 0)
                             {
                                 Scale.X = 1;
                                 Scale.Y = 1;
