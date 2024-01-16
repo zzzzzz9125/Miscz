@@ -60,21 +60,21 @@ namespace Test_Script1
                             bool isXFlip = (vKeyframes[0].TopLeft.X - vKeyframes[0].TopRight.X) * Math.Cos(vKeyframes[0].Rotation) > 0, isYFlip = (vKeyframes[0].TopRight.Y - vKeyframes[0].BottomRight.Y) * Math.Cos(vKeyframes[0].Rotation) > 0;
                             vKeyframes[0].Rotation = rotationSave;
                             int extraTransform = 0;
-                                int effectCount = vEvent.Effects.Count;
-                                for (int i = effectCount - 1; i >= 0; i--)
+                            int effectCount = vEvent.Effects.Count;
+                            for (int i = effectCount - 1; i >= 0; i--)
+                            {
+                                if (vEvent.Effects[i].PlugIn.UniqueID == plugin1.UniqueID)
                                 {
-                                    if (vEvent.Effects[i].PlugIn == plugin1)
+                                    if (resetMode)
                                     {
-                                        if (resetMode)
-                                        {
-                                            vEvent.Effects.RemoveAt(i);
-                                        }
-                                        else
-                                        {
-                                            extraTransform += 1;
-                                        }
+                                        vEvent.Effects.RemoveAt(i);
+                                    }
+                                    else
+                                    {
+                                        extraTransform += 1;
                                     }
                                 }
+                            }
 
                             effect1 = new Effect(plugin1);
                             vEvent.Effects.Insert(extraTransform, effect1);
