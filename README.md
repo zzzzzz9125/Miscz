@@ -4,7 +4,11 @@
 
 同时附有一个很方便的脚本，可以将所有平移/裁切关键帧转换成 TransformOFX 关键帧。
 
+教程：https://www.bilibili.com/read/cv29551839/
+
 # Introduction
 An OFX plugin that provides Pixel Art image scaling for Vegas Pro, modified from [openfx-misc](https://github.com/NatronGitHub/openfx-misc).
 
 It also comes with a handy script, which can convert all Pan/Crop keyframes to TransformOFX keyframes.
+
+Tutorial (Chinese Only Sorry, I will write an English ver. sometime): https://www.bilibili.com/read/cv29551839/
