@@ -26,9 +26,12 @@ namespace Test_Script1
         public float scrHeight;
         public float dFullWidth;
         public float dFullHeight;
+        public double firstWidth;
+        public double firstHeight;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
+            myVegas.ResumePlaybackOnScriptExit = true;
             plugin1 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzTransformPlugin}");
             /* if (plugin1 == null)
             {
@@ -59,8 +62,7 @@ namespace Test_Script1
                             vKeyframes[0].Rotation = 1;
                             bool isXFlip = (vKeyframes[0].TopLeft.X - vKeyframes[0].TopRight.X) * Math.Cos(vKeyframes[0].Rotation) > 0, isYFlip = (vKeyframes[0].TopRight.Y - vKeyframes[0].BottomRight.Y) * Math.Cos(vKeyframes[0].Rotation) > 0;
                             vKeyframes[0].Rotation = rotationSave;
-                            int theLastOne = 0;
-
+                            int theLastOne = 0, countBefore = 0;
                             int effectCount = vEvent.Effects.Count;
                             for (int i = effectCount - 1; i >= 0; i--)
                             {
@@ -69,6 +71,7 @@ namespace Test_Script1
                                     if (resetMode)
                                     {
                                         vEvent.Effects.RemoveAt(i);
+                                        continue;
                                     }
                                     else
                                     {
@@ -78,10 +81,15 @@ namespace Test_Script1
                                         }
                                     }
                                 }
+
+                                if (vEvent.Effects[i].ApplyBeforePanCrop == true)
+                                {
+                                    countBefore += 1;
+                                }
                             }
 
                             effect1 = new Effect(plugin1);
-                            vEvent.Effects.Insert(theLastOne, effect1);
+                            vEvent.Effects.Insert(Math.Max(theLastOne, countBefore), effect1);
                             
                             OFXEffect ofx1 = effect1.OFXEffect;
                             OFXBooleanParameter transformUniform = (OFXBooleanParameter)ofx1["uniform"];
@@ -101,7 +109,7 @@ namespace Test_Script1
                                 transformCenter.Value = Pos;
                             }
 
-                            if (theLastOne > 0)
+                            else if (theLastOne > 0)
                             {
                                 Scale.X = 1;
                                 Scale.Y = 1;
@@ -123,9 +131,14 @@ namespace Test_Script1
                                 }
                                 OFXDoubleParameter transformRotate = (OFXDoubleParameter)ofx1["rotate"];
                                 OFXDouble2DParameter transformTranslate = (OFXDouble2DParameter)ofx1["translate"];
-                                transformScale.Value = new OFXDouble2D { X = Scale.X * Ratio(vKeyframes[0]), Y = Scale.Y * Ratio(vKeyframes[0])};
+                                firstWidth = PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].TopRight);
+                                firstHeight = PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].BottomLeft);
+                                ScaleValueX = Math.Max(scrWidth / firstWidth, scrHeight / firstHeight);
+                                ScaleValueY = Math.Min(scrWidth / PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].TopRight), scrHeight / PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].BottomLeft));
+                                Scale = new OFXDouble2D { X = transformUniform.Value ? ScaleValueY : ScaleValueX, Y = ScaleValueY};
+                                transformScale.Value = Scale;
                                 transformRotate.Value = vKeyframes[0].Rotation / Math.PI * 180 * (isXFlip ? -1 : 1) * (isYFlip ? -1 : 1);
-                                transformTranslate.Value = PointTranslate(vKeyframes[0], Ratio(vKeyframes[0], false));
+                                transformTranslate.Value = PointTranslate(vKeyframes[0]);
                                 transformCenter.Value = new OFXDouble2D { X = Pos.X, Y = Pos.Y};
                                 OFXInterpolationType type0 = TypeChange(vKeyframes[0].Type);
 
@@ -136,13 +149,13 @@ namespace Test_Script1
                                     for (int jj = countKeyframes - 1; jj >= 1; jj--)
                                     {
                                         VideoMotionKeyframe thisKeyframe = vKeyframes[jj] as VideoMotionKeyframe;
-                                        nScale = Math.Round(PointDistance(thisKeyframe.TopLeft, thisKeyframe.TopRight) - PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].TopRight), 4) == 0 ? 0 : 1;
+                                        nScale = Ratio(thisKeyframe) == 1 ? 0 : 1;
                                         nScaleN += nScale;
                                         nRotate = Math.Round(thisKeyframe.Rotation - vKeyframes[0].Rotation, 4) == 0 ? 0 : 1;
                                         nRotateN += nRotate;
                                         nTranslate = PointEqual(PointTranslate(thisKeyframe), PointTranslate(vKeyframes[0])) ? 0 : 1;
                                         nTranslateN += nTranslate;
-                                        nTranslateRotate = PointEqual(PointTranslate(thisKeyframe, rotateMode : true), PointTranslate(vKeyframes[0], rotateMode : true)) ? 0 : 1;
+                                        nTranslateRotate = PointEqual(PointTranslate(thisKeyframe, true), PointTranslate(vKeyframes[0], true)) ? 0 : 1;
                                         nTranslateRotateN += nTranslateRotate;
                                         nCenter = PointEqual(thisKeyframe.Center, vKeyframes[0].Center) ? 0 : 1;
                                         nCenterN += nCenter;
@@ -150,7 +163,7 @@ namespace Test_Script1
                                     transformScale.IsAnimated = Convert.ToBoolean(nScaleN);
                                     if (transformScale.IsAnimated) {transformScale.Keyframes[0].Interpolation = type0;}
                                     transformRotate.IsAnimated = Convert.ToBoolean(nRotateN);
-                                    if (transformRotate.IsAnimated) {transformRotate.Keyframes[0].Interpolation = type0;transformTranslate.Value = PointTranslate(vKeyframes[0], Ratio(vKeyframes[0], false), true);transformCenter.Value = new OFXDouble2D { X = Pos.X + vKeyframes[0].Center.X - dFullWidth / 2, Y = Pos.Y - vKeyframes[0].Center.Y + dFullHeight / 2};}
+                                    if (transformRotate.IsAnimated) {transformRotate.Keyframes[0].Interpolation = type0;transformTranslate.Value = PointTranslate(vKeyframes[0], true);transformCenter.Value = new OFXDouble2D { X = Pos.X + vKeyframes[0].Center.X - dFullWidth / 2, Y = Pos.Y - vKeyframes[0].Center.Y + dFullHeight / 2};}
                                     transformTranslate.IsAnimated = Convert.ToBoolean(nRotateN) ? Convert.ToBoolean(nTranslateRotateN) : Convert.ToBoolean(nTranslateN);
                                     if (transformTranslate.IsAnimated) {transformTranslate.Keyframes[0].Interpolation = type0;}
                                     transformCenter.IsAnimated = Convert.ToBoolean(nCenterN) && Convert.ToBoolean(nRotateN);
@@ -177,7 +190,7 @@ namespace Test_Script1
 
                                         if (transformTranslate.IsAnimated)
                                         {
-                                            transformTranslate.SetValueAtTime(time, PointTranslate(thisKeyframe, Ratio(thisKeyframe, false), transformRotate.IsAnimated));
+                                            transformTranslate.SetValueAtTime(time, PointTranslate(thisKeyframe, transformRotate.IsAnimated));
                                             transformTranslate.Keyframes[1].Interpolation = type;
                                         }
 
@@ -373,13 +386,13 @@ namespace Test_Script1
 
         public double Ratio(VideoMotionKeyframe keyframe, bool forScale = true)
         {
-            double ratio = forScale ? Math.Max(dFullWidth/PointDistance(keyframe.TopLeft, keyframe.TopRight), dFullHeight/PointDistance(keyframe.TopLeft, keyframe.BottomLeft)) : Math.Min(scrWidth/PointDistance(keyframe.TopLeft, keyframe.TopRight), scrHeight/PointDistance(keyframe.TopLeft, keyframe.BottomLeft));
+            double ratio = forScale ? Math.Max(firstWidth/PointDistance(keyframe.TopLeft, keyframe.TopRight), firstHeight/PointDistance(keyframe.TopLeft, keyframe.BottomLeft)) : Math.Min(scrWidth/PointDistance(keyframe.TopLeft, keyframe.TopRight), scrHeight/PointDistance(keyframe.TopLeft, keyframe.BottomLeft));
             return ratio;
         }
 
-        public OFXDouble2D PointTranslate(VideoMotionKeyframe keyframe, double ratio = 1, bool rotateMode = false)
+        public OFXDouble2D PointTranslate(VideoMotionKeyframe keyframe, bool rotateMode = false)
         {
-            double rotation = keyframe.Rotation, pointX, pointY;
+            double rotation = keyframe.Rotation, ratio = Ratio(keyframe, false), pointX, pointY;
             if (rotateMode)
             {
                 pointX = ((keyframe.TopLeft.X + keyframe.BottomRight.X) / 2 - keyframe.Center.X) * ratio * (-1);
@@ -405,13 +418,13 @@ namespace Test_Script1
 
         public bool PointEqual(VideoMotionVertex point1, VideoMotionVertex point2)
         {
-            bool pointEqual = Math.Round(point1.X - point2.X) == 0 && Math.Round(point1.Y - point2.Y) == 0;
+            bool pointEqual = Math.Round(point1.X - point2.X, 4) == 0 && Math.Round(point1.Y - point2.Y, 4) == 0;
             return pointEqual;
         }
 
         public bool PointEqual(OFXDouble2D point1, OFXDouble2D point2)
         {
-            bool pointEqual = Math.Round(point1.X - point2.X) == 0 && Math.Round(point1.Y - point2.Y) == 0;
+            bool pointEqual = Math.Round(point1.X - point2.X, 4) == 0 && Math.Round(point1.Y - point2.Y, 4) == 0;
             return pointEqual;
         }
 
