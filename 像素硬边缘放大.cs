@@ -134,7 +134,7 @@ namespace Test_Script1
                                 firstWidth = PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].TopRight);
                                 firstHeight = PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].BottomLeft);
                                 ScaleValueX = Math.Max(scrWidth / firstWidth, scrHeight / firstHeight);
-                                ScaleValueY = Math.Min(scrWidth / PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].TopRight), scrHeight / PointDistance(vKeyframes[0].TopLeft, vKeyframes[0].BottomLeft));
+                                ScaleValueY = Math.Min(scrWidth / firstWidth, scrHeight / firstHeight);
                                 Scale = new OFXDouble2D { X = transformUniform.Value ? ScaleValueY : ScaleValueX, Y = ScaleValueY};
                                 transformScale.Value = Scale;
                                 transformRotate.Value = vKeyframes[0].Rotation / Math.PI * 180 * (isXFlip ? -1 : 1) * (isYFlip ? -1 : 1);
