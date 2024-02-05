@@ -17,27 +17,15 @@ namespace Test_Script1
     {
         public const double SCALETYPEFACTOR = 1.8;
         public Vegas myVegas;
-        public PlugInNode plugin1;
-        public PlugInNode plugin2;
-        public Effect effect1;
-        public Effect effect2;
         public bool resetMode;
-        public float scrWidth;
-        public float scrHeight;
-        public float dFullWidth;
-        public float dFullHeight;
-        public double firstWidth;
-        public double firstHeight;
+        public float scrWidth, scrHeight, dFullWidth, dFullHeight;
+        public double firstWidth, firstHeight;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
             myVegas.ResumePlaybackOnScriptExit = true;
-            plugin1 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzTransformPlugin}");
-            /* if (plugin1 == null)
-            {
-                plugin1 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.TransformPlugin}");
-                plugin2 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.Mirror}");
-            } */
+            PlugInNode plugin1 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzTransformPlugin}");
+            PlugInNode plugin2 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzPosition}");
             scrWidth = myVegas.Project.Video.Width;
             scrHeight = myVegas.Project.Video.Height;
             resetMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false;
@@ -88,7 +76,7 @@ namespace Test_Script1
                                 }
                             }
 
-                            effect1 = new Effect(plugin1);
+                            Effect effect1 = new Effect(plugin1);
                             vEvent.Effects.Insert(Math.Max(theLastOne, countBefore), effect1);
                             
                             OFXEffect ofx1 = effect1.OFXEffect;
@@ -210,26 +198,32 @@ namespace Test_Script1
                                 }
                             }
 
+                            // Set Pan/Crop keyframes
+                            vKeyframes.Clear();
+                            vKeyframes[0].Rotation = 0;
+                            vKeyframes[0].Center = new VideoMotionVertex(0f, 0f);
+                            vKeyframes[0].Type = VideoKeyframeType.Linear;
+                            VideoMotionBounds bounds = new VideoMotionBounds(new VideoMotionVertex(0f, 0f), new VideoMotionVertex((float)scrWidth, 0f), new VideoMotionVertex((float)scrWidth, (float)scrHeight), new VideoMotionVertex(0f, (float)scrHeight));
+                            vKeyframes[0].Bounds = bounds;
+                            vKeyframes[0].MoveBy(new VideoMotionVertex(dFullWidth / 2 - scrWidth / 2, dFullHeight / 2 - scrHeight / 2));
 
-                            MatchAspect(evnt);
-
-                            foreach (VideoMotionKeyframe MyKF in vKeyframes)
+                            // If the material's height (or width) is larger than the project's, add PositionOFX
+                            if (dFullWidth > scrWidth || dFullHeight > scrHeight)
                             {
-                                float dWidth = Math.Abs(MyKF.TopRight.X - MyKF.TopLeft.X);
-                                float dHeight = Math.Abs(MyKF.BottomLeft.Y - MyKF.TopLeft.Y);
-
-                                float pwid = 0.0F;
-
-                                if (dFullHeight > scrHeight)
+                                effectCount = vEvent.Effects.Count;
+                                for (int i = effectCount - 1; i >= 0; i--)
                                 {
-                                    pwid = dFullHeight / dHeight * 100;
+                                    if (vEvent.Effects[i].PlugIn.UniqueID == plugin2.UniqueID && vEvent.Effects[i].ApplyBeforePanCrop == true)
+                                    {
+                                        break;
+                                    }
+                                    if (i == 0)
+                                    {
+                                        Effect effect2 = new Effect(plugin2);
+                                        vEvent.Effects.Insert(countBefore, effect2);
+                                        effect2.ApplyBeforePanCrop = true;
+                                    }
                                 }
-                                else
-                                {
-                                    pwid = dHeight / scrHeight * 100;
-                                }
-
-                                ScaleKeyframe(MyKF, pwid, 0);
                             }
                         }
                     }
@@ -260,121 +254,6 @@ namespace Test_Script1
             {
                 MessageBox.Show("{0}", e.Message);
                 return null;
-            }
-        }
-
-        public void ScaleKeyframe(VideoMotionKeyframe keyframe, float szChange, float rotAngle)
-        {
-            float cWidth = (1 / (szChange / 100));
-            float cHeight = (1 / (szChange / 100));
-
-            if (szChange > 100)
-            {
-                cWidth = (szChange / 100);
-                cHeight = (szChange / 100);
-            }
-
-            VideoMotionVertex bounds2 = new VideoMotionVertex(cWidth, cHeight);
-
-            keyframe.ScaleBy(bounds2);
-            keyframe.RotateBy((rotAngle * (Math.PI / 180)));
-        }
-
-        public void MatchAspect(TrackEvent trackEvent)
-        {
-            float dWidthProject = myVegas.Project.Video.Width;
-            float dHeightProject = myVegas.Project.Video.Height;
-            double dPixelAspect = myVegas.Project.Video.PixelAspectRatio;
-            double dAspect = dPixelAspect * dWidthProject / dHeightProject;
-
-            MediaStream mediaStream = GetActiveMediaStream(trackEvent);
-            if (!(mediaStream == null))
-            {
-                VideoStream videoStream = mediaStream as VideoStream;
-
-                double dMediaPixelAspect = videoStream.PixelAspectRatio;
-                VideoEvent videoEvent = trackEvent as VideoEvent;
-                VideoMotionKeyframes keyframes = videoEvent.VideoMotion.Keyframes;
-                keyframes.Clear();
-                MatchOutputAspect(keyframes[0], dMediaPixelAspect, dAspect);
-            }
-            myVegas.UpdateUI();
-        }
-
-
-        static void Swap(VideoMotionVertex a,VideoMotionVertex b)
-        {
-            VideoMotionVertex temp = a;
-            a = b;
-            b = temp;
-        }
-
-        public void MatchOutputAspect(VideoMotionKeyframe keyframe, double dMediaPixelAspect, double dAspectOut)
-        {
-            foreach (Track myTrack in myVegas.Project.Tracks)
-            {
-                if (myTrack.IsVideo())
-                {
-                    foreach (VideoEvent vEvent in myTrack.Events)
-                    {
-                        if (vEvent.Selected)
-                        {
-                            VideoMotionKeyframe keyframeSave = keyframe;
-
-                            try
-                            {
-                                VideoStream vs = (VideoStream)vEvent.ActiveTake.Media.Streams.GetItemByMediaType(MediaType.Video,vEvent.ActiveTake.StreamIndex);
-                                int mHeight = vs.Height;
-                                int mWidth = vs.Width;
-
-                                keyframe.Rotation = 0.0;
-
-                                VideoMotionBounds bounds1 = new VideoMotionBounds(keyframe.TopLeft, keyframe.TopRight, keyframe.BottomRight, keyframe.BottomLeft);
-                                bounds1.TopLeft = new VideoMotionVertex(0f, 0f);
-                                bounds1.TopRight = new VideoMotionVertex((float)mWidth, 0f);
-                                bounds1.BottomLeft = new VideoMotionVertex(0f, (float)mHeight);
-                                bounds1.BottomRight = new VideoMotionVertex((float)mWidth, (float)mHeight);
-                                keyframe.Bounds = bounds1;
-
-                                float dWidth = Math.Abs(keyframe.TopRight.X - keyframe.TopLeft.X);
-                                float dHeight = Math.Abs(keyframe.BottomLeft.Y - keyframe.TopLeft.Y);
-                                double dCurrentAspect = dMediaPixelAspect * dWidth / dHeight;
-                                float centerY = keyframe.Center.Y;
-                                float centerX = keyframe.Center.X;
-                                double dFactor1, dFactor2;
-
-                                VideoMotionBounds bounds2 = new VideoMotionBounds(keyframe.TopLeft, keyframe.TopRight, keyframe.BottomRight, keyframe.BottomLeft);
-
-                                if (dCurrentAspect < dAspectOut)
-                                {
-                                    // alter y coords            
-                                    dFactor1 = dCurrentAspect / dAspectOut;
-                                    dFactor2 = 1;
-                                }
-                                else
-                                {
-                                    // alter x coords
-                                    dFactor1 = 1;
-                                    dFactor2 = dAspectOut / dCurrentAspect;
-                                }
-
-                                bounds2.TopLeft = new VideoMotionVertex((bounds2.TopLeft.X - centerX) * (float)dFactor2 + mWidth / 2, (bounds2.TopLeft.Y - centerY) * (float)dFactor1 + mHeight / 2);
-                                bounds2.TopRight = new VideoMotionVertex((bounds2.TopRight.X - centerX) * (float)dFactor2 + mWidth / 2, (bounds2.TopRight.Y - centerY) * (float)dFactor1 + mHeight / 2);
-                                bounds2.BottomLeft = new VideoMotionVertex((bounds2.BottomLeft.X - centerX) * (float)dFactor2 + mWidth / 2, (bounds2.BottomLeft.Y - centerY) * (float)dFactor1 + mHeight / 2);
-                                bounds2.BottomRight = new VideoMotionVertex((bounds2.BottomRight.X - centerX) * (float)dFactor2 + mWidth / 2, (bounds2.BottomRight.Y - centerY) * (float)dFactor1 + mHeight / 2);
-
-                                // set it to new bounds2
-                                keyframe.Bounds = bounds2;
-                                keyframe.Type = VideoKeyframeType.Linear;
-                            }
-                            catch
-                            {
-                                // restore original settings on error
-                                keyframe = keyframeSave;
-                            }
-                        }
-                    }
-                }
             }
         }
 
