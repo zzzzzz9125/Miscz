@@ -57,6 +57,50 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kParamFrameOffset "frameOffset"
 #define kParamFrameOffsetLabel "Frame Offset", "Output frame number for the first sprite."
 
+#define kParamReadingDirection "readingDirection"
+#define kParamReadingDirectionLabel "Reading Direction"
+#define kParamReadingDirectionHint "The reading direction of the sprites."
+#define kParamReadingDirectionOptionHorizontalForward "Horizontal Forward", "Read the sprites in a horizontal forward direction.", "hForward"
+#define kParamReadingDirectionOptionHorizontalBackward "Horizontal Backward", "Read the sprites in a horizontal backward direction.", "hBackward"
+#define kParamReadingDirectionOptionVerticalForward "Vertical Forward", "Read the sprites in a vertical forward direction.", "vForward"
+#define kParamReadingDirectionOptionVerticalBackward "Vertical Backward", "Read the sprites in a vertical backward direction.", "vBackward"
+#define kParamReadingDirectionOptionHorizontalForwardS "Horizontal Forward (S-shaped)", "Read the sprites in a horizontal forward S-shape direction.", "hForwardS"
+#define kParamReadingDirectionOptionHorizontalBackwardS "Horizontal Backward (S-shaped)", "Read the sprites in a horizontal backward S-shape direction.", "hBackwardS"
+#define kParamReadingDirectionOptionVerticalForwardS "Vertical Forward (S-shaped)", "Read the sprites in a vertical forward S-shape direction.", "vForwardS"
+#define kParamReadingDirectionOptionVerticalBackwardS "Vertical Backward (S-shaped)", "Read the sprites in a vertical backward S-shape direction.", "vBackwardS"
+
+#define kParamPlaybackMode "playbackMode"
+#define kParamPlaybackModeLabel "Playback Mode"
+#define kParamPlaybackModeHint "The playback mode when playing the sprites."
+#define kParamPlaybackModeOptionNormal "Normal", "Play the sprites in Normal mode.", "normal"
+#define kParamPlaybackModeOptionNormalReverse "Normal & Reverse", "Play the sprites in Normal & Reverse mode.", "normalReverse"
+#define kParamPlaybackModeOptionNormalReverseMerge "Normal & Reverse (Merge)", "Play the sprites in Normal & Reverse mode, with repeated first/last frames being merged into one frame.", "normalReverseMerge"
+
+#define kParamRepeatRange "repeatRange"
+#define kParamRepeatRangeLabel "Repeat Range", "Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed."
+
+#define kParamRepeatCount "repeatCount"
+#define kParamRepeatCountLabel "Repeat Count", "Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed."
+
+enum ReadingDirectionEnum
+{
+    eReadingDirectionHorizontalForward,
+    eReadingDirectionHorizontalBackward,
+    eReadingDirectionVerticalForward,
+    eReadingDirectionVerticalBackward,
+    eReadingDirectionHorizontalForwardS,
+    eReadingDirectionHorizontalBackwardS,
+    eReadingDirectionVerticalForwardS,
+    eReadingDirectionVerticalBackwardS
+};
+
+enum PlaybackModeEnum
+{
+    ePlaybackModeNormal,
+    ePlaybackModeNormalReverse,
+    ePlaybackModeNormalReverseMerge
+};
+
 #ifdef OFX_EXTENSIONS_NATRON
 #define OFX_COMPONENTS_OK(c) ((c)== ePixelComponentAlpha || (c) == ePixelComponentXY || (c) == ePixelComponentRGB || (c) == ePixelComponentRGBA)
 #else
@@ -151,6 +195,10 @@ public:
         , _spriteSize(NULL)
         , _spriteRange(NULL)
         , _frameOffset(NULL)
+        , _readingDirection(NULL)
+        , _playbackMode(NULL)
+        , _repeatRange(NULL)
+        , _repeatCount(NULL)
     {
 
         _dstClip = fetchClip(kOfxImageEffectOutputClipName);
@@ -166,6 +214,10 @@ public:
         _spriteSize = fetchInt2DParam(kParamSpriteSize);
         _spriteRange = fetchInt2DParam(kParamSpriteRange);
         _frameOffset = fetchIntParam(kParamFrameOffset);
+        _readingDirection = fetchChoiceParam(kParamReadingDirection);
+        _playbackMode = fetchChoiceParam(kParamPlaybackMode);
+        _repeatRange = fetchInt2DParam(kParamRepeatRange);
+        _repeatCount = fetchIntParam(kParamRepeatCount);
     }
 
 private:
@@ -191,26 +243,56 @@ private:
                           const OfxPointI& spriteSize,
                           const OfxPointI& spriteRange,
                           int frameOffset,
+                          ReadingDirectionEnum readingDirection,
+                          PlaybackModeEnum playbackMode,
+                          const OfxPointI& repeatRange,
+                          int repeatCount,
                           OfxRectI *cropRectPixel) const
     {
+        bool verticalRead = (readingDirection == eReadingDirectionVerticalForward || readingDirection == eReadingDirectionVerticalBackward || readingDirection == eReadingDirectionVerticalForwardS || readingDirection == eReadingDirectionVerticalBackwardS);
+        bool backwardRead = (readingDirection == eReadingDirectionHorizontalBackward || readingDirection == eReadingDirectionVerticalBackward || readingDirection == eReadingDirectionHorizontalBackwardS || readingDirection == eReadingDirectionVerticalBackwardS);
+        bool sshapedRead = (readingDirection == eReadingDirectionHorizontalForwardS || readingDirection == eReadingDirectionHorizontalBackwardS || readingDirection == eReadingDirectionVerticalForwardS || readingDirection == eReadingDirectionVerticalBackwardS);
         // number of sprites in the range
         int n = std::abs(spriteRange.y - spriteRange.x) + 1;
+        int m = std::abs(repeatRange.y - repeatRange.x) + 1;
+        if (playbackMode == ePlaybackModeNormalReverseMerge) {
+            n -= 1;
+        }
         // sprite index
-        int i = mod((int)std::floor(time) - frameOffset, n);
+        int i = mod((int)std::floor(time) + frameOffset, n + m * repeatCount);
+        if ((playbackMode == ePlaybackModeNormalReverse || playbackMode == ePlaybackModeNormalReverseMerge) && mod(((int)std::floor(time) + frameOffset) / (n + m * repeatCount), 2) == 1) {
+            i = n + m * repeatCount - (playbackMode != ePlaybackModeNormalReverseMerge ? 1 : 0) - i;
+        }
+        int j = (i - repeatRange.x) / m;
+        if (j < 0) {
+            j = 0;
+        }
+        i = i - std::min(j, repeatCount) * m;
         if (spriteRange.x <= spriteRange.y) {
             i = spriteRange.x + i;
         } else {
             i = spriteRange.x - i;
         }
         // number of sprites per line
-        int cols = (rodPixel.x2 - rodPixel.x1) / spriteSize.x;
+        int cols = verticalRead ? (rodPixel.y2 - rodPixel.y1) / spriteSize.y : (rodPixel.x2 - rodPixel.x1) / spriteSize.x;
         if (cols <= 0) {
             cols = 1;
         }
         int r = i / cols;
         int c = i % cols;
-        cropRectPixel->x1 = (int)(renderScale.x * (rodPixel.x1 + c * spriteSize.x)); // left to right
-        cropRectPixel->y1 = (int)(renderScale.y * (rodPixel.y2 - (r + 1) * spriteSize.y)); // top to bottom
+        if (backwardRead) {
+            c = cols - 1 - c;
+        }
+        if (sshapedRead) {
+            c = r % 2 == 0 ? c : (cols - 1 - c);
+        }
+        if (verticalRead) {
+            int a = r;
+            r = c;
+            c = a;
+        }
+        cropRectPixel->x1 = (int)(renderScale.x * (rodPixel.x1 + c * spriteSize.x));
+        cropRectPixel->y1 = (int)(renderScale.y * (rodPixel.y2 - (r + 1) * spriteSize.y));
         cropRectPixel->x2 = (int)(renderScale.x * (rodPixel.x1 + (c + 1) * spriteSize.x));
         cropRectPixel->y2 = (int)(renderScale.y * (rodPixel.y2 - r * spriteSize.y));
     } // SpriteSheetPlugin::getCropRectangle
@@ -227,6 +309,10 @@ private:
     Int2DParam* _spriteSize;
     Int2DParam* _spriteRange;
     IntParam* _frameOffset;
+    ChoiceParam* _readingDirection;
+    ChoiceParam* _playbackMode;
+    Int2DParam* _repeatRange;
+    IntParam* _repeatCount;
 };
 
 
@@ -299,9 +385,14 @@ SpriteSheetPlugin::setupAndProcess(SpriteSheetProcessorBase &processor,
     OfxPointI spriteRange;
     _spriteRange->getValueAtTime(time, spriteRange.x, spriteRange.y);
     int frameOffset = _frameOffset->getValueAtTime(time);
+    ReadingDirectionEnum readingDirection = (ReadingDirectionEnum)_readingDirection->getValueAtTime(time);
+    PlaybackModeEnum playbackMode = (PlaybackModeEnum)_playbackMode->getValueAtTime(time);
+    OfxPointI repeatRange;
+    _repeatRange->getValueAtTime(time, repeatRange.x, repeatRange.y);
+    int repeatCount = _repeatCount->getValueAtTime(time);
 
     OfxRectI cropRectPixel;
-    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, &cropRectPixel);
+    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, readingDirection, playbackMode, repeatRange, repeatCount, &cropRectPixel);
 
     processor.setValues(cropRectPixel);
 
@@ -332,10 +423,15 @@ SpriteSheetPlugin::getRegionsOfInterest(const RegionsOfInterestArguments &args,
     _spriteSize->getValueAtTime(time, spriteSize.x, spriteSize.y);
     OfxPointI spriteRange;
     _spriteRange->getValueAtTime(time, spriteRange.x, spriteRange.y);
-    int frameOffset = _frameOffset->getValueAtTime(time);
+    int frameOffset = _frameOffset->getValueAtTime(time); 
+    ReadingDirectionEnum readingDirection = (ReadingDirectionEnum)_readingDirection->getValueAtTime(time);
+    PlaybackModeEnum playbackMode = (PlaybackModeEnum)_playbackMode->getValueAtTime(time);
+    OfxPointI repeatRange;
+    _repeatRange->getValueAtTime(time, repeatRange.x, repeatRange.y);
+    int repeatCount = _repeatCount->getValueAtTime(time);
 
     OfxRectI cropRectPixel;
-    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, &cropRectPixel);
+    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, readingDirection, playbackMode, repeatRange, repeatCount, &cropRectPixel);
 
     OfxRectD cropRect;
     Coords::toCanonical(cropRectPixel, args.renderScale, par, &cropRect);
@@ -540,7 +636,68 @@ SpriteSheetPluginFactory::describeInContext(ImageEffectDescriptor &desc,
         IntParamDescriptor* param = desc.defineIntParam(kParamFrameOffset);
         param->setLabelAndHint(kParamFrameOffsetLabel);
         param->setRange(INT_MIN, INT_MAX);
-        param->setDefault(1);
+        param->setDefault(0);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamReadingDirection);
+        param->setLabel(kParamReadingDirectionLabel);
+        param->setHint(kParamReadingDirectionHint);
+        assert(param->getNOptions() == eReadingDirectionHorizontalForward);
+        param->appendOption(kParamReadingDirectionOptionHorizontalForward);
+        assert(param->getNOptions() == eReadingDirectionHorizontalBackward);
+        param->appendOption(kParamReadingDirectionOptionHorizontalBackward);
+        assert(param->getNOptions() == eReadingDirectionVerticalForward);
+        param->appendOption(kParamReadingDirectionOptionVerticalForward);
+        assert(param->getNOptions() == eReadingDirectionVerticalBackward);
+        param->appendOption(kParamReadingDirectionOptionVerticalBackward);
+        assert(param->getNOptions() == eReadingDirectionHorizontalForwardS);
+        param->appendOption(kParamReadingDirectionOptionHorizontalForwardS);
+        assert(param->getNOptions() == eReadingDirectionHorizontalBackwardS);
+        param->appendOption(kParamReadingDirectionOptionHorizontalBackwardS);
+        assert(param->getNOptions() == eReadingDirectionVerticalForwardS);
+        param->appendOption(kParamReadingDirectionOptionVerticalForwardS);
+        assert(param->getNOptions() == eReadingDirectionVerticalBackwardS);
+        param->appendOption(kParamReadingDirectionOptionVerticalBackwardS);
+        param->setAnimates(true);
+        param->setDefault(eReadingDirectionHorizontalForward);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamPlaybackMode);
+        param->setLabel(kParamPlaybackModeLabel);
+        param->setHint(kParamPlaybackModeHint);
+        assert(param->getNOptions() == ePlaybackModeNormal);
+        param->appendOption(kParamPlaybackModeOptionNormal);
+        assert(param->getNOptions() == ePlaybackModeNormalReverse);
+        param->appendOption(kParamPlaybackModeOptionNormalReverse);
+        assert(param->getNOptions() == ePlaybackModeNormalReverseMerged);
+        param->appendOption(kParamPlaybackModeOptionNormalReverseMerge);
+        param->setAnimates(true);
+        param->setDefault(ePlaybackModeNormal);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        Int2DParamDescriptor* param = desc.defineInt2DParam(kParamRepeatRange);
+        param->setLabelAndHint(kParamRepeatRangeLabel);
+        param->setRange(0, 0, INT_MAX, INT_MAX);
+        param->setDefault(0, 0);
+        param->setDimensionLabels("start", "end");
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        IntParamDescriptor* param = desc.defineIntParam(kParamRepeatCount);
+        param->setLabelAndHint(kParamRepeatCountLabel);
+        param->setRange(INT_MIN, INT_MAX);
+        param->setDefault(0);
         if (page) {
             page->addChild(*param);
         }
