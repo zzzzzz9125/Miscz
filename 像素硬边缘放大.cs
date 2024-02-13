@@ -205,7 +205,7 @@ namespace Test_Script1
                             vKeyframes[0].Type = VideoKeyframeType.Linear;
                             VideoMotionBounds bounds = new VideoMotionBounds(new VideoMotionVertex(0f, 0f), new VideoMotionVertex((float)scrWidth, 0f), new VideoMotionVertex((float)scrWidth, (float)scrHeight), new VideoMotionVertex(0f, (float)scrHeight));
                             vKeyframes[0].Bounds = bounds;
-                            vKeyframes[0].MoveBy(new VideoMotionVertex(dFullWidth / 2 - scrWidth / 2, dFullHeight / 2 - scrHeight / 2));
+                            vKeyframes[0].MoveBy(new VideoMotionVertex((int)dFullWidth / 2 - scrWidth / 2, (int)dFullHeight / 2 - scrHeight / 2));
 
                             // If the material's height (or width) is larger than the project's, add PositionOFX
                             if (dFullWidth > scrWidth || dFullHeight > scrHeight)
