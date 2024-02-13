@@ -17,7 +17,6 @@ namespace Test_Script1
     {
         public const double SCALETYPEFACTOR = 1.8;
         public Vegas myVegas;
-        public bool resetMode;
         public float scrWidth, scrHeight, dFullWidth, dFullHeight;
         public double firstWidth, firstHeight;
         public void Main(Vegas vegas)
@@ -28,7 +27,7 @@ namespace Test_Script1
             PlugInNode plugin2 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzPosition}");
             scrWidth = myVegas.Project.Video.Width;
             scrHeight = myVegas.Project.Video.Height;
-            resetMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false;
+            bool resetMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false;
             foreach (Track myTrack in myVegas.Project.Tracks)
             {
                 if (myTrack.IsVideo())
@@ -46,10 +45,15 @@ namespace Test_Script1
                             VideoStream videoStream = (VideoStream)mediaStream;
                             dFullWidth = videoStream.Width;
                             dFullHeight = videoStream.Height;
+
+                            // Judge the status of XFlip and YFlip
                             double rotationSave = vKeyframes[0].Rotation;
-                            vKeyframes[0].Rotation = 1;
-                            bool isXFlip = (vKeyframes[0].TopLeft.X - vKeyframes[0].TopRight.X) * Math.Cos(vKeyframes[0].Rotation) > 0, isYFlip = (vKeyframes[0].TopRight.Y - vKeyframes[0].BottomRight.Y) * Math.Cos(vKeyframes[0].Rotation) > 0;
+                            vKeyframes[0].Rotation = 1; // Turn at a certain angle to avoid misjudgment in some cases
+                            bool isXFlip = (vKeyframes[0].TopLeft.X - vKeyframes[0].TopRight.X) * Math.Cos(vKeyframes[0].Rotation) > 0;
+                            bool isYFlip = (vKeyframes[0].TopRight.Y - vKeyframes[0].BottomRight.Y) * Math.Cos(vKeyframes[0].Rotation) > 0;
                             vKeyframes[0].Rotation = rotationSave;
+
+                            // Calculate the index where TransformOFX is added
                             int theLastOne = 0, countBefore = 0;
                             int effectCount = vEvent.Effects.Count;
                             for (int i = effectCount - 1; i >= 0; i--)
@@ -78,7 +82,7 @@ namespace Test_Script1
 
                             Effect effect1 = new Effect(plugin1);
                             vEvent.Effects.Insert(Math.Max(theLastOne, countBefore), effect1);
-                            
+
                             OFXEffect ofx1 = effect1.OFXEffect;
                             OFXBooleanParameter transformUniform = (OFXBooleanParameter)ofx1["uniform"];
                             transformUniform.Value = vEvent.MaintainAspectRatio ? true : true; // Experimental and imperfect, delete "? true : true" if you want to test
@@ -148,14 +152,36 @@ namespace Test_Script1
                                         nCenter = PointEqual(thisKeyframe.Center, vKeyframes[0].Center) ? 0 : 1;
                                         nCenterN += nCenter;
                                     }
+
                                     transformScale.IsAnimated = Convert.ToBoolean(nScaleN);
-                                    if (transformScale.IsAnimated) {transformScale.Keyframes[0].Interpolation = type0;}
+                                    if (transformScale.IsAnimated)
+                                    {
+                                        transformScale.Keyframes[0].Time = vKeyframes[0].Position;
+                                        transformScale.Keyframes[0].Interpolation = type0;
+                                    }
+
                                     transformRotate.IsAnimated = Convert.ToBoolean(nRotateN);
-                                    if (transformRotate.IsAnimated) {transformRotate.Keyframes[0].Interpolation = type0;transformTranslate.Value = PointTranslate(vKeyframes[0], true);transformCenter.Value = new OFXDouble2D { X = Pos.X + vKeyframes[0].Center.X - dFullWidth / 2, Y = Pos.Y - vKeyframes[0].Center.Y + dFullHeight / 2};}
+                                    if (transformRotate.IsAnimated)
+                                    {
+                                        transformRotate.Keyframes[0].Time = vKeyframes[0].Position;
+                                        transformRotate.Keyframes[0].Interpolation = type0;
+                                        transformTranslate.Value = PointTranslate(vKeyframes[0], true);
+                                        transformCenter.Value = new OFXDouble2D { X = Pos.X + vKeyframes[0].Center.X - dFullWidth / 2, Y = Pos.Y - vKeyframes[0].Center.Y + dFullHeight / 2};
+                                    }
+
                                     transformTranslate.IsAnimated = Convert.ToBoolean(nRotateN) ? Convert.ToBoolean(nTranslateRotateN) : Convert.ToBoolean(nTranslateN);
-                                    if (transformTranslate.IsAnimated) {transformTranslate.Keyframes[0].Interpolation = type0;}
+                                    if (transformTranslate.IsAnimated) 
+                                    {
+                                        transformTranslate.Keyframes[0].Time = vKeyframes[0].Position;
+                                        transformTranslate.Keyframes[0].Interpolation = type0;
+                                    }
+
                                     transformCenter.IsAnimated = Convert.ToBoolean(nCenterN) && Convert.ToBoolean(nRotateN);
-                                    if (transformCenter.IsAnimated) {transformCenter.Keyframes[0].Interpolation = type0;}
+                                    if (transformCenter.IsAnimated) 
+                                    {
+                                        transformCenter.Keyframes[0].Time = vKeyframes[0].Position;
+                                        transformCenter.Keyframes[0].Interpolation = type0;
+                                    }
 
                                     // Add keyframes
                                     for (int jj = countKeyframes - 1; jj >= 1; jj--)
