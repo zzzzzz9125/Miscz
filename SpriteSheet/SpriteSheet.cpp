@@ -57,6 +57,9 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kParamFrameOffset "frameOffset"
 #define kParamFrameOffsetLabel "Frame Offset", "Output frame number for the first sprite."
 
+#define kParamFrameSeparation "frameSeparation"
+#define kParamFrameSeparationLabel "Frame Separation", "The separation of the frames, based on the frame rate of the project."
+
 #define kParamReadingDirection "readingDirection"
 #define kParamReadingDirectionLabel "Reading Direction"
 #define kParamReadingDirectionHint "The reading direction of the sprites."
@@ -81,6 +84,9 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 
 #define kParamRepeatCount "repeatCount"
 #define kParamRepeatCountLabel "Repeat Count", "Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed."
+
+#define kParamSpritesCut "spritesCut"
+#define kParamSpritesCutLabel "Sprites Cut", "Cut the spritesheet and read it separately."
 
 enum ReadingDirectionEnum
 {
@@ -195,10 +201,12 @@ public:
         , _spriteSize(NULL)
         , _spriteRange(NULL)
         , _frameOffset(NULL)
+        , _frameSeparation(NULL)
         , _readingDirection(NULL)
         , _playbackMode(NULL)
         , _repeatRange(NULL)
         , _repeatCount(NULL)
+        , _spritesCut(NULL)
     {
 
         _dstClip = fetchClip(kOfxImageEffectOutputClipName);
@@ -214,10 +222,12 @@ public:
         _spriteSize = fetchInt2DParam(kParamSpriteSize);
         _spriteRange = fetchInt2DParam(kParamSpriteRange);
         _frameOffset = fetchIntParam(kParamFrameOffset);
+        _frameSeparation = fetchIntParam(kParamFrameSeparation);
         _readingDirection = fetchChoiceParam(kParamReadingDirection);
         _playbackMode = fetchChoiceParam(kParamPlaybackMode);
         _repeatRange = fetchInt2DParam(kParamRepeatRange);
         _repeatCount = fetchIntParam(kParamRepeatCount);
+        _spritesCut = fetchInt2DParam(kParamSpritesCut);
     }
 
 private:
@@ -243,11 +253,13 @@ private:
                           const OfxPointI& spriteSize,
                           const OfxPointI& spriteRange,
                           int frameOffset,
+                          int frameSeparation,
                           ReadingDirectionEnum readingDirection,
                           PlaybackModeEnum playbackMode,
                           const OfxPointI& repeatRange,
                           int repeatCount,
-                          OfxRectI *cropRectPixel) const
+                          const OfxPointI& spritesCut,
+        OfxRectI *cropRectPixel) const
     {
         bool verticalRead = (readingDirection == eReadingDirectionVerticalForward || readingDirection == eReadingDirectionVerticalBackward || readingDirection == eReadingDirectionVerticalForwardS || readingDirection == eReadingDirectionVerticalBackwardS);
         bool backwardRead = (readingDirection == eReadingDirectionHorizontalBackward || readingDirection == eReadingDirectionVerticalBackward || readingDirection == eReadingDirectionHorizontalBackwardS || readingDirection == eReadingDirectionVerticalBackwardS);
@@ -259,7 +271,7 @@ private:
             n -= 1;
         }
         // sprite index
-        int i = mod((int)std::floor(time) + frameOffset, n + m * repeatCount);
+        int i = mod((int)std::floor(time) / frameSeparation + frameOffset, n + m * repeatCount);
         if ((playbackMode == ePlaybackModeNormalReverse || playbackMode == ePlaybackModeNormalReverseMerge) && mod(((int)std::floor(time) + frameOffset) / (n + m * repeatCount), 2) == 1) {
             i = n + m * repeatCount - (playbackMode != ePlaybackModeNormalReverseMerge ? 1 : 0) - i;
         }
@@ -274,18 +286,25 @@ private:
             i = spriteRange.x - i;
         }
         // number of sprites per line
-        int cols = verticalRead ? (rodPixel.y2 - rodPixel.y1) / spriteSize.y : (rodPixel.x2 - rodPixel.x1) / spriteSize.x;
+        int cols = verticalRead ? (rodPixel.y2 - rodPixel.y1) / spriteSize.y / spritesCut.y : (rodPixel.x2 - rodPixel.x1) / spriteSize.x / spritesCut.x;
         if (cols <= 0) {
             cols = 1;
         }
-        int r = i / cols;
+        int sum = (rodPixel.y2 - rodPixel.y1) / spriteSize.y / spritesCut.y * (rodPixel.x2 - rodPixel.x1) / spriteSize.x / spritesCut.x;
+        int r = i / cols % (sum / cols);
         int c = i % cols;
         if (backwardRead) {
             c = cols - 1 - c;
         }
         if (sshapedRead) {
-            c = r % 2 == 0 ? c : (cols - 1 - c);
+            c = (r + spriteRange.x / cols % (sum / cols)) % 2 == 0 ? c : (cols - 1 - c);
         }
+        int ii = i / sum;
+        int colsCrop = verticalRead ? spritesCut.y : spritesCut.x;
+        int rr = ii / colsCrop;
+        int cc = ii % colsCrop;
+        r += rr * sum / cols;
+        c += cc * cols;
         if (verticalRead) {
             int a = r;
             r = c;
@@ -309,10 +328,12 @@ private:
     Int2DParam* _spriteSize;
     Int2DParam* _spriteRange;
     IntParam* _frameOffset;
+    IntParam* _frameSeparation;
     ChoiceParam* _readingDirection;
     ChoiceParam* _playbackMode;
     Int2DParam* _repeatRange;
     IntParam* _repeatCount;
+    Int2DParam* _spritesCut;
 };
 
 
@@ -385,15 +406,18 @@ SpriteSheetPlugin::setupAndProcess(SpriteSheetProcessorBase &processor,
     OfxPointI spriteRange;
     _spriteRange->getValueAtTime(time, spriteRange.x, spriteRange.y);
     int frameOffset = _frameOffset->getValueAtTime(time);
+    int frameSeparation = _frameSeparation->getValueAtTime(time);
     ReadingDirectionEnum readingDirection = (ReadingDirectionEnum)_readingDirection->getValueAtTime(time);
     PlaybackModeEnum playbackMode = (PlaybackModeEnum)_playbackMode->getValueAtTime(time);
     OfxPointI repeatRange;
     _repeatRange->getValueAtTime(time, repeatRange.x, repeatRange.y);
     int repeatCount = _repeatCount->getValueAtTime(time);
 
-    OfxRectI cropRectPixel;
-    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, readingDirection, playbackMode, repeatRange, repeatCount, &cropRectPixel);
+    OfxPointI spritesCut;
+    _spritesCut->getValueAtTime(time, spritesCut.x, spritesCut.y);
 
+    OfxRectI cropRectPixel;
+    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, frameSeparation, readingDirection, playbackMode, repeatRange, repeatCount, spritesCut, &cropRectPixel);
     processor.setValues(cropRectPixel);
 
     // Call the base class process member, this will call the derived templated process code
@@ -424,14 +448,18 @@ SpriteSheetPlugin::getRegionsOfInterest(const RegionsOfInterestArguments &args,
     OfxPointI spriteRange;
     _spriteRange->getValueAtTime(time, spriteRange.x, spriteRange.y);
     int frameOffset = _frameOffset->getValueAtTime(time); 
+    int frameSeparation = _frameSeparation->getValueAtTime(time);
     ReadingDirectionEnum readingDirection = (ReadingDirectionEnum)_readingDirection->getValueAtTime(time);
     PlaybackModeEnum playbackMode = (PlaybackModeEnum)_playbackMode->getValueAtTime(time);
     OfxPointI repeatRange;
     _repeatRange->getValueAtTime(time, repeatRange.x, repeatRange.y);
     int repeatCount = _repeatCount->getValueAtTime(time);
 
+    OfxPointI spritesCut;
+    _spritesCut->getValueAtTime(time, spritesCut.x, spritesCut.y);
+
     OfxRectI cropRectPixel;
-    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, readingDirection, playbackMode, repeatRange, repeatCount, &cropRectPixel);
+    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, frameSeparation, readingDirection, playbackMode, repeatRange, repeatCount, spritesCut, &cropRectPixel);
 
     OfxRectD cropRect;
     Coords::toCanonical(cropRectPixel, args.renderScale, par, &cropRect);
@@ -642,6 +670,15 @@ SpriteSheetPluginFactory::describeInContext(ImageEffectDescriptor &desc,
         }
     }
     {
+        IntParamDescriptor* param = desc.defineIntParam(kParamFrameSeparation);
+        param->setLabelAndHint(kParamFrameSeparationLabel);
+        param->setRange(1, INT_MAX);
+        param->setDefault(1);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
         ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamReadingDirection);
         param->setLabel(kParamReadingDirectionLabel);
         param->setHint(kParamReadingDirectionHint);
@@ -698,6 +735,16 @@ SpriteSheetPluginFactory::describeInContext(ImageEffectDescriptor &desc,
         param->setLabelAndHint(kParamRepeatCountLabel);
         param->setRange(INT_MIN, INT_MAX);
         param->setDefault(0);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        Int2DParamDescriptor* param = desc.defineInt2DParam(kParamSpritesCut);
+        param->setLabelAndHint(kParamSpritesCutLabel);
+        param->setRange(1, 1, INT_MAX, INT_MAX);
+        param->setDefault(1, 1);
+        param->setDimensionLabels("cutX", "cutY");
         if (page) {
             page->addChild(*param);
         }
