@@ -37,14 +37,11 @@ namespace Test_Script
         public static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll", EntryPoint = "SetForegroundWindow")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
-        [DllImport("user32.dll", EntryPoint = "keybd_event", SetLastError = true)]
-        public static extern void keybd_event(Keys bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
-        public IntPtr Handle1, HandleVegas;
+        public IntPtr Handle1;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
             Project project = myVegas.Project;
-            HandleVegas = myVegas.MainWindow.Handle;
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, needDisplayFix = false;
             InterfaceType colorType;
             myVegas.GetInterfaceType(out colorType);
@@ -1107,7 +1104,7 @@ namespace Test_Script
 
                 }
 
-                if (GetForegroundWindow() == HandleVegas)
+                if (GetForegroundWindow() == myVegas.MainWindow.Handle)
                 {
                     if (gridForm != null)
                     {
@@ -1129,7 +1126,7 @@ namespace Test_Script
                                 showGridButton.Text = LRZ("HideGrid");
                             }
                         }
-                        else if (a == HandleVegas)
+                        else if (a == myVegas.MainWindow.Handle)
                         {
                             gridForm.Show();
                         }
@@ -1199,6 +1196,10 @@ namespace Test_Script
             {
                 spritesArr = new ArrayList();
                 spritesArr.Add(0);
+                if ((myReg.GetValue("CropMode") != null ? (string)myReg.GetValue("CropMode") : "0") == "1")
+                {
+                    spritesArr.Add(0);
+                }
             }
             for (int i = 0; i < repeat[2]; i++)
             {
@@ -2798,7 +2799,7 @@ namespace Test_Script
                             break;
 
                         case "CropModeTips":
-                            str0 = "裁切模式";
+                            str0 = "正常：正常进行预裁切操作。\n仅裁切：裁切图像后，直接渲染并导入进Vegas。仅需点击网格两次。\n单帧裁切：“仅裁切”的升级版，用于裁切单帧。仅需点击网格一次。";
                             break;
 
                         case "EnableLoopText":
@@ -3067,7 +3068,7 @@ namespace Test_Script
                             break;
 
                         case "CropModeTips":
-                            str0 = "Crop Mode";
+                            str0 = "Normal: PreCrop the image Normally.\nCrop Only: Crop the image, then directly render and import it into Vegas. You just need to click on the grid twice.\nCrop Single: An upgraded version of Crop Only, used for single frames. You just need to click on the grid once.";
                             break;
 
                         case "EnableLoopText":
@@ -3257,7 +3258,7 @@ namespace Test_Script
                             break;
 
                         case "PlaybackChoices":
-                            str0 = new string [] {"Normal", "Normal+Reverse","N.+R.(Half Merge)" , "N.+R.(Full Merge)"};
+                            str0 = new string [] {"Normal", "Normal+Reverse", "N.+R.(Half Merge)" , "N.+R.(Full Merge)"};
                             break;
 
                         case "RenderAsChoices":
