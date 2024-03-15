@@ -760,8 +760,67 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeINTEGER name="frameOffset">
                     <OfxPropLabel>帧偏移</OfxPropLabel>
-                    <OfxParamPropHint>调整输出的第一帧Sprite图像的编号。</OfxParamPropHint>
+                    <OfxParamPropHint>在整体上，调整输出的第一帧Sprite图像的编号。</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
+
+                <OfxParamTypeINTEGER name="frameSeparation">
+                    <OfxPropLabel>帧间隔</OfxPropLabel>
+                    <OfxParamPropHint>每帧之间的间隔，基于项目帧率。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeChoice name="readingDirection">
+                    <OfxPropLabel>读取方向</OfxPropLabel>
+                    <OfxParamPropHint>Sprite图像的读取方向。
+
+水平正向: 以水平正向的方向读取Sprite图像。
+水平反向: 以水平反向的方向读取Sprite图像。
+竖直正向: 以竖直正向的方向读取Sprite图像。
+竖直反向: 以竖直反向的方向读取Sprite图像。
+水平正向(S型): 以水平正向的S折线型方向读取Sprite图像。
+水平反向(S型): 以水平反向的S折线型方向读取Sprite图像。
+竖直正向(S型): 以竖直正向的S折线型方向读取Sprite图像。
+竖直反向(S型): 以竖直反向的S折线型方向读取Sprite图像。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>水平正向</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>水平反向</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>竖直正向</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>竖直反向</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>水平正向(S型)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>水平反向(S型)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>竖直正向(S型)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>竖直反向(S型)</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeChoice name="playbackMode">
+                    <OfxPropLabel>播放模式</OfxPropLabel>
+                    <OfxParamPropHint>Sprite图像的播放模式。
+
+正常: 以正常模式播放Sprite图像。
+正常+倒放: 以正常+倒放模式播放Sprite图像。
+正常+倒放(合并): 以正常+倒放模式播放Sprite图像，并且将重复的首/末帧合并成单个帧。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>正常</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>正常+倒放</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>正常+倒放(合并)</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeINTEGER name="loopOffset">
+                    <OfxPropLabel>循环帧偏移</OfxPropLabel>
+                    <OfxParamPropHint>在单个循环内，调整输出的第一帧Sprite图像的编号。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeINTEGER2D name="repeatRange">
+                    <OfxPropLabel>重复范围</OfxPropLabel>
+                    <OfxParamPropHint>划定一段范围，在该范围内的Sprite图像可以重复数次。当“重复次数”为0时，不进行重复。</OfxParamPropHint>
+                </OfxParamTypeINTEGER2D>
+
+                <OfxParamTypeINTEGER name="repeatCount">
+                    <OfxPropLabel>重复次数</OfxPropLabel>
+                    <OfxParamPropHint>划定一段范围，在该范围内的Sprite图像可以重复数次。当“重复次数”为0时，不进行重复。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeINTEGER2D name="spritesCut">
+                    <OfxPropLabel>Sprite表切割</OfxPropLabel>
+                    <OfxParamPropHint>切割Sprite表，逐个读取。</OfxParamPropHint>
+                </OfxParamTypeINTEGER2D>
             </OfxImageEffectContext>
         </OfxResourceSet>
     </OfxPlugin>
