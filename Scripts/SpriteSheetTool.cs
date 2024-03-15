@@ -16,16 +16,15 @@ namespace Test_Script
     public class Class
     {
         public Vegas myVegas;
-        PlugInNode plugin1, plugin2, plugin3, plugin001;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
         double dFullPixelAspect, frameRate;
-        int [] count, spriteFrame, location, offset, repeat, preview, frameIndex, cut, frameRange;
-        int language, countSelected, directionIndex, playbackIndex;
+        int[] count, spriteFrame, location, offset, preview, frameIndex, cut, frameRange;
+        int language, countSelected;
         Form form, gridForm, gridFormSet;
-        TextBox countXBox, countYBox, frameStartXBox, frameStartYBox, frameEndXBox, frameEndYBox, frameRateBox, startOffsetBox, topLeftXBox, topLeftYBox, bottomRightXBox, bottomRightYBox, cutXBox, cutYBox, previewXBox, previewYBox, loopOffsetBox, repeatFirstBox, repeatLastBox, repeatCountBox, safetyBox, gridDelayBox, autoDelayBox, gridHideDelayBox, scaleFactorBox;
-        TrackBar countXBar, countYBar, safetyBar, gridDelayBar, autoDelayBar, gridHideDelayBar, scaleFactorBar;
-        ComboBox directionBox, playbackBox, reimportBox, languageBox, scaleBox;
+        TextBox countXBox, countYBox, frameStartXBox, frameStartYBox, frameEndXBox, frameEndYBox, frameRateBox, startOffsetBox, topLeftXBox, topLeftYBox, bottomRightXBox, bottomRightYBox, cutXBox, cutYBox, previewXBox, previewYBox, loopOffsetBox, repeatFirstBox, repeatLastBox, repeatCountBox, safetyBox, gridDelayBox, autoDelayBox, gridHideDelayBox, scaleFactorBox, gridOpacityBox;
+        TrackBar countXBar, countYBar, safetyBar, gridDelayBar, autoDelayBar, gridHideDelayBar, scaleFactorBar, gridOpacityBar;
+        ComboBox directionBox, playbackBox, reimportBox, languageBox, cropModeBox;
         VideoEvent vEvent;
         VideoMotionBounds boundsPreCrop;
         VideoMotionKeyframe keyframePreview;
@@ -38,13 +37,15 @@ namespace Test_Script
         public static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll", EntryPoint = "SetForegroundWindow")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
+        [DllImport("user32.dll", EntryPoint = "keybd_event", SetLastError = true)]
+        public static extern void keybd_event(Keys bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
         public IntPtr Handle1, HandleVegas;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
             Project project = myVegas.Project;
             HandleVegas = myVegas.MainWindow.Handle;
-            bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false;
+            bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, needDisplayFix = false;
             InterfaceType colorType;
             myVegas.GetInterfaceType(out colorType);
             switch (colorType)
@@ -67,29 +68,26 @@ namespace Test_Script
             }
             myReg = Registry.CurrentUser.CreateSubKey(regPath);
             language = myReg.GetValue("Language") != null ? int.Parse((string)myReg.GetValue("Language")) : (myVegas.AppCultureInfo.TwoLetterISOLanguageName == "zh" ? 1 : 0);
-            string originalPath = project.FilePath;
-            if (project.IsUntitled)
+
+            MediaBin spritesBin = null;
+            foreach (IMediaBinNode node in project.MediaPool.RootMediaBin)
             {
-                string message = LRZ("UntitledCaution");
-                string caption = LRZ("UntitledCautionCaption");
-                MessageBoxButtons buttons = MessageBoxButtons.YesNo;
-                DialogResult result = MessageBox.Show(message, caption, buttons);
-                if (result == DialogResult.Yes && myVegas.SaveProject())
+                if (node.NodeType == MediaBinNodeType.Bin && ((MediaBin)node).Name == "Sprites")
                 {
-                    originalPath = project.FilePath;
-                }
-                else
-                {
-                    return;
+                    spritesBin = (MediaBin)node;
+                    break;
                 }
             }
-            plugin1 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzTransformPlugin}");
-            plugin2 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzPosition}");
-            plugin3 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:net.sf.openfx.MzSpriteSheet}");
-            plugin001 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.vegascreativesoftware:border}");
-            if (plugin001 == null)
+            if (spritesBin == null)
             {
-                plugin001 = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.sonycreativesoftware:border}");
+                spritesBin = new MediaBin(project, "Sprites");
+                project.MediaPool.RootMediaBin.Add(spritesBin);
+            }
+
+            PlugInNode pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.vegascreativesoftware:border}");
+            if (pluginBorder == null)
+            {
+                pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.sonycreativesoftware:border}");
             }
             scrWidth = myVegas.Project.Video.Width;
             scrHeight = myVegas.Project.Video.Height;
@@ -111,24 +109,57 @@ namespace Test_Script
                             vEvent = (VideoEvent) evnt;
 
                             // Move the cursor
-                            if(!(myVegas.Transport.CursorPosition.CompareTo(evnt.Start) >= 0 && myVegas.Transport.CursorPosition.CompareTo(evnt.End) <= 0))
+                            if(!(myVegas.Transport.CursorPosition.CompareTo(vEvent.Start) >= 0 && myVegas.Transport.CursorPosition.CompareTo(vEvent.End) <= 0))
                             {
-                                Timecode cursor = Timecode.FromNanos(evnt.Start.Nanos + evnt.Length.Nanos / 4);
+                                Timecode cursor = Timecode.FromNanos(vEvent.Start.Nanos + vEvent.Length.Nanos / 4);
                                 myVegas.Transport.CursorPosition = cursor;
                                 myVegas.Transport.ViewCursor(true);
                             }
 
-                            // Identify and read the SpriteSheetTool project
-                            string filePath = GetActiveMediaStream(evnt).Parent.FilePath;
-                            string filePathImageSequence = null, resetPath = null, nestedPath0 = null;
-                            Media oriMedia = null;
-                            Take take0 = null, takeActiveSave = evnt.ActiveTake, takeOriSave = null;
-                            int number = -1;
-
-                            if ((GetActiveMediaStream(evnt).Parent.IsImageSequence() || Regex.IsMatch(filePath, @"(_000\.png)$")) && File.Exists(Path.GetDirectoryName(filePath) + "_Crop.veg"))
+                            string filePath = vEvent.ActiveTake.Media.FilePath;
+                            Take take0 = null, takeActiveSave = vEvent.ActiveTake, takeOriSave = null;
+                            int number = -1, cropModeOri = 0;
+                            bool isRevise = true;
+                            if (Regex.IsMatch(Path.GetDirectoryName(filePath), @"_(Single)?(Crop)?$") && File.Exists(Regex.Replace(Path.GetDirectoryName(filePath), @"_(Single)?(Crop)?$", ".png")))
                             {
-                                filePathImageSequence = filePath;
-                                filePath = Path.GetDirectoryName(filePath) + "_Crop.veg";
+                                int.TryParse(Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"((?<=_)[0-9][0-9][0-9])$").Value, out number);
+                                cropModeOri = Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Single)$") ? 2 : 1;
+                                filePath = Regex.Replace(Path.GetDirectoryName(filePath), @"_(Single)?(Crop)?$", ".png");
+                            }
+                            
+                            else if (vEvent.ActiveTake.Media.IsImageSequence() || Regex.IsMatch(filePath, @"(_000\.png)$"))
+                            {
+                                if (File.Exists(Path.GetDirectoryName(filePath) + ".png"))
+                                {
+                                    number = 0;
+                                    filePath = Path.GetDirectoryName(filePath) + ".png";
+                                }
+
+                                else if (File.Exists(Regex.Replace(Path.GetDirectoryName(filePath), @"(_[0-9][0-9])$", ".png")))
+                                {
+                                    int.TryParse(Regex.Match(Path.GetDirectoryName(filePath), @"((?<=_)[0-9][0-9])$").Value, out number);
+                                    filePath = Regex.Replace(Path.GetDirectoryName(filePath), @"(_[0-9][0-9])$", ".png");
+                                }
+                            }
+
+                            else if (Regex.IsMatch(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$"))
+                            {                                
+                                if (File.Exists(Regex.Replace(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$", ".png")))
+                                {
+                                    number = 0;
+                                    filePath = Regex.Replace(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$", ".png");
+                                }
+
+                                else if (File.Exists(Regex.Replace(filePath, @"(_[0-9][0-9]((\.gif)|((_ProRes|_PNG)?\.mov)))$", ".png")))
+                                {
+                                    int.TryParse(Regex.Match(filePath, @"(?<=_)[0-9][0-9](?=((\.gif)|((_ProRes|_PNG)?\.mov))$)").Value, out number);
+                                    filePath = Regex.Replace(filePath, @"(_[0-9][0-9]((\.gif)|((_ProRes|_PNG)?\.mov)))$", ".png");
+                                }
+                            }
+
+                            else
+                            {
+                                isRevise = false;
                             }
 
                             if (!File.Exists(filePath))
@@ -137,61 +168,28 @@ namespace Test_Script
                                 continue;
                             }
 
-                            if (Regex.IsMatch(filePath, @"((_[0-9][0-9])?_Crop\.veg)$"))
+                            Media oriMedia = Media.CreateInstance(project, filePath);
+                            spritesBin.Add(oriMedia);
+                            for (int i = vEvent.Takes.Count - 1; i >= 0; i--)
                             {
-                                nestedPath0 = myVegas.ReadProject(filePath).Tracks[0].Events[0].Takes[0].Media.FilePath;
-                            }
-
-                            else if (Regex.IsMatch(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$"))
-                            {
-                                nestedPath0 = Regex.Replace(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$", ".veg");
-                            }
-
-                            if (File.Exists(nestedPath0) && Regex.IsMatch(nestedPath0, @"(\.veg)$"))
-                            {
-                                Project project0 = myVegas.ReadProject(nestedPath0);
-                                oriMedia = new Media(project0.Tracks[0].Events[0].Takes[0].Media.FilePath);
-                                resetPath = filePath;
-                            }
-
-
-                            if (Path.GetFileName(resetPath) != null)
-                            {
-                                if (Regex.IsMatch(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$"))
+                                Take take = vEvent.Takes[i];
+                                if (take.MediaPath == filePath)
                                 {
-                                    int.TryParse(Regex.Match(filePath, @"(?<=_)[0-9][0-9](?=((\.gif)|((_ProRes|_PNG)?\.mov))$)").Value, out number);
+                                    takeOriSave = take;
+                                    take0 = takeOriSave;
+                                    vEvent.ActiveTake = takeOriSave;
+                                    break;
                                 }
-                                else if (Regex.Replace(Path.GetFileName(filePath), @"((_[0-9][0-9])?_Crop\.veg)$", "") == Path.GetFileNameWithoutExtension(oriMedia.FilePath))
+                                else if (i == 0)
                                 {
-                                    int.TryParse(Regex.Match(filePath, @"(?<=_)[0-9][0-9](?=(_Crop\.veg)$)").Value, out number);
+                                    take0 = vEvent.AddTake(oriMedia.GetVideoStreamByIndex(0), true);
                                 }
-                                else
-                                {
-                                    number = 0;
-                                }
-                                filePath = oriMedia.FilePath;
-                                for (int i = vEvent.Takes.Count - 1; i >= 0; i--)
-                                {
-                                    Take take = vEvent.Takes[i];
-                                    if (take.MediaPath == filePath)
-                                    {
-                                        takeOriSave = take;
-                                        take0 = takeOriSave;
-                                        vEvent.ActiveTake = takeOriSave;
-                                        break;
-                                    }
-                                    else if (i == 0)
-                                    {
-                                        take0 = vEvent.AddTake(oriMedia.GetVideoStreamByIndex(0), true);
-                                    }
-                                }
-                                vEvent.ResampleMode = VideoResampleMode.Disable;
                             }
+                            vEvent.ResampleMode = VideoResampleMode.Disable;
 
                             vEvent.Selected = true;
 
-                            MediaStream mediaStream = GetActiveMediaStream(vEvent);
-                            VideoStream videoStream = (VideoStream)mediaStream;
+                            VideoStream videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
                             dFullWidth = videoStream.Width;
                             dFullHeight = videoStream.Height;
                             dFullPixelAspect = videoStream.PixelAspectRatio;
@@ -203,20 +201,6 @@ namespace Test_Script
                                 vEvent.VideoMotion.Keyframes.Clear();
                                 keyframePreview = vEvent.VideoMotion.Keyframes[0];
                                 int effectCount = vEvent.Effects.Count;
-                                bool plugin1Exist = false;
-                                for (int i = effectCount - 1; i >= 0; i--)
-                                {
-                                    if (vEvent.Effects[i].PlugIn.UniqueID == plugin1.UniqueID)
-                                    {
-                                        vEvent.Effects.RemoveAt(i);
-                                        plugin1Exist = true;
-                                    }
-                                }
-
-                                if (plugin1Exist)
-                                {
-                                    KeyframeReset(keyframePreview);
-                                }
 
                                 if (KeyframeChanged(keyframePreview))
                                 {
@@ -235,13 +219,13 @@ namespace Test_Script
                                 }
 
                                 // Add a white boarder to show the boundaries of the SpriteSheet image
-                                Effect effect001 = new Effect(plugin001);
-                                vEvent.Effects.Insert(0, effect001);
-                                effect001.ApplyBeforePanCrop = true;
-                                OFXEffect ofx001 = effect001.OFXEffect;
-                                OFXChoiceParameter borderChoice = (OFXChoiceParameter)ofx001["Type"];
+                                Effect effectBorder = new Effect(pluginBorder);
+                                vEvent.Effects.Insert(0, effectBorder);
+                                effectBorder.ApplyBeforePanCrop = true;
+                                OFXEffect ofxBorder = effectBorder.OFXEffect;
+                                OFXChoiceParameter borderChoice = (OFXChoiceParameter)ofxBorder["Type"];
                                 borderChoice.Value = borderChoice.Choices[2];
-                                OFXDoubleParameter borderSize = (OFXDoubleParameter)ofx001["Size"];
+                                OFXDoubleParameter borderSize = (OFXDoubleParameter)ofxBorder["Size"];
                                 borderSize.Value = 0.015;
                                 myVegas.UpdateUI();
 
@@ -251,7 +235,7 @@ namespace Test_Script
 
                                 for (int i = effectCount - 1; i >= 0; i--)
                                 {
-                                    if (vEvent.Effects[i].PlugIn.UniqueID == plugin001.UniqueID)
+                                    if (vEvent.Effects[i].PlugIn.UniqueID == pluginBorder.UniqueID)
                                     {
                                         vEvent.Effects.RemoveAt(i);
                                     }
@@ -259,341 +243,310 @@ namespace Test_Script
 
                                 if (!canContinue)
                                 {
-                                    if (Path.GetFileName(resetPath) != null)
+                                    vEvent.ActiveTake = takeActiveSave;
+                                    if (!take0.Equals(takeOriSave) || isRevise)
                                     {
-                                        vEvent.ActiveTake = takeActiveSave;
                                         if (!take0.Equals(takeOriSave))
                                         {
                                             vEvent.Takes.Remove(take0);
-                                            videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
-                                            dFullWidth = videoStream.Width;
-                                            dFullHeight = videoStream.Height;
-                                            KeyframeReset(keyframePreview);
-
-                                            if (plugin1Exist)
-                                            {
-                                                PixelScale(vEvent);
-                                            }
                                         }
+                                        videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
+                                        dFullWidth = videoStream.Width;
+                                        dFullHeight = videoStream.Height;
+                                        KeyframeReset(keyframePreview);
                                     }
                                     break;
                                 }
                             }
 
-                            int countFrames = Math.Abs(frameIndex[1] - frameIndex[0]) + 1 + (Math.Abs(repeat[1] - repeat[0]) + 1) * repeat[2];
-                            if (frameIndex[0] == frameIndex[1])
+                            int cropMode = myReg.GetValue("CropMode") != null ? int.Parse((string)myReg.GetValue("CropMode")) : 0;
+                            if (spritesArr.Count == 1)
                             {
-                                playbackIndex = 0;
+                                cropMode = 2;
                             }
 
-                            switch (playbackIndex)
+                            int cols = location[2] - location[0] + 1, rows = location[3] - location[1] + 1;
+                            double scaleFactor = myReg.GetValue("ScaleFactor") != null ? double.Parse((string)myReg.GetValue("ScaleFactor")) : 0;
+                            if (scaleFactor < 1)
                             {
-                                case 1:
-                                {
-                                    countFrames = countFrames * 2;
-                                    break;
-                                }
-                                case 2:
-                                {
-                                    countFrames = (countFrames - 1) * 2;
-                                    break;
-                                }
+                                scaleFactor = Math.Ceiling(Math.Max(1, Math.Min(scrWidth / spriteFrame[0] / (cropMode == 1 ? cols : 1), scrHeight / spriteFrame[1] / (cropMode == 1 ? rows : 1))));
                             }
 
-
-                            if (false)
+                            if (Path.GetFileName(Path.GetDirectoryName(filePath)) != "Sprites")
                             {
-                                // Set the save paths
-                                if (Path.GetFileName(Path.GetDirectoryName(filePath)) != "SpriteSheets" && resetPath == null)
-                                {
-                                    Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(filePath), "SpriteSheets"));
-                                    string newPath = Path.Combine(Path.GetDirectoryName(filePath), "SpriteSheets", Path.GetFileName(filePath));
-                                    File.Copy(filePath, newPath, true);
-                                    filePath = newPath;
-                                }
+                                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(filePath), "Sprites"));
+                                string newPath = Path.Combine(Path.GetDirectoryName(filePath), "Sprites", Path.GetFileName(filePath));
+                                File.Copy(filePath, newPath, true);
+                                filePath = newPath;
+                            }
 
-                                string nestedPath = Path.Combine(Path.GetDirectoryName(filePath), (Path.GetFileNameWithoutExtension(filePath) + ".veg"));
-                                if (number == -1)
+                            if ((cropMode != cropModeOri) || !(myReg.GetValue("EnableRevise") != null ? (string)myReg.GetValue("EnableRevise") == "1" : true))
+                            {
+                                number = -1;
+                                isRevise = false;
+                            }
+
+                            string outputDirectory = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + (cropMode == 1 ? "_Crop" : cropMode == 2 ? "_Single" : number > 0 ? ("_" + string.Format("{0:00}", number)) : null));
+
+                            if (number == -1)
+                            {
+                                number = 0;
+                                if (cropMode == 0)
                                 {
-                                    number = 0;
-                                    while (File.Exists(nestedPath))
+                                    while (Directory.Exists(outputDirectory) || File.Exists(outputDirectory + ".gif") || File.Exists(outputDirectory + ".mov") || File.Exists(outputDirectory + "_PNG.mov") || File.Exists(outputDirectory + "_ProRes.mov"))
                                     {
                                         number += 1;
-                                        nestedPath = Path.Combine(Path.GetDirectoryName(filePath), (Path.GetFileNameWithoutExtension(filePath) + "_" + string.Format("{0:00}", number) + ".veg"));
+                                        outputDirectory = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null));
                                     }
                                 }
-
-                                else if (number > 0)
+                                else
                                 {
-                                    nestedPath = Path.Combine(Path.GetDirectoryName(filePath), (Path.GetFileNameWithoutExtension(filePath) + "_" + string.Format("{0:00}", number) + ".veg"));
-                                }
-
-                                Project nestedProject = myVegas.CreateEmptyProject();
-                                nestedProject.SaveProject(nestedPath);
-                                project.SaveProject(originalPath);
-                                myVegas.OpenFile(nestedPath);
-                                nestedProject = myVegas.Project;
-                                bool singleMode = frameIndex[0] == frameIndex[1] && count[0] == 1 && count[1] == 1;
-
-                                if (singleMode)
-                                {
-                                    frameRate = 0.2; // Generate a 5-second event
-                                }
-
-                                nestedProject.Video.Width = spriteFrame[0] * count[0];
-                                nestedProject.Video.Height = spriteFrame[1] * count[1];
-                                nestedProject.Video.FrameRate = frameRate;
-                                nestedProject.Video.FieldOrder = VideoFieldOrder.ProgressiveScan;
-                                nestedProject.Video.PixelAspectRatio = dFullPixelAspect;
-                                VideoEvent newEvent = AddVideoEvent(vegas, filePath, new Timecode(0), Timecode.FromFrames(countFrames));
-                                if (boundsPreCrop != null)
-                                {
-                                    newEvent.VideoMotion.Keyframes[0].Bounds = boundsPreCrop;
-                                }
-
-                                // Add SpriteSheet FX and assign values
-                                if (!singleMode)
-                                {
-                                    Effect effect3 = new Effect(plugin3);
-                                    newEvent.Effects.Insert(0, effect3);
-                                    OFXEffect ofx3 = effect3.OFXEffect;
-                                    OFXInteger2DParameter spriteSize = (OFXInteger2DParameter)ofx3["spriteSize"];
-                                    OFXInteger2D size = new OFXInteger2D { X = spriteFrame[0], Y = spriteFrame[1]};
-                                    spriteSize.Value = size;
-                                    OFXInteger2DParameter spriteRange = (OFXInteger2DParameter)ofx3["spriteRange"];
-                                    OFXInteger2D range = new OFXInteger2D { X = frameIndex[0], Y = frameIndex[1]};
-                                    spriteRange.Value = range;
-                                    OFXIntegerParameter frameOffset = (OFXIntegerParameter)ofx3["frameOffset"];
-                                    frameOffset.Value = offset[0];
-                                    OFXChoiceParameter direction = (OFXChoiceParameter)ofx3["readingDirection"];
-                                    direction.Value = direction.Choices[directionIndex];
-                                    OFXChoiceParameter playback = (OFXChoiceParameter)ofx3["playbackMode"];
-                                    playback.Value = playback.Choices[playbackIndex];
-                                    OFXIntegerParameter loopOffset = (OFXIntegerParameter)ofx3["loopOffset"];
-                                    loopOffset.Value = offset[1];
-                                    OFXInteger2DParameter repeatRange = (OFXInteger2DParameter)ofx3["repeatRange"];
-                                    OFXInteger2D repeatR = new OFXInteger2D { X = repeat[0], Y = repeat[1]};
-                                    repeatRange.Value = repeatR;
-                                    OFXIntegerParameter repeatCount = (OFXIntegerParameter)ofx3["repeatCount"];
-                                    repeatCount.Value = repeat[2];
-                                    OFXInteger2DParameter spritesCut = (OFXInteger2DParameter)ofx3["spritesCut"];
-                                    OFXInteger2D cutValue = new OFXInteger2D { X = cut[0], Y = cut[1]};
-                                    spritesCut.Value = cutValue;
-                                }
-
-                                nestedProject.SaveProject(nestedPath);
-                                File.Delete(nestedPath + ".bak");
-
-                                string nestedCropPath = Path.Combine(Path.GetDirectoryName(filePath), (Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null) + "_Crop.veg"));
-
-                                Project nestedCropProject = myVegas.CreateEmptyProject();
-                                nestedCropProject.SaveProject(nestedCropPath);
-                                myVegas.OpenFile(nestedCropPath);
-                                nestedCropProject = myVegas.Project;
-                                myVegas.ImportFile(nestedPath);
-                                nestedCropProject.Video.MatchProjectSettingsWithMedia(nestedCropProject.MediaPool.Find(nestedPath));
-                                nestedCropProject.Video.Width = spriteFrame[0];
-                                nestedCropProject.Video.Height = spriteFrame[1];
-
-                                VideoEvent nestedEvent = (VideoEvent) nestedCropProject.Tracks[0].Events[0];
-                                nestedEvent.ResampleMode = VideoResampleMode.Disable;
-                                nestedEvent.Loop = true;
-                                VideoMotionKeyframe keyframe = nestedEvent.VideoMotion.Keyframes[0];
-
-                                VideoMotionBounds bounds = new VideoMotionBounds(keyframe.TopLeft, keyframe.TopRight, keyframe.BottomRight, keyframe.BottomLeft);
-                                bounds.TopLeft = PointGet(keyframe.BottomLeft, keyframe.TopLeft, count[1]);
-                                bounds.BottomRight = PointGet(keyframe.BottomLeft, keyframe.BottomRight, count[0]);
-                                bounds.TopRight = new VideoMotionVertex(bounds.BottomRight.X, bounds.TopLeft.Y);
-
-                                keyframe.Bounds = bounds;
-
-                                if (myReg.GetValue("PixelScale") != null ? ((string)myReg.GetValue("PixelScale") == "1") : true)
-                                {
-                                    double scaleFactor = myReg.GetValue("ScaleFactor") != null ? double.Parse((string)myReg.GetValue("ScaleFactor")) : 0;
-                                    if (scaleFactor < 1)
+                                    while (File.Exists(Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) + ".png")))
                                     {
-                                        scaleFactor = Math.Min(scrWidth / spriteFrame[0], scrHeight / spriteFrame[1]);
-                                    }
-                                    nestedCropProject.Video.Width = (int)(spriteFrame[0] * scaleFactor);
-                                    nestedCropProject.Video.Height = (int)(spriteFrame[1] * scaleFactor);
-                                    if (scaleFactor > 1)
-                                    {
-                                        PixelScale(nestedEvent, spriteFrame[0], spriteFrame[1]);
+                                        number += 1;
                                     }
                                 }
+                            }
 
-                                // Render
-                                string reimportPath = null, openFolder = null;
-                                int [] render = myReg.GetValue("Render") != null ? render = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse) : new int [] {0, 0, 0, 0, 0};
+                            if (Directory.Exists(outputDirectory) && cropMode == 0)
+                            {
+                                Directory.Delete(outputDirectory, true);
+                            }
 
-                                if ((render[1] > 0 || render[2] > 0 || render[3] > 0 || render[4] > 0))
+                            if (!Directory.Exists(outputDirectory))
+                            {
+                                Directory.CreateDirectory(outputDirectory);
+                            }
+
+                            int[] render = myReg.GetValue("Render") != null ? render = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse) : new int[] {0, 1, 0, 0, 0};
+
+                            Process p = new Process();
+                            p.StartInfo.FileName = "cmd.exe";
+                            p.StartInfo.UseShellExecute = false;
+                            p.StartInfo.RedirectStandardInput = true;
+                            p.StartInfo.RedirectStandardOutput = true;
+                            p.StartInfo.RedirectStandardError = false;
+                            p.StartInfo.CreateNoWindow = true;
+
+                            Form progressForm = new Form();
+                            progressForm.ShowInTaskbar = false;
+                            progressForm.AutoSize = true;
+                            progressForm.BackColor = backColor;
+                            progressForm.ForeColor = foreColor;
+                            progressForm.Font = LRZFont(9);
+                            progressForm.FormBorderStyle = FormBorderStyle.FixedToolWindow;
+                            progressForm.StartPosition = FormStartPosition.CenterScreen;
+                            progressForm.FormBorderStyle = FormBorderStyle.None;
+                            progressForm.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+
+                            TableLayoutPanel pnl = new TableLayoutPanel();
+                            pnl.AutoSize = true;
+                            pnl.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                            pnl.BorderStyle = BorderStyle.FixedSingle; 
+                            pnl.ColumnCount = 2;
+                            pnl.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200));
+                            pnl.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
+                            progressForm.Controls.Add(pnl);
+
+                            ProgressBar prg = new ProgressBar();
+                            prg.Width = 200;
+                            prg.Height = 20;
+                            prg.Minimum = 0;
+                            prg.Maximum = 1 + spritesArr.Count + render[2] + render[3] + render[4];
+                            prg.Value = 0;
+                            prg.Margin = new Padding(10, 10, 10, 10);
+                            pnl.Controls.Add(prg);
+
+                            Label label = new Label();
+                            label.Margin = new Padding(10, 10, 10, 10);
+                            label.Text = LRZ("Rendering");
+                            label.AutoSize = true;
+                            pnl.Controls.Add(label);
+
+                            if (cropMode == 0)
+                            {
+                                progressForm.Show(myVegas.TimelineWindow);
+                            }
+
+                            try
+                            {
+                                // PreCrop
+                                if (location == null)
                                 {
-                                    string outputDirectory = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null));
-                                    if (Directory.Exists(outputDirectory))
+                                    location = new int[] {(int)keyframePreview.TopLeft.X / spriteFrame[0] + 1, (int)keyframePreview.TopLeft.Y / spriteFrame[1] + 1, (int)keyframePreview.BottomRight.X / spriteFrame[0], (int)keyframePreview.BottomRight.Y / spriteFrame[1]};
+                                }
+                                string preCropPath = cropMode == 0 ? (filePath + "_Crop.png") : Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) +".png");
+                                string renderParameter = "ffmpeg -y -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor";
+                                string preCropCommand = string.Format(renderParameter, filePath, spriteFrame[0] * cols, spriteFrame[1] * rows, spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1), cropMode == 0 ? 1 : scaleFactor);
+                                p.Start();
+                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" & exit", preCropCommand, preCropPath));
+                                p.WaitForExit();
+                                prg.Value += 1;
+                                label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
+                                label.Refresh();
+
+                                string reimportPath = preCropPath, openFolder = reimportPath;
+
+                                if (cropMode == 0)
+                                {
+                                    // Render PNG Image Sequence
+                                    for (int i = 0; i < spritesArr.Count; i++)
                                     {
-                                        Directory.Delete(outputDirectory, true);
+                                        int r = (int)spritesArr[i] / cols;
+                                        int c = (int)spritesArr[i] % cols;
+                                        string renderCommand = string.Format(renderParameter, preCropPath, spriteFrame[0], spriteFrame[1], c * spriteFrame[0], r * spriteFrame[1], scaleFactor);
+                                        string outputFile = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + (cropMode == 2 ? string.Format("{0:000}", number) : string.Format("{0:000}", Mod(i - offset[0], spritesArr.Count))) +".png");
+                                        p.Start();
+                                        p.StandardInput.WriteLine(string.Format("{0} \"{1}\" & exit", renderCommand, outputFile));
+                                        prg.Value += 1;
+                                        label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
+                                        label.Refresh();
                                     }
-                                    Directory.CreateDirectory(outputDirectory);
-                                    for (int i = 0; i < countFrames; i++)
+                                    p.WaitForExit();
+                                    File.Delete(preCropPath);
+                                    reimportPath = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_000.png");
+                                    openFolder = reimportPath;
+
+                                    // Render Other formats
+                                    if (render[2] > 0 || render[3] > 0 || render[4] > 0)
                                     {
-                                        myVegas.UpdateUI();
-                                        string outputFile = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) +"_"+ string.Format("{0:000}", i) +".png");
-                                        Timecode renderTimecode = Timecode.FromFrames(i);
-                                        vegas.SaveSnapshot(outputFile, ImageFileFormat.PNG, renderTimecode);
-                                    }
-                                    Process p = new Process();
-                                    p.StartInfo.FileName = "cmd.exe";
-                                    p.StartInfo.UseShellExecute = false;
-                                    p.StartInfo.RedirectStandardInput = true;
-                                    p.StartInfo.RedirectStandardOutput = true;
-                                    p.StartInfo.RedirectStandardError = true;
-                                    p.StartInfo.CreateNoWindow = true;
-                                    string [] renderCommand = new string[] {" -lavfi split[v],palettegen,[v]paletteuse ", " -c:v copy ", " -c:v prores_ks -profile:v 4444 "};
-                                    string [] renderPath = new string[] {".gif", (render[4] > 0 ? "_PNG.mov" : ".mov"), (render[3] > 0 ? "_ProRes.mov" : ".mov")};
-                                    for (int i = 0; i < render.Length - 2; i++)
-                                    {
-                                        renderCommand[i] = string.Format("ffmpeg -y -r {0} -f image2 -i \"{1}\"{2}", frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i]);
-                                        renderPath[i] = Path.Combine(Path.GetDirectoryName(outputDirectory), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null) + renderPath[i]);
-                                        if (render[i + 2] > 0)
+                                        string [] renderCommand = new string[] {"-lavfi split[v],palettegen,[v]paletteuse", "-c:v copy", "-c:v prores_ks -profile:v 4444"};
+                                        string [] renderPath = new string[] {".gif", (render[4] > 0 ? "_PNG.mov" : ".mov"), (render[3] > 0 ? "_ProRes.mov" : ".mov")};
+                                        for (int i = 0; i < render.Length - 2; i++)
                                         {
-                                            p.Start();
-                                            p.StandardInput.WriteLine(string.Format("{0}\"{1}\"&exit", renderCommand[i], renderPath[i]));
-                                            openFolder = renderPath[i];
-                                            p.WaitForExit();
+                                            renderCommand[i] = string.Format("ffmpeg -y -r {0} -f image2 -i \"{1}\" {2}", frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i]);
+                                            renderPath[i] = Path.Combine(Path.GetDirectoryName(outputDirectory), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null) + renderPath[i]);
+                                            if (render[i + 2] > 0)
+                                            {
+                                                p.Start();
+                                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" & exit", renderCommand[i], renderPath[i]));
+                                                openFolder = renderPath[i];
+                                                prg.Value += 1;
+                                                label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
+                                                label.Refresh();
+                                            }
+                                        }
+                                        p.WaitForExit();
+
+                                        if (render[0] > 0)
+                                        {
+                                            reimportPath = renderPath[render[0] - 1];
+                                            openFolder = reimportPath;
+                                        }
+
+                                        if (render[0] > 0 && render[1] <= 0 && Directory.Exists(outputDirectory))
+                                        {
+                                            Directory.Delete(outputDirectory, true);
                                         }
                                     }
-
-                                    if (render[1] <= 0)
-                                    {
-                                        Directory.Delete(outputDirectory, true);
-                                    }
-                                    else if (openFolder == null)
-                                    {
-                                        openFolder = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) +"_000.png");
-                                    }
-
-                                    if (render[0] == 1)
-                                    {
-                                        reimportPath = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) +"_000.png");
-                                    }
-
-                                    else if (render[0] > 0)
-                                    {
-                                        reimportPath = renderPath[render[0] - 2];
-                                    }
                                 }
-
-                                nestedCropProject.SaveProject(nestedCropPath);
-                                File.Delete(nestedCropPath + ".bak");
-                                myVegas.OpenFile(originalPath);
 
                                 for (int i = vEvent.Takes.Count - 1; i >= 0; i--)
                                 {
                                     Take take = vEvent.Takes[i];
-                                    if (take.MediaPath == reimportPath && (render[0] != 1 || singleMode))
-                                    {
-                                        vEvent.ActiveTake = take;
-                                        continue;
-                                    }
 
-                                    else if (reimportPath == null && take.MediaPath == nestedCropPath)
+                                    if (take.MediaPath == reimportPath)
                                     {
-                                        vEvent.ActiveTake = take;
-                                        continue;
-                                    }
-
-                                    if (i == 0 && vEvent.ActiveTake.MediaPath != nestedCropPath && vEvent.ActiveTake.MediaPath != reimportPath)
-                                    {
-                                        Media nestedCropMedia;
-                                        if (reimportPath == null)
+                                        if (cropMode != 0)
                                         {
-                                            nestedCropMedia = new Media(nestedCropPath);
-                                        }
-                                        else if (Regex.IsMatch(reimportPath, @"(_000\.png)$"))
-                                        {
-                                            nestedCropMedia = singleMode ? new Media(reimportPath) : project.MediaPool.AddImageSequence(reimportPath, countFrames, frameRate);
-                                            nestedCropMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
+                                            vEvent.Takes.RemoveAt(i); // To make it recapture the media, the take has to be deleted first and then added
                                         }
                                         else
                                         {
-                                            nestedCropMedia = new Media(reimportPath);
-                                            nestedCropMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
+                                            vEvent.ActiveTake = take;
                                         }
-                                        vEvent.AddTake(nestedCropMedia.GetVideoStreamByIndex(0), true);
-                                        vEvent.ResampleMode = VideoResampleMode.Disable;
-                                        vEvent.Loop = true;
                                     }
 
-                                    else if (i != 0 && (take.MediaPath == filePath || (filePathImageSequence != null && Path.GetDirectoryName(take.MediaPath) == Path.GetDirectoryName(filePathImageSequence))))
+                                    else if (i != 0 && take.MediaPath == filePath || (take.Media.IsImageSequence() && take.Equals(takeActiveSave)))
                                     {
                                         vEvent.Takes.RemoveAt(i);
                                     }
+
+                                    else if (i == 0 && vEvent.ActiveTake.MediaPath != reimportPath)
+                                    {
+                                        Media importedMedia;
+                                        if (cropMode == 0 && Regex.IsMatch(reimportPath, @"(_000\.png)$"))
+                                        {
+                                            importedMedia = project.MediaPool.AddImageSequence(reimportPath, spritesArr.Count, frameRate);
+                                        }
+                                        else
+                                        {
+                                            importedMedia = Media.CreateInstance(project, reimportPath);
+                                        }
+                                        spritesBin.Add(importedMedia);
+                                        importedMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
+                                        vEvent.AddTake(importedMedia.GetVideoStreamByIndex(0), true);
+                                        vEvent.ResampleMode = VideoResampleMode.Disable;
+                                        vEvent.Loop = myReg.GetValue("EnableLoop") != null ? ((string)myReg.GetValue("EnableLoop") == "1") : true;
+                                    }
                                 }
-
-                                videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
-                                dFullWidth = videoStream.Width;
-                                dFullHeight = videoStream.Height;
-                                KeyframeReset(keyframePreview);
-
-                                if (myReg.GetValue("PixelScale") != null ? ((string)myReg.GetValue("PixelScale") == "2") : false)
-                                {
-                                    PixelScale(vEvent);
-                                }
-
-                                // Automatically set Pan/Crop to full screen. This can cause problems and is disabled yet.
-                                // else if (myReg.GetValue("PixelScale") != null ? ((string)myReg.GetValue("PixelScale") == "1") : true)
-                                // {
-                                //     keyframePreview.Bounds = BoundsGenerate(scrWidth, scrHeight, (int)dFullWidth / 2 - scrWidth / 2, (int)dFullHeight / 2 - scrHeight / 2);
-                                // }
 
                                 if ((myReg.GetValue("DisplayInFolder") != null ? ((string)myReg.GetValue("DisplayInFolder") == "1") : false) && File.Exists(openFolder))
                                 {
                                     ExplorerFile(openFolder);
                                 }
+
+                                videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
+                                dFullWidth = videoStream.Width;
+                                dFullHeight = videoStream.Height;
+
+                                // Attempt to fix a display problem that may occur in Revise mode, but failed...
+                                double newWidth = (cropMode == 1 ? cols : 1) * spriteFrame[0] * scaleFactor, newHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * scaleFactor;
+                                if (isRevise && (newWidth != dFullWidth || newHeight != dFullHeight))
+                                {
+                                    keyframePreview.ScaleBy(new VideoMotionVertex(100, 100));
+                                    myVegas.UpdateUI();
+                                    Delay(150);
+                                    keyframePreview.ScaleBy(new VideoMotionVertex(0.01f, 0.01f));
+                                    myVegas.UpdateUI();
+                                    needDisplayFix = true;
+                                }
+
+                                KeyframeReset(keyframePreview);
+                                myVegas.UpdateUI();
                             }
 
-                            else
+                            catch (Exception ex)
                             {
-                                double scaleValue = Math.Min(scrWidth / spriteFrame[0], scrHeight / spriteFrame[1]);
-                                string outputDirectory = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null));
-                                if (Directory.Exists(outputDirectory))
-                                {
-                                    Directory.Delete(outputDirectory, true);
-                                }
-                                Directory.CreateDirectory(outputDirectory);
-                                Process p = new Process();
-                                p.StartInfo.FileName = "cmd.exe";
-                                p.StartInfo.UseShellExecute = false;
-                                p.StartInfo.RedirectStandardInput = true;
-                                p.StartInfo.RedirectStandardOutput = true;
-                                p.StartInfo.RedirectStandardError = true;
-                                p.StartInfo.CreateNoWindow = true;
-
-                                //PreCrop
-                                int cols = location[2] - location[0] + 1;
-                                string preCropPath = filePath + "_PreCrop.png";
-                                string preCropCommand = string.Format("ffmpeg -y -i \"{0}\" -vf crop={1}:{2}:{3}:{4} -sws_flags neighbor ", filePath, spriteFrame[0] * cols, spriteFrame[1] * (location[3] - location[1] + 1), spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1));
-                                p.Start();
-                                p.StandardInput.WriteLine(string.Format("{0}\"{1}\"&exit", preCropCommand, preCropPath));
-                                p.WaitForExit();
-
-                                for (int i = 0; i < spritesArr.Count; i++)
-                                {
-                                    p.Start();
-                                    int r = (int)spritesArr[i] / cols;
-                                    int c = (int)spritesArr[i] % cols;
-                                    string renderCommand = string.Format("ffmpeg -y -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor ", preCropPath, spriteFrame[0], spriteFrame[1], c * spriteFrame[0], r * spriteFrame[1], scaleValue);
-                                    string outputFile = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) +"_"+ string.Format("{0:000}", i) +".png");
-                                    p.StandardInput.WriteLine(string.Format("{0}\"{1}\"&exit", renderCommand, outputFile));
-                                }
-                                p.WaitForExit();
-                                File.Delete(preCropPath);
-
+                                MessageBox.Show(ex.Message);
                             }
-                            myVegas.UpdateUI();
+
+                            finally
+                            {
+                                if (cropMode == 0)
+                                {
+                                    progressForm.Close();
+                                }
+                            }
                         }
                     }
                 }
+            }
+
+            // Remove unused media
+            foreach (IMediaBinNode node in spritesBin)
+            {
+                if (node.NodeType == MediaBinNodeType.MediaRef && ((Media)node).UseCount == 0)
+                {
+                    project.MediaPool.Remove(((Media)node).FilePath);
+                }
+            }
+
+            // Completely fix the display problem by opening another program, then closing it. This will cause Vegas to re-read the media files.
+            // When "Close media files when not the active application" in Preferences is unchecked, this method doesn't work either, so you have to reopen the current project.
+            // Looking for a better way to solve this.
+            if (needDisplayFix && (myReg.GetValue("DisplayFix") != null ? (string)myReg.GetValue("DisplayFix") == "1" : true))
+            {
+                // project.MediaPool.OpenAllMedia();             // This line doesn't work, I wonder why
+                Process p = new Process();
+                p.StartInfo.FileName = "cmd.exe";
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardInput = true;
+                p.StartInfo.RedirectStandardOutput = false;
+                p.StartInfo.RedirectStandardError = false;
+                p.StartInfo.CreateNoWindow = true;
+                p.Start();
+                p.StandardInput.WriteLine("start CreateMinidumpx64.exe & taskkill /f /im CreateMinidumpx64.exe & exit");
             }
         }
 
@@ -603,98 +556,6 @@ namespace Test_Script
             while (Math.Abs(Environment.TickCount - start) < milliSecond)
             {
                 Application.DoEvents();
-            }
-        }
-
-        public MediaStream GetActiveMediaStream(TrackEvent trackEvent)
-        {
-            try
-            {
-                if (!(trackEvent.ActiveTake.IsValid()))
-                {
-                    throw new ArgumentException("empty or invalid take");
-                }
-
-                Media media = myVegas.Project.MediaPool.Find(trackEvent.ActiveTake.MediaPath);
-                if (null == media)
-                {
-                    MessageBox.Show("missing media");
-                    throw new ArgumentException("missing media");
-                }
-
-                MediaStream mediaStream = media.Streams.GetItemByMediaType(MediaType.Video, trackEvent.ActiveTake.StreamIndex);
-                return mediaStream;
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("{0}", e.Message);
-                return null;
-            }
-        }
-
-        public static VideoEvent AddVideoEvent(Vegas vegas, string mediaFile, Timecode start, Timecode length)
-        {
-            Media media =new Media(mediaFile);
-            VideoTrack track = vegas.Project.AddVideoTrack();
-            VideoEvent videoEvent = track.AddVideoEvent(start,length);
-            Take take = videoEvent.AddTake(media.GetVideoStreamByIndex(0));
-            return videoEvent;
-        }
-
-        public static VideoMotionVertex PointGet(VideoMotionVertex point1, VideoMotionVertex point2, int n)
-        {
-            VideoMotionVertex point3 = new VideoMotionVertex(((n-1) * point1.X + point2.X) / n, ((n-1) * point1.Y + point2.Y) / n); 
-            return point3;
-        }
-
-        private void PixelScale(VideoEvent vEvent, float width = 0, float height = 0)
-        {
-            bool outsideMode = width * height == 0 ? true : false;
-            if (outsideMode)
-            {
-                VideoStream videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
-                width = videoStream.Width;
-                height = videoStream.Height;
-            }
-            float projectWidth = myVegas.Project.Video.Width, projectHeight = myVegas.Project.Video.Height;
-            int countBefore = 0;
-            int effectCount = vEvent.Effects.Count;
-            for (int i = effectCount - 1; i >= 0; i--)
-            {
-                if (vEvent.Effects[i].ApplyBeforePanCrop == true)
-                {
-                    countBefore += 1;
-                }
-            }
-            Effect effect1 = new Effect(plugin1);
-            vEvent.Effects.Insert(countBefore, effect1);
-
-            OFXEffect ofx1 = effect1.OFXEffect;
-            OFXBooleanParameter transformUniform = (OFXBooleanParameter)ofx1["uniform"];
-            transformUniform.Value = true;
-            OFXChoiceParameter transformFilter = (OFXChoiceParameter)ofx1["filter"];
-            transformFilter.Value = transformFilter.Choices[0];
-            OFXDouble2DParameter transformScale = (OFXDouble2DParameter)ofx1["scale"];
-            double ScaleValueY = Math.Min(projectWidth / width, projectHeight / height);
-            OFXDouble2D Scale = new OFXDouble2D { X = ScaleValueY , Y = ScaleValueY};
-            transformScale.Value = Scale;
-            OFXDouble2DParameter transformCenter = (OFXDouble2DParameter)ofx1["center"];
-            OFXDouble2D Pos = new OFXDouble2D { X = projectWidth / 2 + (width % 2)/2.0, Y = projectHeight / 2 - (height % 2)/2.0};
-            transformCenter.Value = new OFXDouble2D { X = Pos.X, Y = Pos.Y};
-
-            // Set Pan/Crop keyframes
-            vEvent.VideoMotion.Keyframes.Clear();
-            VideoMotionKeyframe keyframe = vEvent.VideoMotion.Keyframes[0];
-            if (outsideMode)
-            {
-                keyframe.Rotation = 0;
-                keyframe.Center = new VideoMotionVertex(0f, 0f);
-                keyframe.Type = VideoKeyframeType.Linear;
-                keyframe.Bounds = BoundsGenerate(projectWidth, projectHeight, (int)width / 2 - projectWidth / 2, (int)height / 2 - projectHeight / 2);
-            }
-            else
-            {
-                keyframe.ScaleBy(new VideoMotionVertex((float)ScaleValueY, (float)ScaleValueY));
             }
         }
 
@@ -776,16 +637,22 @@ namespace Test_Script
             return distance;
         }
 
+        public static int Mod(double a, double b)
+        {
+            int c = (int)(a - Math.Floor(a / b) * b);
+            return c;
+        }
+
         private void SpriteSheetSetWindow()
         {
             string countReg = (boundsPreCrop == null) ? "Count" : "CountCroped";
-            count = myReg.GetValue(countReg) != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue(countReg)), ","), int.Parse) : new int [] {8, 4};
+            count = myReg.GetValue(countReg) != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue(countReg)), ","), int.Parse) : new int[] {8, 4};
             frameRate = myReg.GetValue("FrameRate") == null ? 10 : Convert.ToDouble(myReg.GetValue("FrameRate"));
-            offset = new int [] {0, 0};
-            frameRange = new int [] {1, 1, count[0], count[1]};
-            frameIndex = new int [] {0, count[0] * count[1] - 1};
-            spriteFrame = new int [] {(int) PointDistance(keyframePreview.TopLeft, keyframePreview.TopRight), (int) PointDistance(keyframePreview.TopLeft, keyframePreview.BottomLeft)};
-            cut = new int [] {1, 1};
+            offset = new int[] {0, 0};
+            frameRange = new int[] {1, 1, count[0], count[1]};
+            frameIndex = new int[] {0, count[0] * count[1] - 1};
+            spriteFrame = new int[] {(int) PointDistance(keyframePreview.TopLeft, keyframePreview.TopRight), (int) PointDistance(keyframePreview.TopLeft, keyframePreview.BottomLeft)};
+            cut = new int[] {1, 1};
             isPreCrop = (myReg.GetValue("PreCropAtStart") != null ? (string)myReg.GetValue("PreCropAtStart") == "1" : true) && !KeyframeChanged(keyframePreview);
             canContinue = false;
             canClose = false;
@@ -800,7 +667,7 @@ namespace Test_Script
             form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
             if (myReg.GetValue("FormLocation") != null)
             {
-                int [] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("FormLocation")), ","), int.Parse);
+                int[] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("FormLocation")), ","), int.Parse);
                 form.Location = new Point(Math.Max(0, Math.Min(arr[0], Screen.GetWorkingArea(form).Width * 4 / 5)), Math.Max(0, Math.Min(arr[1], Screen.GetWorkingArea(form).Height * 4 / 5)));
                 form.StartPosition = FormStartPosition.Manual;
             }
@@ -824,12 +691,8 @@ namespace Test_Script
             l.GrowStyle = TableLayoutPanelGrowStyle.AddRows;
             l.ColumnCount = 3;
             l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160));
-            l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60));
-            l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60));
-            for (int i = 0; i<= 2; i++)
-            {
-                l.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            }
+            l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 65));
+            l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 65));
 
             panelBig.Controls.Add(l);
             
@@ -855,7 +718,9 @@ namespace Test_Script
             countXBox.TextChanged += new EventHandler(countXBox_TextChanged);
 
             countYBar = new TrackBar();
-            countYBar.AutoSize = true;
+            countYBar.AutoSize = false;
+            countYBar.Height = countYBox.Height;
+            countYBar.Margin = new Padding(0, 5, 0, 5);
             countYBar.Dock = DockStyle.Fill;
             countYBar.Minimum = 1;
             countYBar.Maximum = 20;
@@ -868,7 +733,9 @@ namespace Test_Script
             countYBar.ValueChanged += new EventHandler(countYBar_ValueChanged);
 
             countXBar = new TrackBar();
-            countXBar.AutoSize = true;
+            countXBar.AutoSize = false;
+            countXBar.Height = countXBox.Height;
+            countXBar.Margin = new Padding(0, 5, 0, 5);
             countXBar.Dock = DockStyle.Fill;
             countXBar.Minimum = 1;
             countXBar.Maximum = 20;
@@ -1015,6 +882,7 @@ namespace Test_Script
             directionBox = new ComboBox();
             directionBox.DataSource = LRZArr("DirectionChoices");
             directionBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            directionBox.Dock = DockStyle.Fill;
             directionBox.Tag = "Frame";
             l.Controls.Add(directionBox);
             l.SetColumnSpan(directionBox, 2);
@@ -1032,6 +900,7 @@ namespace Test_Script
             playbackBox = new ComboBox();
             playbackBox.DataSource = LRZArr("PlaybackChoices");
             playbackBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            playbackBox.Dock = DockStyle.Fill;
             playbackBox.Tag = "Frame";
             l.Controls.Add(playbackBox);
             l.SetColumnSpan(playbackBox, 2);
@@ -1100,36 +969,70 @@ namespace Test_Script
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
-            label.Text = LRZ("ScaleText");
+            label.Text = LRZ("ScaleFactorText");
             label.Tag = "Frame";
             label.AutoSize = true;
             l.Controls.Add(label);
-            tt.SetToolTip(label, LRZ("ScaleTips"));
 
-            scaleBox = new ComboBox();
-            scaleBox.DataSource = LRZArr("ScaleChoices");
-            scaleBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            scaleBox.Tag = "Frame";
-            l.Controls.Add(scaleBox);
-            l.SetColumnSpan(scaleBox, 2);
-            tt.SetToolTip(scaleBox, LRZ("ScaleTips"));
+            scaleFactorBox = new TextBox();
+            scaleFactorBox.AutoSize = true;
+            scaleFactorBox.Tag = "Frame";
+            l.Controls.Add(scaleFactorBox);
+            scaleFactorBox.TextChanged += new EventHandler(scaleFactorBox_TextChanged);
+            tt.SetToolTip(scaleFactorBox, LRZ("ScaleFactorTips"));
 
-            CheckBox cropSingle = new CheckBox();
-            cropSingle.Text = LRZ("CropSingleText");
-            cropSingle.AutoSize = true;
-            cropSingle.Checked = myReg.GetValue("CropSingle") != null ? ((string)myReg.GetValue("CropSingle") == "1") : false;
-            cropSingle.Tag = "PreCrop";
-            l.Controls.Add(cropSingle);
-            l.SetColumnSpan(cropSingle, 3);
-            cropSingle.CheckedChanged += new EventHandler(cropSingle_CheckedChanged);
+            label = new Label();
+            label.Tag = "Frame";
+            l.Controls.Add(label);
 
-            CheckBox multiMode = new CheckBox();
-            multiMode.Text = LRZ("MultiModeText");
-            multiMode.AutoSize = true;
-            multiMode.Checked = myReg.GetValue("MultiMode") != null ? ((string)myReg.GetValue("MultiMode") == "1") : false;
-            multiMode.Tag = "Frame";
-            l.Controls.Add(multiMode);
-            multiMode.CheckedChanged += new EventHandler(multiMode_CheckedChanged);
+            double scaleFactor = myReg.GetValue("ScaleFactor") != null ? double.Parse((string)myReg.GetValue("ScaleFactor")) : 0;
+
+            scaleFactorBar = new TrackBar();
+            scaleFactorBar.AutoSize = false;
+            scaleFactorBar.Height = scaleFactorBox.Height;
+            scaleFactorBar.Tag = "Frame";
+            scaleFactorBar.Margin = new Padding(0, 5, 0, 5);
+            scaleFactorBar.Dock = DockStyle.Fill;
+            scaleFactorBar.Minimum = 0;
+            scaleFactorBar.Maximum = 100;
+            scaleFactorBar.LargeChange = 10;
+            scaleFactorBar.SmallChange = 1;
+            scaleFactorBar.TickStyle = TickStyle.None;
+            scaleFactorBar.Value = (int)Math.Floor(Math.Min(scaleFactorBar.Maximum, Math.Max(scaleFactor, scaleFactorBar.Minimum)));
+            l.Controls.Add(scaleFactorBar);
+            l.SetColumnSpan(scaleFactorBar, 3);
+            scaleFactorBar.ValueChanged += new EventHandler(scaleFactorBar_ValueChanged);
+            tt.SetToolTip(scaleFactorBar, LRZ("ScaleFactorTips"));
+
+            scaleFactorBox.Text = scaleFactor < 1 ? LRZ("Auto") : string.Format("{0}", scaleFactor);
+
+            label = new Label();
+            label.Margin = new Padding(6, 6, 6, 6);
+            label.Text = LRZ("CropModeText");
+            label.Tag = "PreCrop";
+            label.AutoSize = true;
+            l.Controls.Add(label);
+            tt.SetToolTip(label, LRZ("CropModeTips"));
+
+            cropModeBox = new ComboBox();
+            cropModeBox.DataSource = LRZArr("CropModeChoices");
+            cropModeBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            cropModeBox.Dock = DockStyle.Fill;
+            cropModeBox.Tag = "PreCrop";
+            l.Controls.Add(cropModeBox);
+            l.SetColumnSpan(cropModeBox, 2);
+            tt.SetToolTip(cropModeBox, LRZ("CropModeTips"));
+            cropModeBox.SelectedIndexChanged += new EventHandler(cropMode_SelectedIndexChanged);
+
+            CheckBox enableLoop = new CheckBox();
+            enableLoop.Text = LRZ("EnableLoopText");
+            enableLoop.Margin = new Padding(0, 3, 0, 3);
+            enableLoop.AutoSize = true;
+            enableLoop.Checked = myReg.GetValue("EnableLoop") != null ? ((string)myReg.GetValue("EnableLoop") == "1") : true;
+            enableLoop.Tag = "Frame";
+            l.Controls.Add(enableLoop);
+            enableLoop.CheckedChanged += new EventHandler(enableLoop_CheckedChanged);
+
 
             CheckBox autoMode = new CheckBox();
             autoMode.Text = LRZ("AutoModeText");
@@ -1189,13 +1092,20 @@ namespace Test_Script
             renderAs.Click += new EventHandler(renderAs_Click);
 
             preCropSet();
-            form.ResumeLayout();
-            form.Show(myVegas.TimelineWindow);
             showGrid();
+
             while (!canClose && !canContinue)
             {
+
                 IntPtr a = GetForegroundWindow();
-                Delay(300);
+                try
+                {
+                    Delay(300);
+                }
+                catch
+                {
+
+                }
 
                 if (GetForegroundWindow() == HandleVegas)
                 {
@@ -1215,6 +1125,7 @@ namespace Test_Script
                                 }
                                 showGridButton.Tag = true;
                                 gridForm.Show();
+                                SetForegroundWindow(gridForm.Handle);
                                 showGridButton.Text = LRZ("HideGrid");
                             }
                         }
@@ -1239,7 +1150,6 @@ namespace Test_Script
                             gridForm.Location = new Point(Math.Min(gridForm.Location.X, Screen.GetWorkingArea(gridForm).Width - 30), Math.Min(gridForm.Location.Y, Screen.GetWorkingArea(gridForm).Height - 30));
                         }
                     }
-
                 }
             }
         }
@@ -1247,8 +1157,7 @@ namespace Test_Script
         private void form_Load(object sender, EventArgs e)
         {
             Handle1 = form.Handle;
-            scaleBox.SelectedIndex = myReg.GetValue("PixelScale") != null ? int.Parse((string)myReg.GetValue("PixelScale")) : 1;
-            scaleBox.SelectedIndexChanged += new EventHandler(scaleBox_SelectedIndexChanged);
+            cropModeBox.SelectedIndex = myReg.GetValue("CropMode") != null ? int.Parse((string)myReg.GetValue("CropMode")) : 0;
         }
 
         private void ok_Click(object sender, EventArgs e)
@@ -1256,15 +1165,8 @@ namespace Test_Script
             int countSelectedSaved = countSelected;
             countSelected += 1;
 
-            if (myReg.GetValue("AutoMode") != null ? ((string)myReg.GetValue("AutoMode") == "1") : true)
-            {
-                changeColor(false);
-            }
-            else if (isPreCrop)
-            {
-                changeColor();
-            }
-
+            changeColor(countSelected < 2);
+            
             if (countSelected == countSelectedSaved + 1)
             {
                 if (isPreCrop)
@@ -1281,35 +1183,57 @@ namespace Test_Script
         private void spriteOk()
         {
             gridForm.Hide();
-            try
+            count = new int[] {int.Parse(countXBox.Text), int.Parse(countYBox.Text)};
+            spriteFrame = new int[] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
+            frameRange = new int[] {int.Parse(frameStartXBox.Text), int.Parse(frameStartYBox.Text), int.Parse(frameEndXBox.Text), int.Parse(frameEndYBox.Text)};
+            offset = new int[] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
+            int[] repeat = new int[] {int.Parse(repeatFirstBox.Text), int.Parse(repeatLastBox.Text), int.Parse(repeatCountBox.Text)};
+            if (repeat[0] > repeat[1])
             {
-                count = new int [] {int.Parse(countXBox.Text), int.Parse(countYBox.Text)};
-                spriteFrame = new int [] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
-                frameRange = new int [] {int.Parse(frameStartXBox.Text), int.Parse(frameStartYBox.Text), int.Parse(frameEndXBox.Text), int.Parse(frameEndYBox.Text)};
-                offset = new int [] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
-                directionIndex = directionBox.SelectedIndex;
-                playbackIndex = playbackBox.SelectedIndex;
-                repeat = new int[] {int.Parse(repeatFirstBox.Text), int.Parse(repeatLastBox.Text), int.Parse(repeatCountBox.Text)};
-                cut = new int[] {int.Parse(cutXBox.Text), int.Parse(cutYBox.Text)};
-                canContinue = true;
-                if (true == (bool)showGridButton.Tag)
+                int tmp = repeat[0];
+                repeat[0] = repeat[1];
+                repeat[1] = tmp;
+            }
+            ArrayList repeatArr = new ArrayList();
+            if (spritesArr == null)
+            {
+                spritesArr = new ArrayList();
+                spritesArr.Add(0);
+            }
+            for (int i = 0; i < repeat[2]; i++)
+            {
+                for (int j = repeat[0]; j <= repeat[1]; j++)
                 {
-                    gridForm.Close();
+                    repeatArr.Add(j + Math.Min((int)spritesArr[0], (int)spritesArr[spritesArr.Count - 1]));
                 }
-                form.Close();
             }
-            catch
+            for (int i = 0; i < spritesArr.Count; i++)
             {
-
+                if ((int)spritesArr[i] == repeat[1])
+                {
+                    spritesArr.InsertRange(i + 1, repeatArr);
+                    break;
+                }
             }
+            if (playbackBox.SelectedIndex > 0)
+            {
+                repeatArr.Reverse();
+                for (int i = spritesArr.Count - 1; i >= 0; i--)
+                {
+                    if ((int)spritesArr[i] == repeat[1])
+                    {
+                        spritesArr.InsertRange(i, repeatArr);
+                        break;
+                    }
+                }
+            }
+            cut = new int[] {int.Parse(cutXBox.Text), int.Parse(cutYBox.Text)};
+            canContinue = true;
+            form.Close();
         }
         private void cancel_Click(object sender, EventArgs e)
         {
             canClose = true;
-            if (true == (bool)showGridButton.Tag)
-            {
-                gridForm.Close();
-            }
             form.Close();
         }
 
@@ -1445,20 +1369,14 @@ namespace Test_Script
 
         }
 
-        private void scaleBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void cropMode_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ComboBox cbb = (ComboBox)sender;
-            myReg.SetValue("PixelScale", cbb.SelectedIndex.ToString());
+            myReg.SetValue("CropMode", ((ComboBox)sender).SelectedIndex.ToString());
         }
 
-        private void cropSingle_CheckedChanged(object sender, EventArgs e)
+        private void enableLoop_CheckedChanged(object sender, EventArgs e)
         {
-            myReg.SetValue("CropSingle", (((CheckBox)sender).Checked ? 1 : 0).ToString());
-        }
-
-        private void multiMode_CheckedChanged(object sender, EventArgs e)
-        {
-            myReg.SetValue("MultiMode", (((CheckBox)sender).Checked ? 1 : 0).ToString());
+            myReg.SetValue("EnableLoop", (((CheckBox)sender).Checked ? 1 : 0).ToString());
         }
 
         private void autoMode_CheckedChanged(object sender, EventArgs e)
@@ -1466,42 +1384,45 @@ namespace Test_Script
             myReg.SetValue("AutoMode", (((CheckBox)sender).Checked ? 1 : 0).ToString());
         }
 
+        private void scaleFactorBox_TextChanged(object sender, EventArgs e)
+        {
+            double a = 0;
+            scaleFactorBar.Value = double.TryParse(((TextBox)sender).Text, out a) ? (int)Math.Floor(Math.Min(scaleFactorBar.Maximum, Math.Max(a, scaleFactorBar.Minimum))) : 0;
+            myReg.SetValue("ScaleFactor", (double.TryParse(((TextBox)sender).Text, out a) ? a : 0).ToString());
+        }
+
+        private void scaleFactorBar_ValueChanged(object sender, EventArgs e)
+        {
+            scaleFactorBox.Text = ((TrackBar)sender).Value < 1 ? LRZ("Auto") : string.Format("{0}", ((TrackBar)sender).Value);
+        }
+
         private void preCropSet()
         {
+            form.Hide();
             foreach (Control ctrl in countXBox.Parent.Controls)
             {
-                switch ((String) ctrl.Tag)
-                {
-                    case "PreCrop":
-                    {
-                        ctrl.Visible = isPreCrop;
-                        break;
-                    }
-
-                    case "Frame":
-                    {
-                        ctrl.Visible = !isPreCrop;
-                        break;
-                    }
-                }
+                string str = (String) ctrl.Tag;
+                ctrl.Visible = str == "PreCrop" ? isPreCrop : str == "Frame" ? !isPreCrop : true;
             }
             form.Text = isPreCrop ? (LRZ("FormTitle") + " - " + LRZ("PreCrop")) : LRZ("FormTitle");
             countSelected = 0;
+            form.ResumeLayout();
+            form.Show(myVegas.TimelineWindow);
         }
 
-        public void preCropOk(bool singleMode = false)
+        public void preCropOk(bool cropMode = false)
         {
             try
             {
-                spriteFrame = new int [] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
-                location = new int [] {int.Parse(topLeftXBox.Text), int.Parse(topLeftYBox.Text), int.Parse(bottomRightXBox.Text), int.Parse(bottomRightYBox.Text)};
+                spriteFrame = new int[] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
+                location = new int[] {int.Parse(topLeftXBox.Text), int.Parse(topLeftYBox.Text), int.Parse(bottomRightXBox.Text), int.Parse(bottomRightYBox.Text)};
 
                 VideoMotionKeyframe keyframe = vEvent.VideoMotion.Keyframes[0];
                 KeyframePreCrop(keyframe);
                 myVegas.UpdateUI();
-                count = new int [] {location[2] - location[0] + 1, location[3] - location[1] + 1};
+                count = new int[] {location[2] - location[0] + 1, location[3] - location[1] + 1};
 
-                spriteFrame = new int [] {spriteFrame[0] * count[0], spriteFrame[1] * count[1]};
+                spriteFrame = new int[] {spriteFrame[0] * count[0], spriteFrame[1] * count[1]};
                 countXBox.Text = string.Format("{0}", count[0]);
                 countYBox.Text = string.Format("{0}", count[1]);
                 myReg.SetValue("CountCroped", count[0] + "," + count[1]);
@@ -1518,16 +1439,13 @@ namespace Test_Script
                 int start = (int.Parse(frameStartYBox.Text) - 1) * count[0] + int.Parse(frameStartXBox.Text) - 1;
                 int end = (int.Parse(frameEndYBox.Text) - 1) * count[0] + int.Parse(frameEndXBox.Text) - 1;
                 ToIndexes(start, end);
-                if (!singleMode)
-                {
-                    refreshGrid();
-                }
                 isPreCrop = !isPreCrop;
-                form.Hide();
                 countXBar.Value = count[0];
                 countYBar.Value = count[1];
-                preCropSet();
-                form.Show(myVegas.TimelineWindow);
+                if (!cropMode)
+                {
+                    refreshGrid(true);
+                }
             }
             catch
             {
@@ -1568,10 +1486,6 @@ namespace Test_Script
             settingsL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, language == 1 ? 120 : 140));
             settingsL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50));
             settingsL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
-            for (int i = 0; i<= 6; i++)
-            {
-                settingsL.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
-            }
             panelBig.Controls.Add(settingsL);
 
             ToolTip tt = new ToolTip();
@@ -1591,8 +1505,9 @@ namespace Test_Script
             int safetyThreshold = myReg.GetValue("SafetyThreshold") != null ? int.Parse((string)myReg.GetValue("SafetyThreshold")) : 300;
 
             safetyBar = new TrackBar();
-            safetyBar.AutoSize = true;
-            safetyBar.Margin = new Padding(6, 6, 6, 6);
+            safetyBar.AutoSize = false;
+            safetyBar.Height = safetyBox.Height;
+            safetyBar.Margin = new Padding(0, 5, 0, 5);
             safetyBar.Dock = DockStyle.Fill;
             safetyBar.Minimum = 50;
             safetyBar.Maximum = 1000;
@@ -1621,8 +1536,9 @@ namespace Test_Script
             int gridDelay = myReg.GetValue("DelayGrid") != null ? int.Parse((string)myReg.GetValue("DelayGrid")) : 35;
 
             gridDelayBar = new TrackBar();
-            gridDelayBar.AutoSize = true;
-            gridDelayBar.Margin = new Padding(6, 6, 6, 6);
+            gridDelayBar.AutoSize = false;
+            gridDelayBar.Height = gridDelayBox.Height;
+            gridDelayBar.Margin = new Padding(0, 5, 0, 5);
             gridDelayBar.Dock = DockStyle.Fill;
             gridDelayBar.Minimum = 0;
             gridDelayBar.Maximum = 200;
@@ -1651,8 +1567,9 @@ namespace Test_Script
             int gridHideDelay = myReg.GetValue("DelayGridHide") != null ? int.Parse((string)myReg.GetValue("DelayGridHide")) : 1200;
 
             gridHideDelayBar = new TrackBar();
-            gridHideDelayBar.AutoSize = true;
-            gridHideDelayBar.Margin = new Padding(6, 6, 6, 6);
+            gridHideDelayBar.AutoSize = false;
+            gridHideDelayBar.Height = gridHideDelayBox.Height;
+            gridHideDelayBar.Margin = new Padding(0, 5, 0, 5);
             gridHideDelayBar.Dock = DockStyle.Fill;
             gridHideDelayBar.Minimum = 0;
             gridHideDelayBar.Maximum = 2500;
@@ -1681,8 +1598,9 @@ namespace Test_Script
             int autoDelay = myReg.GetValue("DelayAuto") != null ? int.Parse((string)myReg.GetValue("DelayAuto")) : 1000;
 
             autoDelayBar = new TrackBar();
-            autoDelayBar.AutoSize = true;
-            autoDelayBar.Margin = new Padding(6, 6, 6, 6);
+            autoDelayBar.AutoSize = false;
+            autoDelayBar.Height = autoDelayBox.Height;
+            autoDelayBar.Margin = new Padding(0, 5, 0, 5);
             autoDelayBar.Dock = DockStyle.Fill;
             autoDelayBar.Minimum = 0;
             autoDelayBar.Maximum = 2500;
@@ -1696,44 +1614,40 @@ namespace Test_Script
 
             autoDelayBox.Text = string.Format("{0}", autoDelayBar.Value);
 
-            label = new Label();
-            label.Margin = new Padding(6, 6, 6, 6);
-            label.Text = LRZ("ScaleFactorText");
-            label.AutoSize = true;
-            settingsL.Controls.Add(label);
+            CheckBox enableRevise = new CheckBox();
+            enableRevise.Text = LRZ("EnableReviseText");
+            enableRevise.Checked = myReg.GetValue("EnableRevise") != null ? (string)myReg.GetValue("EnableRevise") == "1" : true;
+            enableRevise.AutoSize = false;
+            enableRevise.Margin = new Padding(0, 3, 0, 3);
+            enableRevise.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(enableRevise);
 
-            scaleFactorBox = new TextBox();
-            scaleFactorBox.AutoSize = true;
-            settingsL.Controls.Add(scaleFactorBox);
-            scaleFactorBox.TextChanged += new EventHandler(scaleFactorBox_TextChanged);
-            tt.SetToolTip(scaleFactorBox, LRZ("ScaleFactorTips"));
-
-            double scaleFactor = myReg.GetValue("ScaleFactor") != null ? double.Parse((string)myReg.GetValue("ScaleFactor")) : 0;
-
-            scaleFactorBar = new TrackBar();
-            scaleFactorBar.AutoSize = true;
-            scaleFactorBar.Margin = new Padding(6, 6, 6, 6);
-            scaleFactorBar.Dock = DockStyle.Fill;
-            scaleFactorBar.Minimum = 0;
-            scaleFactorBar.Maximum = 100;
-            scaleFactorBar.LargeChange = 10;
-            scaleFactorBar.SmallChange = 1;
-            scaleFactorBar.TickStyle = TickStyle.None;
-            scaleFactorBar.Value = (int)Math.Floor(Math.Min(scaleFactorBar.Maximum, Math.Max(scaleFactor, scaleFactorBar.Minimum)));
-            settingsL.Controls.Add(scaleFactorBar);
-            scaleFactorBar.ValueChanged += new EventHandler(scaleFactorBar_ValueChanged);
-            tt.SetToolTip(scaleFactorBar, LRZ("ScaleFactorTips"));
-
-            scaleFactorBox.Text = scaleFactor < 1 ? LRZ("Auto") : string.Format("{0}", scaleFactor);
+            CheckBox multiMode = new CheckBox();
+            multiMode.Text = LRZ("MultiModeText");
+            multiMode.Checked = myReg.GetValue("MultiMode") != null ? ((string)myReg.GetValue("MultiMode") == "1") : false;
+            multiMode.AutoSize = false;
+            multiMode.Margin = new Padding(0, 3, 0, 3);
+            multiMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(multiMode);
+            settingsL.SetColumnSpan(multiMode, 2);
 
             CheckBox preCropAtStart = new CheckBox();
             preCropAtStart.Text = LRZ("PreCropAtStartText");
             preCropAtStart.Checked = myReg.GetValue("PreCropAtStart") != null ? (string)myReg.GetValue("PreCropAtStart") == "1" : true;
             preCropAtStart.AutoSize = false;
-            preCropAtStart.Margin = new Padding(6, 6, 6, 6);
+            preCropAtStart.Margin = new Padding(0, 3, 0, 3);
             preCropAtStart.Anchor = AnchorStyles.Left|AnchorStyles.Right;
             settingsL.Controls.Add(preCropAtStart);
             settingsL.SetColumnSpan(preCropAtStart, 3);
+
+            CheckBox displayFix = new CheckBox();
+            displayFix.Text = LRZ("DisplayFixText");
+            displayFix.Checked = myReg.GetValue("DisplayFix") != null ? (string)myReg.GetValue("DisplayFix") == "1" : true;
+            displayFix.AutoSize = false;
+            displayFix.Margin = new Padding(0, 3, 0, 3);
+            displayFix.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(displayFix);
+            settingsL.SetColumnSpan(displayFix, 3);
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
@@ -1789,12 +1703,13 @@ namespace Test_Script
                 {
 
                 }
-
-                myReg.SetValue("DelayAuto", Convert.ToString(autoDelayBar.Value));
-                myReg.SetValue("DelayGrid", Convert.ToString(gridDelayBar.Value));
-                myReg.SetValue("DelayGridHide", Convert.ToString(gridHideDelayBar.Value));
-                myReg.SetValue("ScaleFactor", Convert.ToString(double.TryParse(scaleFactorBox.Text, out scaleFactor) ? scaleFactor : 0));
+                myReg.SetValue("DelayAuto", autoDelayBar.Value.ToString());
+                myReg.SetValue("DelayGrid", gridDelayBar.Value.ToString());
+                myReg.SetValue("DelayGridHide", gridHideDelayBar.Value.ToString());
+                myReg.SetValue("EnableRevise", (enableRevise.Checked ? 1 : 0).ToString());
+                myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("PreCropAtStart", (preCropAtStart.Checked ? 1 : 0).ToString());
+                myReg.SetValue("DisplayFix", (displayFix.Checked ? 1 : 0).ToString());
 
                 if (languageBox.SelectedIndex != language)
                 {
@@ -1803,12 +1718,11 @@ namespace Test_Script
                     form.Close();
                     SpriteSheetSetWindow();
                 }
-                else if (!preCropAtStart.Checked && isPreCrop)
+
+                else if (preCropAtStart.Checked ^ isPreCrop)
                 {
                     isPreCrop = !isPreCrop;
-                    form.Hide();
                     preCropSet();
-                    form.Show(myVegas.TimelineWindow);
                 }
             }
         }
@@ -1869,18 +1783,6 @@ namespace Test_Script
             autoDelayBox.Text = string.Format("{0}", ((TrackBar)sender).Value);
         }
 
-        private void scaleFactorBox_TextChanged(object sender, EventArgs e)
-        {
-            double a = 0;
-            scaleFactorBar.Value = double.TryParse(((TextBox)sender).Text, out a) ? (int)Math.Floor(Math.Min(scaleFactorBar.Maximum, Math.Max(a, scaleFactorBar.Minimum))) : 0;
-        }
-
-        private void scaleFactorBar_ValueChanged(object sender, EventArgs e)
-        {
-            scaleFactorBox.Text = ((TrackBar)sender).Value < 1 ? LRZ("Auto") : string.Format("{0}", ((TrackBar)sender).Value);
-
-        }
-
         private void resetCropBox_Click(object sender, EventArgs e)
         {
             resetCrop();
@@ -1906,8 +1808,8 @@ namespace Test_Script
         private void resetCrop()
         {
             KeyframeReset(keyframePreview);
-            spriteFrame = new int [] {(int) PointDistance(keyframePreview.TopLeft, keyframePreview.TopRight), (int) PointDistance(keyframePreview.TopLeft, keyframePreview.BottomLeft)};
-            count = myReg.GetValue("Count") != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Count")), ","), int.Parse) : new int [] {8, 4};
+            spriteFrame = new int[] {(int) PointDistance(keyframePreview.TopLeft, keyframePreview.TopRight), (int) PointDistance(keyframePreview.TopLeft, keyframePreview.BottomLeft)};
+            count = myReg.GetValue("Count") != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Count")), ","), int.Parse) : new int[] {8, 4};
 
             try
             {
@@ -1920,13 +1822,9 @@ namespace Test_Script
                 frameEndXBox.Text = string.Format("{0}", count[0]);
                 frameEndYBox.Text = string.Format("{0}", count[1]);
                 isPreCrop = true;
-                form.Hide();
                 countXBar.Value = count[0];
                 countYBar.Value = count[1];
-                preCropSet();
-                form.Show(myVegas.TimelineWindow);
-                refreshGrid();
-                myVegas.UpdateUI();
+                refreshGrid(true);
             }
             catch
             {
@@ -1934,13 +1832,18 @@ namespace Test_Script
             }
         }
 
-        private void refreshGrid()
+        private void refreshGrid(bool needPreCropSet = false)
         {
             if (false == (bool) showGridButton.Tag)
             {
                 return;
             }
+            if (needPreCropSet)
+            {
+                form.Hide();
+            }
             gridForm.Hide();
+            gridForm.Opacity = (myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 40) / 100.0;
             preview = myReg.GetValue("GridPreview") != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("GridPreview")), ","), int.Parse) : new int[] {480,270};
 
             double gridSizeFactor = Math.Min(1.0 * preview[0] / spriteFrame[0], 1.0 * preview[1] / spriteFrame[1]);
@@ -1948,7 +1851,7 @@ namespace Test_Script
 
             if (myReg.GetValue("GridCenter") != null)
             {
-                int [] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("GridCenter")), ","), int.Parse);
+                int[] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("GridCenter")), ","), int.Parse);
                 gridForm.Location = new Point(Math.Max(0, Math.Min(arr[0] - gridForm.Size.Width / 2, Screen.GetWorkingArea(gridForm).Width * 4 / 5)), Math.Max(0, Math.Min(arr[1] - gridForm.Size.Height / 2, Screen.GetWorkingArea(gridForm).Height * 4 / 5)));
             }
             else
@@ -1997,14 +1900,21 @@ namespace Test_Script
                     gridL.Controls.Add(label);
                 }
                 Button selectButton = new Button();
-                selectButton.Tag = new int [] {i, ToIndex(i)};
+                selectButton.Tag = new int[] {i, ToIndex(i)};
+                selectButton.Margin = new Padding(0, 0, 0, 0);
                 selectButton.Dock = DockStyle.Fill;
                 selectButton.MouseDown += new MouseEventHandler(selectButton_MouseDown);
                 gridL.Controls.Add(selectButton);
             }
             gridForm.Controls.Add(gridL);
+            myVegas.UpdateUI();
             gridForm.Show();
             SetForegroundWindow(Handle1);
+            if (needPreCropSet)
+            {
+                Delay(1);
+                preCropSet();
+            }
         }
 
         private void refreshIndex_Handler(object sender, EventArgs e)
@@ -2020,7 +1930,7 @@ namespace Test_Script
                     {
                         if (ctrl is Button)
                         {
-                            int i = ((int [])ctrl.Tag)[0];
+                            int i = ((int[])ctrl.Tag)[0];
                             if (i == start || i == end)
                             {
                                 ctrl.BackColor = Color.FromArgb(255,0,0);
@@ -2047,10 +1957,10 @@ namespace Test_Script
                 {
                     try
                     {
-                        ((int [])ctrl.Tag)[1] = ToIndex(((int [])ctrl.Tag)[0]);
+                        ((int[])ctrl.Tag)[1] = ToIndex(((int[])ctrl.Tag)[0]);
 
                         // For Test Only
-                        // ctrl.Text = Convert.ToString(((int [])ctrl.Tag)[1]);
+                        // ctrl.Text = Convert.ToString(((int[])ctrl.Tag)[1]);
                     }
                     catch
                     {
@@ -2095,7 +2005,7 @@ namespace Test_Script
 
         private int ToIndex(int r, int c, bool isFrameIndex = false)
         {
-            directionIndex = directionBox.SelectedIndex;
+            int directionIndex = directionBox.SelectedIndex;
             bool verticalRead = directionIndex == 2 || directionIndex == 3 || directionIndex == 6 || directionIndex == 7;
             bool backwardRead = directionIndex == 1 || directionIndex == 3 || directionIndex == 5 || directionIndex == 7;
             bool sshapedRead = directionIndex == 4 || directionIndex == 5 || directionIndex == 6 || directionIndex == 7;
@@ -2105,7 +2015,7 @@ namespace Test_Script
                 r = c;
                 c = a;
             }
-            cut = new int [] {int.Parse(cutXBox.Text), int.Parse(cutYBox.Text)};
+            cut = new int[] {int.Parse(cutXBox.Text), int.Parse(cutYBox.Text)};
             int sum = count[0] / cut[0] * count[1] / cut[1];
             int cols = verticalRead ? count[1] / cut[1] : count[0] / cut[0];
             int colsCut = verticalRead ? cut[1] : cut[0];
@@ -2134,9 +2044,10 @@ namespace Test_Script
             return index;
         }
 
-        private void showGrid()
+        private void showGrid(int countSelectedInput = 0)
         {
-            countSelected = 0;
+            countSelected = countSelectedInput;
+
             if (gridForm == null)
             {
                 gridForm = new Form();
@@ -2146,7 +2057,6 @@ namespace Test_Script
                 gridForm.ForeColor = foreColor;
                 gridForm.Text = LRZ("GridTitle");
                 gridForm.Font = LRZFont(9);
-                gridForm.Opacity = 0.5;
                 gridForm.Owner = form;
                 gridForm.ShowInTaskbar = false;
                 gridForm.StartPosition = FormStartPosition.Manual;
@@ -2167,7 +2077,7 @@ namespace Test_Script
                 gridFormSet.BackColor = backColor;
                 gridFormSet.ForeColor = foreColor;
                 gridFormSet.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                gridFormSet.Text = LRZ("GridSizeSetting");
+                gridFormSet.Text = LRZ("GridDisplaySettings");
                 gridFormSet.Font = LRZFont(9);
 
                 Panel panelBig = new Panel();
@@ -2179,17 +2089,47 @@ namespace Test_Script
                 gridSetL.AutoSize = true;
                 gridSetL.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                 gridSetL.GrowStyle = TableLayoutPanelGrowStyle.AddRows;
-                gridSetL.ColumnCount = 3;
-                gridSetL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 230));
+                gridSetL.ColumnCount = 4;
+                gridSetL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105));
+                gridSetL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 125));
                 gridSetL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 45));
                 gridSetL.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 45));
                 panelBig.Controls.Add(gridSetL);
 
                 Label label = new Label();
+                label.Margin = new Padding(6, 6, 0, 6);
+                label.Text = LRZ("GridOpacityText");
+                label.AutoSize = true;
+                gridSetL.Controls.Add(label);
+
+                gridOpacityBar = new TrackBar();
+                gridOpacityBar.AutoSize = false;
+                
+                gridOpacityBar.Margin = new Padding(0, 5, 0, 5);
+                gridOpacityBar.Dock = DockStyle.Fill;
+                gridOpacityBar.Minimum = 20;
+                gridOpacityBar.Maximum = 80;
+                gridOpacityBar.LargeChange = 10;
+                gridOpacityBar.SmallChange = 1;
+                gridOpacityBar.TickStyle = TickStyle.None;
+                gridOpacityBar.Value = Math.Min(gridOpacityBar.Maximum, Math.Max(myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 40, gridOpacityBar.Minimum));
+                gridSetL.Controls.Add(gridOpacityBar);
+                gridSetL.SetColumnSpan(gridOpacityBar, 2);
+                gridOpacityBar.ValueChanged += new EventHandler(gridOpacityBar_ValueChanged);
+
+                gridOpacityBox = new TextBox();
+                gridOpacityBox.AutoSize = true;
+                gridOpacityBox.Text = string.Format("{0}", gridOpacityBar.Value);
+                gridSetL.Controls.Add(gridOpacityBox);
+                gridOpacityBox.TextChanged += new EventHandler(gridOpacityBox_TextChanged);
+                gridOpacityBar.Height = gridOpacityBox.Height;
+
+                label = new Label();
                 label.Margin = new Padding(6, 6, 6, 6);
                 label.Text = LRZ("PreviewText");
                 label.AutoSize = true;
                 gridSetL.Controls.Add(label);
+                gridSetL.SetColumnSpan(label, 2);
 
                 previewXBox = new TextBox();
                 previewXBox.Text = string.Format("{0}", preview[0]);
@@ -2204,10 +2144,10 @@ namespace Test_Script
                 autoMatch.Checked = true;
                 autoMatch.CheckedChanged += new EventHandler(autoMatch_CheckedChanged);
                 autoMatch.AutoSize = false;
-                autoMatch.Margin = new Padding(6, 6, 6, 6);
+                autoMatch.Margin = new Padding(6, 0, 6, 0);
                 autoMatch.Anchor = AnchorStyles.Left|AnchorStyles.Right;
                 gridSetL.Controls.Add(autoMatch);
-                gridSetL.SetColumnSpan(autoMatch, 2);
+                gridSetL.SetColumnSpan(autoMatch, 4);
 
                 if (autoMatch.Checked)
                 {
@@ -2221,7 +2161,7 @@ namespace Test_Script
                 panel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                 panel.Anchor = AnchorStyles.None;
                 gridSetL.Controls.Add(panel);
-                gridSetL.SetColumnSpan(panel, 3);
+                gridSetL.SetColumnSpan(panel, 4);
                 panel.Font = LRZFont(8);
 
                 Button cancel = new Button();
@@ -2238,9 +2178,10 @@ namespace Test_Script
             }
             else if (gridForm.Visible == false)
             {
+                gridForm.Owner = form;
                 showGridButton.Tag = true;
                 refreshGrid();
-                gridForm.Show();
+                SetForegroundWindow(gridForm.Handle);
                 showGridButton.Text = LRZ("HideGrid");
             }
             else
@@ -2265,6 +2206,7 @@ namespace Test_Script
                 previewYBox.TextChanged -= new EventHandler(previewYBox_TextChanged);
             }
         }
+
         private void previewXBox_TextChanged(object sender, EventArgs e)
         {
             if (((TextBox)sender).Focused)
@@ -2295,6 +2237,23 @@ namespace Test_Script
             }
         }
 
+        private void gridOpacityBox_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                gridOpacityBar.Value = int.Parse(((TextBox)sender).Text);
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void gridOpacityBar_ValueChanged(object sender, EventArgs e)
+        {
+            gridOpacityBox.Text = string.Format("{0}", ((TrackBar)sender).Value);
+        }
+
         private void gridForm_LocationChanged(object sender, EventArgs e)
         {
             myReg.SetValue("GridCenter", (gridForm.Location.X + gridForm.Size.Width / 2) + "," + (gridForm.Location.Y + gridForm.Size.Height / 2));
@@ -2310,7 +2269,7 @@ namespace Test_Script
         private void selectButton_MouseDown(object sender, MouseEventArgs e)
         {
             Button button = (Button) sender;
-            int i = ((int []) button.Tag)[0], countSelectedSaved = countSelected, a = countSelectedSaved % 2;
+            int i = ((int[]) button.Tag)[0], countSelectedSaved = countSelected, a = countSelectedSaved % 2;
             if (e.Button == MouseButtons.Right)
             {
                 foreach (Control ctrl in gridL.Controls)
@@ -2329,6 +2288,7 @@ namespace Test_Script
                         DialogResult result = gridFormSet.ShowDialog();
                         if (DialogResult.OK == result)
                         {
+                            myReg.SetValue("GridOpacity", gridOpacityBar.Value.ToString());
                             int tmp1, tmp2;
                             if (int.TryParse(previewXBox.Text, out tmp1) && int.TryParse(previewYBox.Text, out tmp2))
                             {
@@ -2348,84 +2308,86 @@ namespace Test_Script
                 }
                 return;
             }
-            if ((myReg.GetValue("CropSingle") != null ? ((string)myReg.GetValue("CropSingle") == "1") : false) && isPreCrop)
+
+            if (isPreCrop && ((cropModeBox.SelectedIndex == 1 && a == 1) || cropModeBox.SelectedIndex == 2))
             {
-                try
+                refreshColor();
+                button.BackColor = Color.FromArgb(0,255,0);
+                if (cropModeBox.SelectedIndex == 2)
                 {
-                    refreshColor();
-                    button.BackColor = Color.FromArgb(0,255,0);
                     topLeftXBox.Text = string.Format("{0}", i % count[0] + 1);
                     topLeftYBox.Text = string.Format("{0}", i / count[0] + 1);
                     bottomRightXBox.Text = string.Format("{0}", i % count[0] + 1);
                     bottomRightYBox.Text = string.Format("{0}", i / count[0] + 1);
-                    preCropOk(true);
-                    spriteOk();
                 }
-                catch
+                else
                 {
-
+                    bottomRightXBox.Text = string.Format("{0}", Math.Max(i % count[0] + 1, int.Parse(topLeftXBox.Text)));
+                    bottomRightYBox.Text = string.Format("{0}", Math.Max(i / count[0] + 1, int.Parse(topLeftYBox.Text)));
+                    topLeftXBox.Text = string.Format("{0}", Math.Min(i % count[0] + 1, int.Parse(topLeftXBox.Text)));
+                    topLeftYBox.Text = string.Format("{0}", Math.Min(i / count[0] + 1, int.Parse(topLeftYBox.Text)));
                 }
+                if (gridForm != null)
+                {
+                    gridForm.Hide();
+                }
+                preCropOk(true);
+                spriteOk();
             }
             countSelected = countSelectedSaved + 1;
-            try
+
+            switch (a)
             {
-                switch (a)
+                case 0:
                 {
-                    case 0:
+                    refreshColor();
+                    button.BackColor = Color.FromArgb(255,0,0);
+                    if (isPreCrop)
                     {
-                        refreshColor();
-                        button.BackColor = Color.FromArgb(255,0,0);
-                        if (isPreCrop)
-                        {
-                            topLeftXBox.Text = string.Format("{0}", i % count[0] + 1);
-                            topLeftYBox.Text = string.Format("{0}", i / count[0] + 1);
-                        }
-                        else
-                        {
-                            frameStartXBox.Text = string.Format("{0}", i % count[0] + 1);
-                            frameStartYBox.Text = string.Format("{0}", i / count[0] + 1);
-                        }
-                        break;
+                        topLeftXBox.Text = string.Format("{0}", i % count[0] + 1);
+                        topLeftYBox.Text = string.Format("{0}", i / count[0] + 1);
                     }
-                    case 1:
+                    else
                     {
-                        button.BackColor = Color.FromArgb(255,0,0);
-                        if (isPreCrop)
-                        {
-                            bottomRightXBox.Text = string.Format("{0}", Math.Max(i % count[0] + 1, int.Parse(topLeftXBox.Text)));
-                            bottomRightYBox.Text = string.Format("{0}", Math.Max(i / count[0] + 1, int.Parse(topLeftYBox.Text)));
-                            topLeftXBox.Text = string.Format("{0}", Math.Min(i % count[0] + 1, int.Parse(topLeftXBox.Text)));
-                            topLeftYBox.Text = string.Format("{0}", Math.Min(i / count[0] + 1, int.Parse(topLeftYBox.Text)));
-                        }
-                        else
-                        {
-                            frameEndXBox.Text = string.Format("{0}", i % count[0] + 1);
-                            frameEndYBox.Text = string.Format("{0}", i / count[0] + 1);
-                            int start = (int.Parse(frameStartYBox.Text) - 1) * count[0] + int.Parse(frameStartXBox.Text) - 1;
-                            int end = (int.Parse(frameEndYBox.Text) - 1) * count[0] + int.Parse(frameEndXBox.Text) - 1;
-                            ToIndexes(start, end);
-                            refreshIndex();
-                        }
-
-                        changeColor();
-                        if (countSelected == countSelectedSaved + 1)
-                        {
-                            if (isPreCrop)
-                            {
-                                preCropOk();
-                            }
-                            else if (myReg.GetValue("AutoMode") != null ? ((string)myReg.GetValue("AutoMode") == "1") : true)
-                            {
-                                spriteOk();
-                            }
-                        }
-                        break;
+                        frameStartXBox.Text = string.Format("{0}", i % count[0] + 1);
+                        frameStartYBox.Text = string.Format("{0}", i / count[0] + 1);
                     }
+                    break;
                 }
-            }
-            catch
-            {
+                case 1:
+                {
+                    button.BackColor = Color.FromArgb(255,0,0);
+                    if (isPreCrop)
+                    {
+                        bottomRightXBox.Text = string.Format("{0}", Math.Max(i % count[0] + 1, int.Parse(topLeftXBox.Text)));
+                        bottomRightYBox.Text = string.Format("{0}", Math.Max(i / count[0] + 1, int.Parse(topLeftYBox.Text)));
+                        topLeftXBox.Text = string.Format("{0}", Math.Min(i % count[0] + 1, int.Parse(topLeftXBox.Text)));
+                        topLeftYBox.Text = string.Format("{0}", Math.Min(i / count[0] + 1, int.Parse(topLeftYBox.Text)));
+                    }
+                    else
+                    {
+                        frameEndXBox.Text = string.Format("{0}", i % count[0] + 1);
+                        frameEndYBox.Text = string.Format("{0}", i / count[0] + 1);
+                        int start = (int.Parse(frameStartYBox.Text) - 1) * count[0] + int.Parse(frameStartXBox.Text) - 1;
+                        int end = (int.Parse(frameEndYBox.Text) - 1) * count[0] + int.Parse(frameEndXBox.Text) - 1;
+                        ToIndexes(start, end);
+                        refreshIndex();
+                    }
 
+                    changeColor();
+                    if (countSelected == countSelectedSaved + 1)
+                    {
+                        if (isPreCrop)
+                        {
+                            preCropOk();
+                        }
+                        else if (myReg.GetValue("AutoMode") != null ? ((string)myReg.GetValue("AutoMode") == "1") : true)
+                        {
+                            spriteOk();
+                        }
+                    }
+                    break;
+                }
             }
         }
 
@@ -2433,47 +2395,53 @@ namespace Test_Script
         {
             int autoDelay = myReg.GetValue("DelayAuto") != null ? int.Parse((string)myReg.GetValue("DelayAuto")) : 1000;
 
-            try
+            if (gridForm == null)
             {
-                if (isPreCrop)
+                showGrid(countSelected);
+            }
+
+            SetForegroundWindow(gridForm.Handle);
+
+            if (isPreCrop)
+            {
+                foreach (Control ctrl in gridL.Controls)
                 {
-                    foreach (Control ctrl in gridL.Controls)
+                    if (ctrl is Button)
                     {
-                        if (ctrl is Button)
+                        int i = ((int[]) ctrl.Tag)[0];
+                        if (i % count[0] + 2 > int.Parse(topLeftXBox.Text) && i % count[0] < int.Parse(bottomRightXBox.Text) && i / count[0] + 2 > int.Parse(topLeftYBox.Text) && i / count[0] < int.Parse(bottomRightYBox.Text))
                         {
-                            int i = ((int []) ctrl.Tag)[0];
-                            if (i % count[0] + 2 > int.Parse(topLeftXBox.Text) && i % count[0] < int.Parse(bottomRightXBox.Text) && i / count[0] + 2 > int.Parse(topLeftYBox.Text) && i / count[0] < int.Parse(bottomRightYBox.Text))
-                            {
-                                ctrl.BackColor = Color.FromArgb(0,255,0);
-                            }
+                            ctrl.BackColor = Color.FromArgb(0,255,0);
                         }
                     }
-                    Delay(1000);
                 }
-                else
-                {
-                    offset = new int [] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
-                    int gridDelay = myReg.GetValue("DelayGrid") != null ? int.Parse((string)myReg.GetValue("DelayGrid")) : 35;
-                    spritesArr = new ArrayList();
-                    changeColor(gridDelay);
-                    if (playbackBox.SelectedIndex > 0)
-                    {
-                        Delay(gridDelay * 5);
-                        changeColor(gridDelay, true);
-                    }
-                    if (shouldDelay)
-                    {
-                        Delay(autoDelay);
-                    }
-                }
+                Delay(1000);
             }
-            catch
+            else
             {
-
+                offset = new int[] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
+                spritesArr = new ArrayList();
+                int gridDelay = myReg.GetValue("DelayGrid") != null ? int.Parse((string)myReg.GetValue("DelayGrid")) : 35;
+                if (!changeColor(shouldDelay ? gridDelay : 0))
+                {
+                    return;
+                }
+                if (playbackBox.SelectedIndex > 0)
+                {
+                    Delay(gridDelay * 5);
+                    if (!changeColor(shouldDelay ? gridDelay : 0, true))
+                    {
+                        return;
+                    }
+                }
+                if (shouldDelay)
+                {
+                    Delay(autoDelay);
+                }
             }
         }
 
-        private void changeColor(int delay, bool reverse = false)
+        private bool changeColor(int delay, bool reverse = false)
         {
             int countSelectedSaved = countSelected;
             int a = frameIndex[0], b = frameIndex[1];
@@ -2487,9 +2455,9 @@ namespace Test_Script
             {
                 if (countSelected != countSelectedSaved)
                 {
-                    break;
+                    return false;
                 }
-                if ((playbackBox.SelectedIndex == 2) && (j == b))
+                if (((playbackBox.SelectedIndex == 2 && !reverse) || playbackBox.SelectedIndex == 3) && (j == b))
                 {
                     continue;
                 }
@@ -2497,13 +2465,14 @@ namespace Test_Script
                 {
                     if (ctrl is Button)
                     {
-                        int i = ((int []) ctrl.Tag)[1];
+                        int i = ((int[]) ctrl.Tag)[1];
                         int jj = frameIndex[0] > frameIndex[1] ? (a + b - j) : j;
                         jj = reverse ? (a + b - jj) : jj;
                         jj = (jj - a + offset[1]) % (b - a + 1) + a;
+
                         if (jj == i)
                         {
-                            spritesArr.Add(((int []) ctrl.Tag)[0]);
+                            spritesArr.Add(((int[]) ctrl.Tag)[0]);
                             ctrl.BackColor = reverse ? Color.FromArgb(255,165,0) : Color.FromArgb(0,255,0);
                             Delay(delay);
                             break;
@@ -2511,6 +2480,7 @@ namespace Test_Script
                     }
                 }
             }
+            return true;
         }
 
         private void renderAs_Click(object sender, EventArgs e)
@@ -2550,10 +2520,10 @@ namespace Test_Script
             ToolTip tt = new ToolTip();
 
             int renderCount = 4;
-            int [] render = new int[renderCount + 1];
+            int[] render = new int[] {0, 1, 0, 0, 0};
             if (myReg.GetValue("Render") != null)
             {
-                int [] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse);
+                int[] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse);
                 for (int i = 0; i < render.Length && i < arr.Length; i++)
                 {
                     render[i] = arr[i];
@@ -2561,13 +2531,13 @@ namespace Test_Script
             }
 
             string [] choicesText = LRZArr("RenderAsChoices");
-            for (int i = 1; i < renderCount + 1; i++)
+            for (int i = 0; i < renderCount; i++)
             {
                 CheckBox renderAsChoices = new CheckBox();
-                renderAsChoices.Text = choicesText[i - 1];
+                renderAsChoices.Text = choicesText[i];
                 renderAsChoices.Tag = i;
                 renderAsChoices.AutoSize = true;
-                renderAsChoices.Checked = (render[i] > 0) ? true : false;
+                renderAsChoices.Checked = (render[i + 1] > 0) ? true : false;
                 renderAsChoices.Margin = new Padding(6, 2, 6, 2);
                 renderAsChoices.Anchor = AnchorStyles.Left|AnchorStyles.Right;
                 renderAsL.Controls.Add(renderAsChoices);
@@ -2582,23 +2552,13 @@ namespace Test_Script
             renderAsL.Controls.Add(label);
 
             reimportBox = new ComboBox();
-            reimportBox.DataSource = new string [] {LRZ("vegProject"), ".png", ".gif", ".mov (PNG)", ".mov (ProRes)"};
+            reimportBox.DataSource = new string [] {".png", ".gif", ".mov (PNG)", ".mov (ProRes)"};
             reimportBox.Tag = render[0];
             reimportBox.Dock = DockStyle.Fill;
             reimportBox.DropDownStyle = ComboBoxStyle.DropDownList;
             renderAsL.Controls.Add(reimportBox);
             tt.SetToolTip(reimportBox, LRZ("Reimport"));
             reimportBox.SelectedIndexChanged += new EventHandler(reimportBox_SelectedIndexChanged);
-
-            label = new Label();
-            label.Margin = new Padding(6, 2, 6, 2);
-            label.Text = LRZ("RenderAsNote");
-            label.TextAlign = ContentAlignment.MiddleCenter;
-            label.Font = LRZFont(7);
-            label.AutoSize = true;
-            label.Dock = DockStyle.Fill;
-            renderAsL.Controls.Add(label);
-            renderAsL.SetColumnSpan(label, 2);
 
             CheckBox displayInFolder = new CheckBox();
             displayInFolder.Text = LRZ("DisplayInFolderText");
@@ -2641,7 +2601,7 @@ namespace Test_Script
                 {
                     foreach (Control ctrl in renderAsL.Controls)
                     {
-                        if (ctrl is CheckBox && i == (int)ctrl.Tag)
+                        if (ctrl is CheckBox && i == (int)ctrl.Tag + 1)
                         {
                             render[i] = ((CheckBox)ctrl).Checked ? 1 : 0;
                         }
@@ -2662,14 +2622,38 @@ namespace Test_Script
 
             if (reimportBox.SelectedIndex == (int)ckb.Tag && !ckb.Checked)
             {
-                reimportBox.SelectedIndex = 0;
+                foreach (Control ctrl in ckb.Parent.Controls)
+                {
+                    if (ctrl is CheckBox)
+                    {
+                        CheckBox ckb0 = (CheckBox)ctrl;
+                        if ((int)ckb0.Tag <= 3 && ckb0.Checked)
+                        {
+                            reimportBox.SelectedIndex = (int)ckb0.Tag;
+                            return;
+                        }
+                    }
+                }
+
+                foreach (Control ctrl in ckb.Parent.Controls)
+                {
+                    if (ctrl is CheckBox)
+                    {
+                        CheckBox ckb0 = (CheckBox)ctrl;
+                        if ((int)ckb0.Tag == 0)
+                        {
+                            ckb0.Checked = true;
+                            reimportBox.SelectedIndex = 0;
+                            return;
+                        }
+                    }
+                }
             }
         }
 
         private void reimportBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox cbb = (ComboBox)sender;
-
             foreach (Control ctrl in cbb.Parent.Controls)
             {
                 if (ctrl is CheckBox)
@@ -2693,14 +2677,6 @@ namespace Test_Script
                 case 1:
                     switch(str)
                     {
-                        case "UntitledCaution":
-                            str0 = "当前项目尚未保存过，是否保存？若选否，脚本会停止运行！";
-                            break;
-
-                        case "UntitledCautionCaption":
-                            str0 = "项目保存提示";
-                            break;
-
                         case "ResetCropCaution":
                             str0 = "检测到当前图像已被裁切，是否重置裁切图像？";
                             break;
@@ -2817,20 +2793,20 @@ namespace Test_Script
                             str0 = "将Sprite表先切割成若干小块，按照顺序读取。\n单个小块读取完毕后再读取下一小块。\n默认为1×1，即不切割。";
                             break;
 
-                        case "CropSingleText":
-                            str0 = "单帧裁切模式";
+                        case "CropModeText":
+                            str0 = "裁切模式";
                             break;
 
-                        case "MultiModeText":
-                            str0 = "多事件应用此参数";
+                        case "CropModeTips":
+                            str0 = "裁切模式";
+                            break;
+
+                        case "EnableLoopText":
+                            str0 = "是否启用事件循环";
                             break;
 
                         case "AutoModeText":
                             str0 = "自动模式";
-                            break;
-
-                        case "ScaleText":
-                            str0 = "像素硬边缘放大";
                             break;
 
                         case "Cancel":
@@ -2869,8 +2845,12 @@ namespace Test_Script
                             str0 = "可视化网格选择工具";
                             break;
 
-                        case "GridSizeSetting":
-                            str0 = "网格大小 设置";
+                        case "GridDisplaySettings":
+                            str0 = "网格显示设置";
+                            break;
+
+                        case "GridOpacityText":
+                            str0 = "网格不透明度";
                             break;
 
                         case "PreviewText":
@@ -2885,16 +2865,8 @@ namespace Test_Script
                             str0 = "渲染 设置";
                             break;
 
-                        case "RenderAsNote":
-                            str0 = "注：.gif 和 .mov 需要配置 ffmpeg。";
-                            break;
-
                         case "Reimport":
                             str0 = "重新导入";
-                            break;
-
-                        case "vegProject":
-                            str0 = ".veg 工程文件";
                             break;
 
                         case "DisplayInFolderText":
@@ -2942,19 +2914,35 @@ namespace Test_Script
                             break;
 
                         case "ScaleFactorTips":
-                            str0 = "用于设置 当像素硬边缘放大设置为【嵌套工程内】时，嵌套工程相较于原素材 的缩放倍率。\n此时若选择启用渲染功能，该值也会影响渲染缩放倍率。\n“自动”表示缩放至当前工程大小。";
+                            str0 = "用于设置 渲染出来的文件相较于原素材 的缩放倍率。\n“自动”表示缩放至当前工程大小。";
                             break;
 
                         case "Auto":
                             str0 = "自动";
                             break;
 
+                        case "EnableReviseText":
+                            str0 = "启用修改";
+                            break;
+
+                        case "MultiModeText":
+                            str0 = "启用多事件模式";
+                            break;
+
                         case "PreCropAtStartText":
-                            str0 = "启动时进入预裁切模式";
+                            str0 = "启动时进入预裁切窗口";
+                            break;
+
+                        case "DisplayFixText":
+                            str0 = "修复某些情况下修改模式的显示问题";
                             break;
 
                         case "Language":
                             str0 = "界面语言";
+                            break;
+
+                        case "Rendering":
+                            str0 = "渲染中";
                             break;
                     }
                     break;
@@ -2962,14 +2950,6 @@ namespace Test_Script
                 default:
                     switch(str)
                     {
-                        case "UntitledCaution":
-                            str0 = "The current project has never been saved. Do you want to save it? If no, the script will stop running!";
-                            break;
-
-                        case "UntitledCautionCaption":
-                            str0 = "Project Saving Caution";
-                            break;
-
                         case "ResetCropCaution":
                             str0 = "Detected that the current image has been cropped. Do you want to reset the cropped image?";
                             break;
@@ -3082,12 +3062,16 @@ namespace Test_Script
                             str0 = "Cut (V. x H.)";
                             break;
 
-                        case "CropSingleText":
-                            str0 = "Single Frame Crop Mode";
+                        case "CropModeText":
+                            str0 = "Crop Mode";
                             break;
 
-                        case "MultiModeText":
-                            str0 = "Multi-Event Mode";
+                        case "CropModeTips":
+                            str0 = "Crop Mode";
+                            break;
+
+                        case "EnableLoopText":
+                            str0 = "Enable Event Loop";
                             break;
 
                         case "CutTips":
@@ -3096,10 +3080,6 @@ namespace Test_Script
 
                         case "AutoModeText":
                             str0 = "Auto Mode";
-                            break;
-
-                        case "ScaleText":
-                            str0 = "Pixel Art Scaling";
                             break;
 
                         case "Cancel":
@@ -3138,8 +3118,12 @@ namespace Test_Script
                             str0 = "Visual Grid Select Tool";
                             break;
 
-                        case "GridSizeSetting":
-                            str0 = "Grid Size Setting";
+                        case "GridDisplaySettings":
+                            str0 = "Grid Display Settings";
+                            break;
+
+                        case "GridOpacityText":
+                            str0 = "Grid Opacity";
                             break;
 
                         case "PreviewText":
@@ -3154,16 +3138,8 @@ namespace Test_Script
                             str0 = "RenderAs Settings";
                             break;
 
-                        case "RenderAsNote":
-                            str0 = "Note:  FFMPEG is required\nto render .gif/.mov formats.";
-                            break;
-
                         case "Reimport":
                             str0 = "Reimport";
-                            break;
-
-                        case "vegProject":
-                            str0 = ".veg project";
                             break;
 
                         case "DisplayInFolderText":
@@ -3179,7 +3155,7 @@ namespace Test_Script
                             break;
 
                         case "SafetyTips":
-                            str0 = "The maximum value of rows x columns. When the value of the R. x C. exceeds the safety threshold, NO grid refresh is performed,\nto avoid excessive grid generation when you accidentally input the wrong row/column, which directly causes the situation of software deadlock.";
+                            str0 = "The maximum value of rows x columns. When the value of the R. x C. exceeds the safety threshold, NO grid refresh is performed,\nto avoid excessive grid generation when you accidentally input the wrong row/column, which directly causes software deadlock.";
                             break;
 
                         case "GridDelayText":
@@ -3211,19 +3187,35 @@ namespace Test_Script
                             break;
 
                         case "ScaleFactorTips":
-                            str0 = "The scale factor of the nested project relative to the source material when \"Pixel Art Scaling\" is set to \"Inside\". \nRendering will be also affected when you choose to enable rendering at this point.\n\"Auto\" stands for following the current project.";
+                            str0 = "The scale factor of the rendered file relative to the source material.\nAuto: Scale to the current project size.";
                             break;
 
                         case "Auto":
                             str0 = "Auto";
                             break;
 
+                        case "EnableReviseText":
+                            str0 = "Enable Revise";
+                            break;
+
+                        case "MultiModeText":
+                            str0 = "Multi-Event Mode";
+                            break;
+
                         case "PreCropAtStartText":
-                            str0 = "Enter PreCrop Mode At Start";
+                            str0 = "Enter PreCrop Window At Start";
+                            break;
+
+                        case "DisplayFixText":
+                            str0 = "Fix Pan/Crop Problem In Revise Mode";
                             break;
 
                         case "Language":
                             str0 = "UI Language";
+                            break;
+
+                        case "Rendering":
+                            str0 = "Rendering";
                             break;
                     }
                     break;
@@ -3244,15 +3236,15 @@ namespace Test_Script
                             break;
 
                         case "PlaybackChoices":
-                            str0 = new string [] {"正常", "正常+倒放", "正+倒(合并)"};
+                            str0 = new string [] {"正常", "正常+倒放", "正+倒 (半合并)" ,"正+倒 (全合并)"};
                             break;
 
                         case "RenderAsChoices":
                             str0 = new string [] {".png 图像序列", ".gif 图片", ".mov 格式 (PNG 编码)", ".mov 格式 (ProRes 编码)"};
                             break;
 
-                        case "ScaleChoices":
-                            str0 = new string [] {"无", "嵌套工程内", "嵌套工程外"};
+                        case "CropModeChoices":
+                            str0 = new string [] {"正常", "仅裁切", "单帧裁切"};
                             break;
                     }
                     break;
@@ -3265,15 +3257,15 @@ namespace Test_Script
                             break;
 
                         case "PlaybackChoices":
-                            str0 = new string [] {"Normal", "Normal+Reverse", "N.+R.(Merge)"};
+                            str0 = new string [] {"Normal", "Normal+Reverse","N.+R.(Half Merge)" , "N.+R.(Full Merge)"};
                             break;
 
                         case "RenderAsChoices":
                             str0 = new string [] {".png image sequence", ".gif", ".mov (PNG coding)", ".mov (ProRes coding)"};
                             break;
 
-                        case "ScaleChoices":
-                            str0 = new string [] {"None", "Inside", "Outside"};
+                        case "CropModeChoices":
+                            str0 = new string [] {"Normal", "Crop Only", "Crop Single"};
                             break;
                     }
                     break;
