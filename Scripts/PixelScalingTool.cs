@@ -120,7 +120,8 @@ namespace Test_Script
 
                 if((!arrMedia.IsImageSequence() && !File.Exists(outputPath)) || (arrMedia.IsImageSequence() && Directory.GetFiles(outputPath).Length == 0))
                 {
-                    myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format("File {0} does not exist.", filePath));
+                    myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format(arrMedia.IsImageSequence() ? "Directory {0} is empty." : "File {0} does not exist.", outputPath));
+                    return;
                 }
 
                 Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(filePath, framesCount, vStream.FrameRate) : Media.CreateInstance(project, outputPath);
