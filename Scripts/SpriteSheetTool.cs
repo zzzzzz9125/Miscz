@@ -1,14 +1,14 @@
 using System;
 using System.IO;
-using System.Windows.Forms;
 using System.Drawing;
-using System.Runtime;
-using ScriptPortal.Vegas;
-using System.Runtime.InteropServices;
 using Microsoft.Win32;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Collections;
+using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+
+using ScriptPortal.Vegas;  // If you are using Sony Vegas Pro 13 or below, replace "ScriptPortal.Vegas" with "Sony.Vegas"
 
 namespace Test_Script
 {
@@ -22,8 +22,8 @@ namespace Test_Script
         int[] count, spriteFrame, location, offset, preview, frameIndex, cut, frameRange;
         int language, countSelected;
         Form form, gridForm, gridFormSet;
-        TextBox countXBox, countYBox, frameStartXBox, frameStartYBox, frameEndXBox, frameEndYBox, frameRateBox, startOffsetBox, topLeftXBox, topLeftYBox, bottomRightXBox, bottomRightYBox, cutXBox, cutYBox, previewXBox, previewYBox, loopOffsetBox, repeatFirstBox, repeatLastBox, repeatCountBox, safetyBox, gridDelayBox, autoDelayBox, gridHideDelayBox, scaleFactorBox, gridOpacityBox;
-        TrackBar countXBar, countYBar, safetyBar, gridDelayBar, autoDelayBar, gridHideDelayBar, scaleFactorBar, gridOpacityBar;
+        TextBox countXBox, countYBox, frameStartXBox, frameStartYBox, frameEndXBox, frameEndYBox, frameRateBox, startOffsetBox, topLeftXBox, topLeftYBox, bottomRightXBox, bottomRightYBox, cutXBox, cutYBox, previewXBox, previewYBox, loopOffsetBox, repeatFirstBox, repeatLastBox, repeatCountBox, safetyBox, gridDelayBox, autoDelayBox, gridHideDelayBox, scaleBox, gridOpacityBox;
+        TrackBar countXBar, countYBar, safetyBar, gridDelayBar, autoDelayBar, gridHideDelayBar, scaleBar, gridOpacityBar;
         ComboBox directionBox, playbackBox, reimportBox, languageBox, cropModeBox;
         VideoEvent vEvent;
         VideoMotionBounds boundsPreCrop;
@@ -42,7 +42,7 @@ namespace Test_Script
         {
             myVegas = vegas;
             Project project = myVegas.Project;
-            bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, needDisplayFix = false;
+            bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false;
             InterfaceType colorType;
             myVegas.GetInterfaceType(out colorType);
             switch (colorType)
@@ -86,9 +86,9 @@ namespace Test_Script
             {
                 pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.sonycreativesoftware:border}");
             }
-            scrWidth = myVegas.Project.Video.Width;
-            scrHeight = myVegas.Project.Video.Height;
-            foreach (Track myTrack in myVegas.Project.Tracks)
+            scrWidth = project.Video.Width;
+            scrHeight = project.Video.Height;
+            foreach (Track myTrack in project.Tracks)
             {
                 if (myTrack.IsVideo())
                 {
@@ -438,20 +438,18 @@ namespace Test_Script
                                     }
                                 }
 
+                                if ((myReg.GetValue("DisplayInFolder") != null ? ((string)myReg.GetValue("DisplayInFolder") == "1") : false) && File.Exists(openFolder))
+                                {
+                                    ExplorerFile(openFolder);
+                                }
+
                                 for (int i = vEvent.Takes.Count - 1; i >= 0; i--)
                                 {
                                     Take take = vEvent.Takes[i];
 
                                     if (take.MediaPath == reimportPath)
                                     {
-                                        if (cropMode != 0)
-                                        {
-                                            vEvent.Takes.RemoveAt(i); // To make it recapture the media, the take has to be deleted first and then added
-                                        }
-                                        else
-                                        {
-                                            vEvent.ActiveTake = take;
-                                        }
+                                        vEvent.ActiveTake = take;
                                     }
 
                                     else if (i != 0 && take.MediaPath == filePath || (take.Media.IsImageSequence() && take.Equals(takeActiveSave)))
@@ -478,29 +476,31 @@ namespace Test_Script
                                     }
                                 }
 
-                                if ((myReg.GetValue("DisplayInFolder") != null ? ((string)myReg.GetValue("DisplayInFolder") == "1") : false) && File.Exists(openFolder))
+                                // To fix the problem that media files are not refreshed in Revise Mode
+                                if (isRevise)
                                 {
-                                    ExplorerFile(openFolder);
+                                    string tmpPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_tmp" + Path.GetExtension(filePath));
+                                    File.Copy(reimportPath, tmpPath, true);
+                                    Media tmpMedia = Media.CreateInstance(project, tmpPath);
+                                    vEvent.ActiveTake.Media.ReplaceWith(tmpMedia);
+                                    Media importedMedia;
+                                    if (cropMode == 0 && Regex.IsMatch(reimportPath, @"(_000\.png)$"))
+                                    {
+                                        importedMedia = project.MediaPool.AddImageSequence(reimportPath, spritesArr.Count, frameRate);
+                                    }
+                                    else
+                                    {
+                                        importedMedia = Media.CreateInstance(project, reimportPath);
+                                    }
+                                    spritesBin.Add(importedMedia);
+                                    tmpMedia.ReplaceWith(importedMedia);
+                                    File.Delete(tmpPath);
                                 }
 
-                                videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
-                                dFullWidth = videoStream.Width;
-                                dFullHeight = videoStream.Height;
-
-                                // Attempt to fix a display problem that may occur in Revise mode, but failed...
-                                double newWidth = (cropMode == 1 ? cols : 1) * spriteFrame[0] * scaleFactor, newHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * scaleFactor;
-                                if (isRevise && (newWidth != dFullWidth || newHeight != dFullHeight))
-                                {
-                                    keyframePreview.ScaleBy(new VideoMotionVertex(100, 100));
-                                    myVegas.UpdateUI();
-                                    Delay(150);
-                                    keyframePreview.ScaleBy(new VideoMotionVertex(0.01f, 0.01f));
-                                    myVegas.UpdateUI();
-                                    needDisplayFix = true;
-                                }
+                                dFullWidth = (cropMode == 1 ? cols : 1) * spriteFrame[0] * (float)scaleFactor;
+                                dFullHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * (float)scaleFactor;
 
                                 KeyframeReset(keyframePreview);
-                                myVegas.UpdateUI();
                             }
 
                             catch (Exception ex)
@@ -513,6 +513,7 @@ namespace Test_Script
                                 if (cropMode == 0)
                                 {
                                     progressForm.Close();
+                                    myVegas.UpdateUI();
                                 }
                             }
                         }
@@ -527,23 +528,6 @@ namespace Test_Script
                 {
                     project.MediaPool.Remove(((Media)node).FilePath);
                 }
-            }
-
-            // Completely fix the display problem by opening another program, then closing it. This will cause Vegas to re-read the media files.
-            // When "Close media files when not the active application" in Preferences is unchecked, this method doesn't work either, so you have to reopen the current project.
-            // Looking for a better way to solve this.
-            if (needDisplayFix && (myReg.GetValue("DisplayFix") != null ? (string)myReg.GetValue("DisplayFix") == "1" : true))
-            {
-                // project.MediaPool.OpenAllMedia();             // This line doesn't work, I wonder why
-                Process p = new Process();
-                p.StartInfo.FileName = "cmd.exe";
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.RedirectStandardInput = true;
-                p.StartInfo.RedirectStandardOutput = false;
-                p.StartInfo.RedirectStandardError = false;
-                p.StartInfo.CreateNoWindow = true;
-                p.Start();
-                p.StandardInput.WriteLine("start CreateMinidumpx64.exe & taskkill /f /im CreateMinidumpx64.exe & exit");
             }
         }
 
@@ -971,12 +955,12 @@ namespace Test_Script
             label.AutoSize = true;
             l.Controls.Add(label);
 
-            scaleFactorBox = new TextBox();
-            scaleFactorBox.AutoSize = true;
-            scaleFactorBox.Tag = "Frame";
-            l.Controls.Add(scaleFactorBox);
-            scaleFactorBox.TextChanged += new EventHandler(scaleFactorBox_TextChanged);
-            tt.SetToolTip(scaleFactorBox, LRZ("ScaleFactorTips"));
+            scaleBox = new TextBox();
+            scaleBox.AutoSize = true;
+            scaleBox.Tag = "Frame";
+            l.Controls.Add(scaleBox);
+            scaleBox.TextChanged += new EventHandler(scaleBox_TextChanged);
+            tt.SetToolTip(scaleBox, LRZ("ScaleFactorTips"));
 
             label = new Label();
             label.Tag = "Frame";
@@ -984,24 +968,24 @@ namespace Test_Script
 
             double scaleFactor = myReg.GetValue("ScaleFactor") != null ? double.Parse((string)myReg.GetValue("ScaleFactor")) : 0;
 
-            scaleFactorBar = new TrackBar();
-            scaleFactorBar.AutoSize = false;
-            scaleFactorBar.Height = scaleFactorBox.Height;
-            scaleFactorBar.Tag = "Frame";
-            scaleFactorBar.Margin = new Padding(0, 5, 0, 5);
-            scaleFactorBar.Dock = DockStyle.Fill;
-            scaleFactorBar.Minimum = 0;
-            scaleFactorBar.Maximum = 100;
-            scaleFactorBar.LargeChange = 10;
-            scaleFactorBar.SmallChange = 1;
-            scaleFactorBar.TickStyle = TickStyle.None;
-            scaleFactorBar.Value = (int)Math.Floor(Math.Min(scaleFactorBar.Maximum, Math.Max(scaleFactor, scaleFactorBar.Minimum)));
-            l.Controls.Add(scaleFactorBar);
-            l.SetColumnSpan(scaleFactorBar, 3);
-            scaleFactorBar.ValueChanged += new EventHandler(scaleFactorBar_ValueChanged);
-            tt.SetToolTip(scaleFactorBar, LRZ("ScaleFactorTips"));
+            scaleBar = new TrackBar();
+            scaleBar.AutoSize = false;
+            scaleBar.Height = scaleBox.Height;
+            scaleBar.Tag = "Frame";
+            scaleBar.Margin = new Padding(0, 5, 0, 5);
+            scaleBar.Dock = DockStyle.Fill;
+            scaleBar.Minimum = 0;
+            scaleBar.Maximum = 100;
+            scaleBar.LargeChange = 10;
+            scaleBar.SmallChange = 1;
+            scaleBar.TickStyle = TickStyle.None;
+            scaleBar.Value = (int)Math.Floor(Math.Min(scaleBar.Maximum, Math.Max(scaleFactor, scaleBar.Minimum)));
+            l.Controls.Add(scaleBar);
+            l.SetColumnSpan(scaleBar, 3);
+            scaleBar.ValueChanged += new EventHandler(scaleBar_ValueChanged);
+            tt.SetToolTip(scaleBar, LRZ("ScaleFactorTips"));
 
-            scaleFactorBox.Text = scaleFactor < 1 ? LRZ("Auto") : string.Format("{0}", scaleFactor);
+            scaleBox.Text = scaleFactor < 1 ? LRZ("Auto") : string.Format("{0}", scaleFactor);
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
@@ -1385,16 +1369,23 @@ namespace Test_Script
             myReg.SetValue("AutoMode", (((CheckBox)sender).Checked ? 1 : 0).ToString());
         }
 
-        private void scaleFactorBox_TextChanged(object sender, EventArgs e)
+        private void scaleBox_TextChanged(object sender, EventArgs e)
         {
             double a = 0;
-            scaleFactorBar.Value = double.TryParse(((TextBox)sender).Text, out a) ? (int)Math.Floor(Math.Min(scaleFactorBar.Maximum, Math.Max(a, scaleFactorBar.Minimum))) : 0;
-            myReg.SetValue("ScaleFactor", (double.TryParse(((TextBox)sender).Text, out a) ? a : 0).ToString());
+            if (double.TryParse(((TextBox)sender).Text, out a))
+            {
+                a = Math.Min(a, 10000);
+                if (scaleBar.Maximum < a)
+                {
+                    scaleBar.Maximum = (int)Math.Ceiling(a);
+                }
+                scaleBar.Value = (int)Math.Floor(Math.Max(a, scaleBar.Minimum));
+            }
         }
 
-        private void scaleFactorBar_ValueChanged(object sender, EventArgs e)
+        private void scaleBar_ValueChanged(object sender, EventArgs e)
         {
-            scaleFactorBox.Text = ((TrackBar)sender).Value < 1 ? LRZ("Auto") : string.Format("{0}", ((TrackBar)sender).Value);
+            scaleBox.Text = ((TrackBar)sender).Value < 1 ? LRZ("Auto") : string.Format("{0}", ((TrackBar)sender).Value);
         }
 
         private void preCropSet()
@@ -1632,23 +1623,15 @@ namespace Test_Script
             settingsL.Controls.Add(multiMode);
             settingsL.SetColumnSpan(multiMode, 2);
 
+            bool preCropAS = myReg.GetValue("PreCropAtStart") != null ? (string)myReg.GetValue("PreCropAtStart") == "1" : true;
             CheckBox preCropAtStart = new CheckBox();
             preCropAtStart.Text = LRZ("PreCropAtStartText");
-            preCropAtStart.Checked = myReg.GetValue("PreCropAtStart") != null ? (string)myReg.GetValue("PreCropAtStart") == "1" : true;
+            preCropAtStart.Checked = preCropAS;
             preCropAtStart.AutoSize = false;
             preCropAtStart.Margin = new Padding(0, 3, 0, 3);
             preCropAtStart.Anchor = AnchorStyles.Left|AnchorStyles.Right;
             settingsL.Controls.Add(preCropAtStart);
             settingsL.SetColumnSpan(preCropAtStart, 3);
-
-            CheckBox displayFix = new CheckBox();
-            displayFix.Text = LRZ("DisplayFixText");
-            displayFix.Checked = myReg.GetValue("DisplayFix") != null ? (string)myReg.GetValue("DisplayFix") == "1" : true;
-            displayFix.AutoSize = false;
-            displayFix.Margin = new Padding(0, 3, 0, 3);
-            displayFix.Anchor = AnchorStyles.Left|AnchorStyles.Right;
-            settingsL.Controls.Add(displayFix);
-            settingsL.SetColumnSpan(displayFix, 3);
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
@@ -1710,7 +1693,6 @@ namespace Test_Script
                 myReg.SetValue("EnableRevise", (enableRevise.Checked ? 1 : 0).ToString());
                 myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("PreCropAtStart", (preCropAtStart.Checked ? 1 : 0).ToString());
-                myReg.SetValue("DisplayFix", (displayFix.Checked ? 1 : 0).ToString());
 
                 if (languageBox.SelectedIndex != language)
                 {
@@ -1720,7 +1702,7 @@ namespace Test_Script
                     SpriteSheetSetWindow();
                 }
 
-                else if (preCropAtStart.Checked ^ isPreCrop)
+                else if ((preCropAtStart.Checked != preCropAS) && (preCropAtStart.Checked ^ isPreCrop))
                 {
                     isPreCrop = !isPreCrop;
                     preCropSet();
@@ -2695,7 +2677,7 @@ namespace Test_Script
                             break;
 
                         case "FormTitle":
-                            str0 = "SpriteSheet 工具";
+                            str0 = "SpriteSheet 工具 v.1.2.0";
                             break;
 
                         case "CountText":
@@ -2791,7 +2773,7 @@ namespace Test_Script
                             break;
 
                         case "CutTips":
-                            str0 = "将Sprite表先切割成若干小块，按照顺序读取。\n单个小块读取完毕后再读取下一小块。\n默认为1×1，即不切割。";
+                            str0 = "将 Sprite 表先切割成若干小块，按照顺序读取。\n单个小块读取完毕后再读取下一小块。\n默认为1×1，即不切割。";
                             break;
 
                         case "CropModeText":
@@ -2799,7 +2781,7 @@ namespace Test_Script
                             break;
 
                         case "CropModeTips":
-                            str0 = "正常：正常进行预裁切操作。\n仅裁切：裁切图像后，直接渲染并导入进Vegas。仅需点击网格两次。\n单帧裁切：“仅裁切”的升级版，用于裁切单帧。仅需点击网格一次。";
+                            str0 = "正常：正常进行预裁切操作。\n仅裁切：裁切图像后，直接渲染并导入进 Vegas。仅需点击网格两次。\n单帧裁切：“仅裁切”的升级版，用于裁切单帧。仅需点击网格一次。";
                             break;
 
                         case "EnableLoopText":
@@ -2934,10 +2916,6 @@ namespace Test_Script
                             str0 = "启动时进入预裁切窗口";
                             break;
 
-                        case "DisplayFixText":
-                            str0 = "修复某些情况下修改模式的显示问题";
-                            break;
-
                         case "Language":
                             str0 = "界面语言";
                             break;
@@ -2968,7 +2946,7 @@ namespace Test_Script
                             break;
 
                         case "FormTitle":
-                            str0 = "SpriteSheet Tool";
+                            str0 = "SpriteSheetTool v.1.2.0";
                             break;
 
                         case "CountText":
@@ -3205,10 +3183,6 @@ namespace Test_Script
 
                         case "PreCropAtStartText":
                             str0 = "Enter PreCrop Window At Start";
-                            break;
-
-                        case "DisplayFixText":
-                            str0 = "Fix Pan/Crop Problem In Revise Mode";
                             break;
 
                         case "Language":
