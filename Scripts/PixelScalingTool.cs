@@ -23,7 +23,7 @@ namespace Test_Script
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, isRevise = false;
 
             double scaleFactor = 0;
-            ArrayList mediaList = new ArrayList(), scaleOri = new ArrayList();
+            ArrayList mediaList = new ArrayList();
 
             foreach (Track myTrack in myVegas.Project.Tracks)
             {
