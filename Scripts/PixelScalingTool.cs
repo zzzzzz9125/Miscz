@@ -10,9 +10,9 @@ using ScriptPortal.Vegas;  // If you are using Sony Vegas Pro 13 or below, repla
 
 namespace Test_Script
 {
-
     public class Class
     {
+        public const bool DEBUGMODE = true;
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
@@ -111,11 +111,11 @@ namespace Test_Script
                 p.StartInfo.FileName = "cmd.exe";
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.RedirectStandardInput = true;
-                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.RedirectStandardOutput = false;
                 p.StartInfo.RedirectStandardError = false;
-                p.StartInfo.CreateNoWindow = true;
+                p.StartInfo.CreateNoWindow = DEBUGMODE ? false : true;
                 p.Start();
-                p.StandardInput.WriteLine(string.Format("{0} & exit", renderCommand));
+                p.StandardInput.WriteLine(string.Format("{0} {1}", renderCommand, DEBUGMODE ? "" : "& exit"));
                 p.WaitForExit();
 
                 if((!arrMedia.IsImageSequence() && !File.Exists(outputPath)) || (arrMedia.IsImageSequence() && Directory.GetFiles(outputPath).Length == 0))
