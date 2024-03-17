@@ -102,7 +102,7 @@ namespace Test_Script
                     }
 
                     Directory.CreateDirectory(outputPath);
-                    renderCommand = string.Format("cd {0} & (for %i in (*{3}) do (ffmpeg -y -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\\%i\"))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath)); 
+                    renderCommand = string.Format("cd \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\\%i\"))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath)); 
                     framesCount = GetFramesCount(filePath);
                     filePath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                 }
@@ -120,7 +120,7 @@ namespace Test_Script
 
                 if((!arrMedia.IsImageSequence() && !File.Exists(outputPath)) || (arrMedia.IsImageSequence() && Directory.GetFiles(outputPath).Length == 0))
                 {
-                    myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format(arrMedia.IsImageSequence() ? "Directory {0} is empty." : "File {0} does not exist.", outputPath));
+                    myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format(arrMedia.IsImageSequence() ? "Output Directory {0} is empty." : "Output File {0} does not exist.", outputPath));
                     return;
                 }
 
