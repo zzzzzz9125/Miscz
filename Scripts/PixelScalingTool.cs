@@ -12,7 +12,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const bool DEBUGMODE = false;
+        public const bool DEBUGMODE = true;
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
