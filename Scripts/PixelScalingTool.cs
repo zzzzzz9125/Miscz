@@ -12,13 +12,14 @@ namespace Test_Script
 {
     public class Class
     {
-        public const bool DEBUGMODE = true;
+        public const bool DEBUGMODE = false;
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
+            myVegas.ResumePlaybackOnScriptExit = true;
             Project project = myVegas.Project;
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, isRevise = false;
 
