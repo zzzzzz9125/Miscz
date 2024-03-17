@@ -24,7 +24,7 @@ namespace Test_Script
         Form form, gridForm, gridFormSet;
         TextBox countXBox, countYBox, frameStartXBox, frameStartYBox, frameEndXBox, frameEndYBox, frameRateBox, startOffsetBox, topLeftXBox, topLeftYBox, bottomRightXBox, bottomRightYBox, cutXBox, cutYBox, previewXBox, previewYBox, loopOffsetBox, repeatFirstBox, repeatLastBox, repeatCountBox, safetyBox, gridDelayBox, autoDelayBox, gridHideDelayBox, scaleBox, gridOpacityBox;
         TrackBar countXBar, countYBar, safetyBar, gridDelayBar, autoDelayBar, gridHideDelayBar, scaleBar, gridOpacityBar;
-        ComboBox directionBox, playbackBox, reimportBox, languageBox, cropModeBox;
+        ComboBox directionBox, playbackBox, reimportBox, languageBox, cropModeBox, numberingBox;
         VideoEvent vEvent;
         VideoMotionBounds boundsPreCrop;
         VideoMotionKeyframe keyframePreview;
@@ -1606,6 +1606,20 @@ namespace Test_Script
 
             autoDelayBox.Text = string.Format("{0}", autoDelayBar.Value);
 
+            label = new Label();
+            label.Margin = new Padding(6, 6, 6, 6);
+            label.Text = LRZ("NumberingText");
+            label.AutoSize = true;
+            settingsL.Controls.Add(label);
+
+            numberingBox = new ComboBox();
+            numberingBox.DataSource = LRZArr("NumberingChoices");
+            numberingBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            numberingBox.Tag = myReg.GetValue("NumberingType") != null ? int.Parse((string)myReg.GetValue("NumberingType")) : 0;
+            numberingBox.Dock = DockStyle.Fill;
+            settingsL.Controls.Add(numberingBox);
+            settingsL.SetColumnSpan(numberingBox, 2);
+
             CheckBox enableRevise = new CheckBox();
             enableRevise.Text = LRZ("EnableReviseText");
             enableRevise.Checked = myReg.GetValue("EnableRevise") != null ? (string)myReg.GetValue("EnableRevise") == "1" : true;
@@ -1693,6 +1707,7 @@ namespace Test_Script
                 myReg.SetValue("EnableRevise", (enableRevise.Checked ? 1 : 0).ToString());
                 myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("PreCropAtStart", (preCropAtStart.Checked ? 1 : 0).ToString());
+                myReg.SetValue("NumberingType", numberingBox.SelectedIndex.ToString());
 
                 if (languageBox.SelectedIndex != language)
                 {
@@ -1712,6 +1727,7 @@ namespace Test_Script
 
         private void settingsForm_Load(object sender, EventArgs e)
         {
+            numberingBox.SelectedIndex = (int)numberingBox.Tag;
             languageBox.SelectedIndex = (int)languageBox.Tag;
         }
 
@@ -1826,7 +1842,7 @@ namespace Test_Script
                 form.Hide();
             }
             gridForm.Hide();
-            gridForm.Opacity = (myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 40) / 100.0;
+            gridForm.Opacity = (myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 50) / 100.0;
             preview = myReg.GetValue("GridPreview") != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("GridPreview")), ","), int.Parse) : new int[] {480,270};
 
             double gridSizeFactor = Math.Min(1.0 * preview[0] / spriteFrame[0], 1.0 * preview[1] / spriteFrame[1]);
@@ -1885,6 +1901,7 @@ namespace Test_Script
                 Button selectButton = new Button();
                 selectButton.Tag = new int[] {i, ToIndex(i)};
                 selectButton.Margin = new Padding(0, 0, 0, 0);
+                selectButton.ForeColor = Color.FromArgb(255, 0, 255);
                 selectButton.Dock = DockStyle.Fill;
                 selectButton.MouseDown += new MouseEventHandler(selectButton_MouseDown);
                 gridL.Controls.Add(selectButton);
@@ -1941,9 +1958,10 @@ namespace Test_Script
                     try
                     {
                         ((int[])ctrl.Tag)[1] = ToIndex(((int[])ctrl.Tag)[0]);
-
-                        // For Test Only
-                        // ctrl.Text = Convert.ToString(((int[])ctrl.Tag)[1]);
+                        if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "2" : false)
+                        {
+                            ctrl.Text = Convert.ToString(((int[])ctrl.Tag)[1]);
+                        }
                     }
                     catch
                     {
@@ -1959,6 +1977,10 @@ namespace Test_Script
                 if (ctrl is Button)
                 {
                     ctrl.BackColor = backColor;
+                    if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "1" : false)
+                    {
+                        ctrl.Text = "";
+                    }
                 }
             }
         }
@@ -2095,7 +2117,7 @@ namespace Test_Script
                 gridOpacityBar.LargeChange = 10;
                 gridOpacityBar.SmallChange = 1;
                 gridOpacityBar.TickStyle = TickStyle.None;
-                gridOpacityBar.Value = Math.Min(gridOpacityBar.Maximum, Math.Max(myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 40, gridOpacityBar.Minimum));
+                gridOpacityBar.Value = Math.Min(gridOpacityBar.Maximum, Math.Max(myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 50, gridOpacityBar.Minimum));
                 gridSetL.Controls.Add(gridOpacityBar);
                 gridSetL.SetColumnSpan(gridOpacityBar, 2);
                 gridOpacityBar.ValueChanged += new EventHandler(gridOpacityBar_ValueChanged);
@@ -2457,6 +2479,10 @@ namespace Test_Script
                         {
                             spritesArr.Add(((int[]) ctrl.Tag)[0]);
                             ctrl.BackColor = reverse ? Color.FromArgb(255,165,0) : Color.FromArgb(0,255,0);
+                            if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "1" : true)
+                            {
+                                ctrl.Text = Convert.ToString(Math.Abs(i - frameIndex[0]));
+                            }
                             Delay(delay);
                             break;
                         }
@@ -2844,6 +2870,10 @@ namespace Test_Script
                             str0 = "修改值时自动匹配项目比例";
                             break;
 
+                        case "NumberingText":
+                            str0 = "网格编号类型";
+                            break;
+
                         case "RenderAsSettings":
                             str0 = "渲染 设置";
                             break;
@@ -3113,6 +3143,10 @@ namespace Test_Script
                             str0 = "Auto Match Project Aspect";
                             break;
 
+                        case "NumberingText":
+                            str0 = "Grid Numbering";
+                            break;
+
                         case "RenderAsSettings":
                             str0 = "RenderAs Settings";
                             break;
@@ -3221,6 +3255,10 @@ namespace Test_Script
                         case "CropModeChoices":
                             str0 = new string [] {"正常", "仅裁切", "单帧裁切"};
                             break;
+
+                        case "NumberingChoices":
+                            str0 = new string [] {"无", "范围编号", "全局编号"};
+                            break;
                     }
                     break;
 
@@ -3241,6 +3279,10 @@ namespace Test_Script
 
                         case "CropModeChoices":
                             str0 = new string [] {"Normal", "Crop Only", "Crop Single"};
+                            break;
+
+                        case "NumberingChoices":
+                            str0 = new string [] {"None", "Range Numbering", "Global Numbering"};
                             break;
                     }
                     break;
