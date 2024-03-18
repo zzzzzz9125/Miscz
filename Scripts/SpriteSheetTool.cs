@@ -2547,7 +2547,7 @@ namespace Test_Script
                             ctrl.BackColor = reverse ? Color.FromArgb(255,165,0) : Color.FromArgb(0,255,0);
                             if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "1" : true)
                             {
-                                ctrl.Text = Convert.ToString(Math.Abs(Mod(i - frameIndex[0] - offset[1], b - a + 1)));
+                                ctrl.Text = Convert.ToString(Math.Abs((i - frameIndex[0] - offset[1]) % (b - a + 1)));
                             }
                             Delay(delay);
                             break;
