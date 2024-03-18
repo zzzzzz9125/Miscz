@@ -12,17 +12,17 @@ namespace Test_Script
 {
     public class Class
     {
-        public const bool DEBUGMODE = false;
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
+        CheckBox debugMode;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
             myVegas.ResumePlaybackOnScriptExit = true;
             Project project = myVegas.Project;
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, isRevise = false;
-
+            string logFile = "nul";
             double scaleFactor = 0;
             ArrayList mediaList = new ArrayList();
 
@@ -74,6 +74,10 @@ namespace Test_Script
                 if (DialogResult.OK == ScaleWindow())
                 {
                     double.TryParse(scaleBox.Text, out scaleFactor);
+                    if (debugMode.Checked)
+                    {
+                        logFile = string.Format("\"{0}\"", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss"))));
+                    }
                 }
 
                 else
@@ -82,51 +86,68 @@ namespace Test_Script
                 }
             }
 
-            foreach (Media arrMedia in mediaList)
+            Process p = new Process();
+            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardInput = true;
+            p.StartInfo.RedirectStandardOutput = false;
+            p.StartInfo.RedirectStandardError = false;
+            p.StartInfo.CreateNoWindow = true;
+
+            try
             {
-                VideoStream vStream = (VideoStream)arrMedia.Streams[0];
-                double scaleValue = scaleFactor >= 1 ? scaleFactor : Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
-
-                string filePath = arrMedia.FilePath;
-                string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
-                string renderCommand = string.Format("ffmpeg -y -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\"", filePath, scaleValue, outputPath); 
-
-                int framesCount = 0;
-
-                if (arrMedia.IsImageSequence())
+                foreach (Media arrMedia in mediaList)
                 {
-                    outputPath = Path.GetDirectoryName(filePath) + "_Scaled";
+                    VideoStream vStream = (VideoStream)arrMedia.Streams[0];
+                    double scaleValue = scaleFactor >= 1 ? scaleFactor : Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
 
-                    if (Directory.Exists(outputPath))
+                    string filePath = arrMedia.FilePath;
+                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
+                    string renderCommand = string.Format("ffmpeg -y -loglevel 32 -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\"", filePath, scaleValue, outputPath); 
+                    int framesCount = 0;
+
+                    if (arrMedia.IsImageSequence())
                     {
-                        Directory.Delete(outputPath, true);
+                        outputPath = Path.GetDirectoryName(filePath) + "_Scaled";
+
+                        if (Directory.Exists(outputPath))
+                        {
+                            Directory.Delete(outputPath, true);
+                        }
+
+                        Directory.CreateDirectory(outputPath);
+                        renderCommand = string.Format("cd /d \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -loglevel 32 -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\\%i\" ))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath)); 
+                        framesCount = GetFramesCount(filePath);
+                        filePath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                     }
 
-                    Directory.CreateDirectory(outputPath);
-                    renderCommand = string.Format("cd \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\\%i\"))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath)); 
-                    framesCount = GetFramesCount(filePath);
-                    filePath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
+                    p.Start();
+                    p.StandardInput.WriteLine(string.Format("({0}) >> {1} 2>&1 & exit", renderCommand, logFile));
+                    p.WaitForExit();
+
+                    if((!arrMedia.IsImageSequence() && !File.Exists(outputPath)) || (arrMedia.IsImageSequence() && Directory.GetFiles(outputPath).Length == 0))
+                    {
+                        myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format(arrMedia.IsImageSequence() ? "Output Directory {0} is empty." : "Output File {0} does not exist.", outputPath));
+                        return;
+                    }
+
+                    Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(filePath, framesCount, vStream.FrameRate) : Media.CreateInstance(project, outputPath);
+                    arrMedia.ReplaceWith(newMedia);
                 }
+            }
 
-                Process p = new Process();
-                p.StartInfo.FileName = "cmd.exe";
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.RedirectStandardInput = true;
-                p.StartInfo.RedirectStandardOutput = false;
-                p.StartInfo.RedirectStandardError = false;
-                p.StartInfo.CreateNoWindow = DEBUGMODE ? false : true;
-                p.Start();
-                p.StandardInput.WriteLine(string.Format("{0} {1}", renderCommand, DEBUGMODE ? "" : "& exit"));
-                p.WaitForExit();
+            catch (Exception ex)
+            {
+                myVegas.ShowError("FFmpeg Rendering Error!\n\n" + ex.Message, "Rendering failed, please make sure you have added FFmpeg to environment variables, then try again. If this problem still occurred, please enable Debug Mode, check the FFmpeg log files, and shall submit an issue to the Github page of this project (https://github.com/zzzzzz9125/Miscz).");
+            }
 
-                if((!arrMedia.IsImageSequence() && !File.Exists(outputPath)) || (arrMedia.IsImageSequence() && Directory.GetFiles(outputPath).Length == 0))
+            finally
+            {
+                if (logFile != "nul")
                 {
-                    myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format(arrMedia.IsImageSequence() ? "Output Directory {0} is empty." : "Output File {0} does not exist.", outputPath));
-                    return;
+                    p.Start();
+                    p.StandardInput.WriteLine(string.Format("{0} & exit", logFile));
                 }
-
-                Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(filePath, framesCount, vStream.FrameRate) : Media.CreateInstance(project, outputPath);
-                arrMedia.ReplaceWith(newMedia);
             }
         }
 
@@ -210,6 +231,14 @@ namespace Test_Script
             scaleBox.Text = "Auto";
             l.Controls.Add(scaleBox);
             scaleBox.TextChanged += new EventHandler(scaleBox_TextChanged);
+
+            debugMode = new CheckBox();
+            debugMode.Text = "Debug Mode";
+            debugMode.Checked = false;
+            debugMode.Margin = new Padding(3, 3, 3, 3);
+            debugMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            l.Controls.Add(debugMode);
+            l.SetColumnSpan(debugMode, 3);
 
             FlowLayoutPanel panel = new FlowLayoutPanel();
             panel.FlowDirection = FlowDirection.RightToLeft;

@@ -256,6 +256,11 @@ namespace Test_Script
                                 }
                             }
 
+                            if (location == null)
+                            {
+                                location = new int[] {(int)keyframePreview.TopLeft.X / spriteFrame[0] + 1, (int)keyframePreview.TopLeft.Y / spriteFrame[1] + 1, (int)keyframePreview.BottomRight.X / spriteFrame[0], (int)keyframePreview.BottomRight.Y / spriteFrame[1]};
+                            }
+
                             int cropMode = myReg.GetValue("CropMode") != null ? int.Parse((string)myReg.GetValue("CropMode")) : 0;
                             if (spritesArr.Count == 1)
                             {
@@ -316,12 +321,13 @@ namespace Test_Script
                             }
 
                             int[] render = myReg.GetValue("Render") != null ? render = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse) : new int[] {0, 1, 0, 0, 0};
+                            bool isDebug = myReg.GetValue("DebugMode") != null ? ((string)myReg.GetValue("DebugMode") == "1") : false;
 
                             Process p = new Process();
                             p.StartInfo.FileName = "cmd.exe";
                             p.StartInfo.UseShellExecute = false;
                             p.StartInfo.RedirectStandardInput = true;
-                            p.StartInfo.RedirectStandardOutput = true;
+                            p.StartInfo.RedirectStandardOutput = false;
                             p.StartInfo.RedirectStandardError = false;
                             p.StartInfo.CreateNoWindow = true;
 
@@ -365,23 +371,30 @@ namespace Test_Script
                                 progressForm.Show(myVegas.TimelineWindow);
                             }
 
+                            string logPath = Path.Combine(Path.GetTempPath(), "MisczToolsForVegasPro", "SpriteSheetTool", "ffmpeg-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+                            if (isDebug && !Directory.Exists(logPath))
+                            {
+                                Directory.CreateDirectory(logPath);
+                            }
+
                             try
                             {
                                 // PreCrop
-                                if (location == null)
-                                {
-                                    location = new int[] {(int)keyframePreview.TopLeft.X / spriteFrame[0] + 1, (int)keyframePreview.TopLeft.Y / spriteFrame[1] + 1, (int)keyframePreview.BottomRight.X / spriteFrame[0], (int)keyframePreview.BottomRight.Y / spriteFrame[1]};
-                                }
                                 string preCropPath = cropMode == 0 ? (filePath + "_Crop.png") : Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) +".png");
-                                string renderParameter = "ffmpeg -y -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor";
+                                string renderParameter = "ffmpeg -y -loglevel 32 -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor";
                                 string preCropCommand = string.Format(renderParameter, filePath, spriteFrame[0] * cols, spriteFrame[1] * rows, spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1), cropMode == 0 ? 1 : scaleFactor);
+                                string logFile = "nul";
+                                if (isDebug)
+                                {
+                                    logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(preCropPath) + ".log"));
+                                }
+
                                 p.Start();
-                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" & exit", preCropCommand, preCropPath));
+                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", preCropCommand, preCropPath, logFile));
                                 p.WaitForExit();
                                 prg.Value += 1;
                                 label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
                                 label.Refresh();
-
                                 string reimportPath = preCropPath, openFolder = reimportPath;
 
                                 if (cropMode == 0)
@@ -393,8 +406,13 @@ namespace Test_Script
                                         int c = (int)spritesArr[i] % cols;
                                         string renderCommand = string.Format(renderParameter, preCropPath, spriteFrame[0], spriteFrame[1], c * spriteFrame[0], r * spriteFrame[1], scaleFactor);
                                         string outputFile = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + (cropMode == 2 ? string.Format("{0:000}", number) : string.Format("{0:000}", Mod(i - offset[0], spritesArr.Count))) +".png");
+                                        if (isDebug)
+                                        {
+                                            logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(outputFile) + ".log"));
+                                        }
+
                                         p.Start();
-                                        p.StandardInput.WriteLine(string.Format("{0} \"{1}\" & exit", renderCommand, outputFile));
+                                        p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", renderCommand, outputFile, logFile));
                                         prg.Value += 1;
                                         label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
                                         label.Refresh();
@@ -411,12 +429,17 @@ namespace Test_Script
                                         string [] renderPath = new string[] {".gif", (render[4] > 0 ? "_PNG.mov" : ".mov"), (render[3] > 0 ? "_ProRes.mov" : ".mov")};
                                         for (int i = 0; i < render.Length - 2; i++)
                                         {
-                                            renderCommand[i] = string.Format("ffmpeg -y -r {0} -f image2 -i \"{1}\" {2}", frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i]);
+                                            renderCommand[i] = string.Format("ffmpeg -y -loglevel 32 -r {0} -f image2 -i \"{1}\" {2}", frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i]);
                                             renderPath[i] = Path.Combine(Path.GetDirectoryName(outputDirectory), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null) + renderPath[i]);
                                             if (render[i + 2] > 0)
                                             {
+                                                if (isDebug)
+                                                {
+                                                    logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(renderPath[i]) + ".log"));
+                                                }
+
                                                 p.Start();
-                                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" & exit", renderCommand[i], renderPath[i]));
+                                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", renderCommand[i], renderPath[i], logFile));
                                                 openFolder = renderPath[i];
                                                 prg.Value += 1;
                                                 label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
@@ -501,15 +524,30 @@ namespace Test_Script
                                 dFullHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * (float)scaleFactor;
 
                                 KeyframeReset(keyframePreview);
+
+                                int a = int.Parse("aaa");
                             }
 
                             catch (Exception ex)
                             {
-                                MessageBox.Show(ex.Message);
+                                myVegas.ShowError(LRZ("RenderingError") + ex.Message, LRZ("RenderingErrorDetails"));
                             }
 
                             finally
                             {
+                                if (isDebug)
+                                {
+                                    string logFile = logPath + ".log";
+                                    string newlogFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Path.GetFileName(logFile));
+                                    p.Start();
+                                    p.StandardInput.WriteLine(string.Format("type \"{0}\\*.log\" >> {1} & exit", logPath, logFile));
+                                    p.WaitForExit();
+                                    Directory.Delete(logPath, true);
+                                    File.Copy(logFile, newlogFile, true);
+                                    p.Start();
+                                    p.StandardInput.WriteLine(string.Format("\"{0}\" & exit", newlogFile));
+                                }
+
                                 if (cropMode == 0)
                                 {
                                     progressForm.Close();
@@ -843,7 +881,6 @@ namespace Test_Script
             startOffsetBox.Tag = "Frame";
             l.Controls.Add(startOffsetBox);
             tt.SetToolTip(startOffsetBox, LRZ("OffsetTips"));
-            // startOffsetBox.TextChanged += new EventHandler(refreshIndex_Handler);
 
             loopOffsetBox = new TextBox();
             loopOffsetBox.Text = string.Format("{0}", offset[1]);
@@ -1164,55 +1201,52 @@ namespace Test_Script
         private void spriteOk()
         {
             gridForm.Hide();
-            count = new int[] {int.Parse(countXBox.Text), int.Parse(countYBox.Text)};
-            spriteFrame = new int[] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
-            frameRange = new int[] {int.Parse(frameStartXBox.Text), int.Parse(frameStartYBox.Text), int.Parse(frameEndXBox.Text), int.Parse(frameEndYBox.Text)};
-            offset = new int[] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
-            int[] repeat = new int[] {int.Parse(repeatFirstBox.Text), int.Parse(repeatLastBox.Text), int.Parse(repeatCountBox.Text)};
-            if (repeat[0] > repeat[1])
+            try
             {
-                int tmp = repeat[0];
-                repeat[0] = repeat[1];
-                repeat[1] = tmp;
-            }
-            ArrayList repeatArr = new ArrayList();
-            if (spritesArr == null)
-            {
-                spritesArr = new ArrayList();
-                spritesArr.Add(0);
-                if ((myReg.GetValue("CropMode") != null ? (string)myReg.GetValue("CropMode") : "0") == "1")
+                count = new int[] {int.Parse(countXBox.Text), int.Parse(countYBox.Text)};
+                spriteFrame = new int[] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
+                frameRange = new int[] {int.Parse(frameStartXBox.Text), int.Parse(frameStartYBox.Text), int.Parse(frameEndXBox.Text), int.Parse(frameEndYBox.Text)};
+                offset = new int[] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
+                int[] repeat = new int[] {int.Parse(repeatFirstBox.Text), int.Parse(repeatLastBox.Text), int.Parse(repeatCountBox.Text)};
+                if (repeat[0] > repeat[1])
                 {
+                    int tmp = repeat[0];
+                    repeat[0] = repeat[1];
+                    repeat[1] = tmp;
+                }
+                ArrayList repeatArr = new ArrayList();
+                if (spritesArr == null)
+                {
+                    spritesArr = new ArrayList();
                     spritesArr.Add(0);
-                }
-            }
-            for (int i = 0; i < repeat[2]; i++)
-            {
-                for (int j = repeat[0]; j <= repeat[1]; j++)
-                {
-                    repeatArr.Add(j + Math.Min((int)spritesArr[0], (int)spritesArr[spritesArr.Count - 1]));
-                }
-            }
-            for (int i = 0; i < spritesArr.Count; i++)
-            {
-                if ((int)spritesArr[i] == repeat[1])
-                {
-                    spritesArr.InsertRange(i + 1, repeatArr);
-                    break;
-                }
-            }
-            if (playbackBox.SelectedIndex > 0)
-            {
-                repeatArr.Reverse();
-                for (int i = spritesArr.Count - 1; i >= 0; i--)
-                {
-                    if ((int)spritesArr[i] == repeat[1])
+                    if ((myReg.GetValue("CropMode") != null ? (string)myReg.GetValue("CropMode") : "0") == "1")
                     {
-                        spritesArr.InsertRange(i, repeatArr);
-                        break;
+                        spritesArr.Add(0);
                     }
                 }
+                for (int i = 0; i < repeat[2]; i++)
+                {
+                    for (int j = repeat[0]; j <= repeat[1]; j++)
+                    {
+                        repeatArr.Add(spritesArr[j]);
+                    }
+                }
+                spritesArr.InsertRange(repeat[1] + 1, repeatArr);
+
+                if (playbackBox.SelectedIndex > 0)
+                {
+                    repeatArr.Reverse();
+                    spritesArr.InsertRange(spritesArr.Count - repeat[1] - (playbackBox.SelectedIndex == 3 ? 0 : 1), repeatArr);
+                }
             }
-            cut = new int[] {int.Parse(cutXBox.Text), int.Parse(cutYBox.Text)};
+
+            catch
+            {
+                gridForm.Show();
+                return;
+            }
+            int cut0, cut1;
+            cut = new int[] {int.TryParse(cutXBox.Text, out cut0) ? cut0 : 1, int.TryParse(cutYBox.Text, out cut1) ? cut1 : 1};
             canContinue = true;
             form.Close();
         }
@@ -1615,7 +1649,7 @@ namespace Test_Script
             numberingBox = new ComboBox();
             numberingBox.DataSource = LRZArr("NumberingChoices");
             numberingBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            numberingBox.Tag = myReg.GetValue("NumberingType") != null ? int.Parse((string)myReg.GetValue("NumberingType")) : 0;
+            numberingBox.Tag = myReg.GetValue("NumberingType") != null ? int.Parse((string)myReg.GetValue("NumberingType")) : 1;
             numberingBox.Dock = DockStyle.Fill;
             settingsL.Controls.Add(numberingBox);
             settingsL.SetColumnSpan(numberingBox, 2);
@@ -1637,6 +1671,14 @@ namespace Test_Script
             settingsL.Controls.Add(multiMode);
             settingsL.SetColumnSpan(multiMode, 2);
 
+            CheckBox debugMode = new CheckBox();
+            debugMode.Text = LRZ("DebugModeText");
+            debugMode.Checked = myReg.GetValue("DebugMode") != null ? ((string)myReg.GetValue("DebugMode") == "1") : false;
+            debugMode.AutoSize = false;
+            debugMode.Margin = new Padding(0, 3, 0, 3);
+            debugMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(debugMode);
+
             bool preCropAS = myReg.GetValue("PreCropAtStart") != null ? (string)myReg.GetValue("PreCropAtStart") == "1" : true;
             CheckBox preCropAtStart = new CheckBox();
             preCropAtStart.Text = LRZ("PreCropAtStartText");
@@ -1645,7 +1687,7 @@ namespace Test_Script
             preCropAtStart.Margin = new Padding(0, 3, 0, 3);
             preCropAtStart.Anchor = AnchorStyles.Left|AnchorStyles.Right;
             settingsL.Controls.Add(preCropAtStart);
-            settingsL.SetColumnSpan(preCropAtStart, 3);
+            settingsL.SetColumnSpan(preCropAtStart, 2);
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
@@ -1706,8 +1748,15 @@ namespace Test_Script
                 myReg.SetValue("DelayGridHide", gridHideDelayBar.Value.ToString());
                 myReg.SetValue("EnableRevise", (enableRevise.Checked ? 1 : 0).ToString());
                 myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
+                myReg.SetValue("DebugMode", (debugMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("PreCropAtStart", (preCropAtStart.Checked ? 1 : 0).ToString());
                 myReg.SetValue("NumberingType", numberingBox.SelectedIndex.ToString());
+
+                string logPath = Path.Combine(Path.GetTempPath(), "MisczToolsForVegasPro", "SpriteSheetTool");
+                if (!debugMode.Checked && Directory.Exists(logPath))
+                {
+                    Directory.Delete(logPath, true);
+                }
 
                 if (languageBox.SelectedIndex != language)
                 {
@@ -1919,6 +1968,15 @@ namespace Test_Script
 
         private void refreshIndex_Handler(object sender, EventArgs e)
         {
+            if (sender is TextBox)
+            {
+                int a;
+                if (!int.TryParse(((TextBox)sender).Text, out a))
+                {
+                    return;
+                }
+                
+            }
             if (countSelected > 1)
             {
                 refreshColor();
@@ -1977,7 +2035,7 @@ namespace Test_Script
                 if (ctrl is Button)
                 {
                     ctrl.BackColor = backColor;
-                    if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "1" : false)
+                    if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "1" : true)
                     {
                         ctrl.Text = "";
                     }
@@ -2020,7 +2078,8 @@ namespace Test_Script
                 r = c;
                 c = a;
             }
-            cut = new int[] {int.Parse(cutXBox.Text), int.Parse(cutYBox.Text)};
+            int cut0, cut1;
+            cut = new int[] {int.TryParse(cutXBox.Text, out cut0) ? cut0 : 1, int.TryParse(cutYBox.Text, out cut1) ? cut1 : 1};
             int sum = count[0] / cut[0] * count[1] / cut[1];
             int cols = verticalRead ? count[1] / cut[1] : count[0] / cut[0];
             int colsCut = verticalRead ? cut[1] : cut[0];
@@ -2414,9 +2473,17 @@ namespace Test_Script
                     if (ctrl is Button)
                     {
                         int i = ((int[]) ctrl.Tag)[0];
-                        if (i % count[0] + 2 > int.Parse(topLeftXBox.Text) && i % count[0] < int.Parse(bottomRightXBox.Text) && i / count[0] + 2 > int.Parse(topLeftYBox.Text) && i / count[0] < int.Parse(bottomRightYBox.Text))
+                        try
                         {
-                            ctrl.BackColor = Color.FromArgb(0,255,0);
+                            if (i % count[0] + 2 > int.Parse(topLeftXBox.Text) && i % count[0] < int.Parse(bottomRightXBox.Text) && i / count[0] + 2 > int.Parse(topLeftYBox.Text) && i / count[0] < int.Parse(bottomRightYBox.Text))
+                            {
+                                ctrl.BackColor = Color.FromArgb(0,255,0);
+                            }
+                        }
+
+                        catch
+                        {
+
                         }
                     }
                 }
@@ -2424,7 +2491,8 @@ namespace Test_Script
             }
             else
             {
-                offset = new int[] {int.Parse(startOffsetBox.Text), int.Parse(loopOffsetBox.Text)};
+                int off0, off1;
+                offset = new int[] {int.TryParse(startOffsetBox.Text, out off0) ? off0 : 0, int.TryParse(loopOffsetBox.Text, out off1) ? off1 : 0};
                 spritesArr = new ArrayList();
                 int gridDelay = myReg.GetValue("DelayGrid") != null ? int.Parse((string)myReg.GetValue("DelayGrid")) : 35;
                 if (!changeColor(shouldDelay ? gridDelay : 0))
@@ -2473,7 +2541,7 @@ namespace Test_Script
                         int i = ((int[]) ctrl.Tag)[1];
                         int jj = frameIndex[0] > frameIndex[1] ? (a + b - j) : j;
                         jj = reverse ? (a + b - jj) : jj;
-                        jj = (jj - a + offset[1]) % (b - a + 1) + a;
+                        jj = Mod(jj - a + offset[1], b - a + 1) + a;
 
                         if (jj == i)
                         {
@@ -2481,7 +2549,7 @@ namespace Test_Script
                             ctrl.BackColor = reverse ? Color.FromArgb(255,165,0) : Color.FromArgb(0,255,0);
                             if (myReg.GetValue("NumberingType") != null ? (string)myReg.GetValue("NumberingType") == "1" : true)
                             {
-                                ctrl.Text = Convert.ToString(Math.Abs(i - frameIndex[0]));
+                                ctrl.Text = Convert.ToString(Math.Abs(Mod(i - frameIndex[0] - offset[1], b - a + 1)));
                             }
                             Delay(delay);
                             break;
@@ -2702,6 +2770,14 @@ namespace Test_Script
                             str0 = "文件 {0} 不存在。";
                             break;
 
+                        case "RenderingError":
+                            str0 = "FFmpeg 渲染失败！\n\n";
+                            break;
+
+                        case "RenderingErrorDetails":
+                            str0 = "渲染失败，请先确保你已将 FFmpeg 添加至环境变量内，再重试。若仍然多次出现该报错，请启用设置中的“调试模式”，查看 FFmpeg 的日志文件，并向本项目的 Github 页面（https://github.com/zzzzzz9125/Miscz）提交 Issues。";
+                            break;
+
                         case "FormTitle":
                             str0 = "SpriteSheet 工具 v.1.2.0";
                             break;
@@ -2759,7 +2835,7 @@ namespace Test_Script
                             break;
 
                         case "OffsetTips":
-                            str0 = "起始帧偏移：播放时的总体的起始帧偏移量。\n循环内偏移：循环内偏移：单个循环内的帧偏移量。\n两者的功能稍微有些不同，注意区别。";
+                            str0 = "起始帧偏移：播放时的总体的起始帧偏移量。\n循环内偏移：单个循环内的帧偏移量。\n两者的功能稍微有些不同，注意区别。";
                             break;
 
                         case "DirectionText":
@@ -2942,8 +3018,12 @@ namespace Test_Script
                             str0 = "启用多事件模式";
                             break;
 
+                        case "DebugModeText":
+                            str0 = "调试模式";
+                            break;
+
                         case "PreCropAtStartText":
-                            str0 = "启动时进入预裁切窗口";
+                            str0 = "启动时进入预裁切";
                             break;
 
                         case "Language":
@@ -2973,6 +3053,14 @@ namespace Test_Script
 
                         case "FileNotExistErrorDetails":
                             str0 = "File {0} does not exist.";
+                            break;
+
+                        case "RenderingError":
+                            str0 = "FFmpeg Rendering Error!\n\n";
+                            break;
+
+                        case "RenderingErrorDetails":
+                            str0 = "Rendering failed, please make sure you have added FFmpeg to environment variables, then try again. If this problem still occurred, please enable Debug Mode in Settings, check the FFmpeg log files, and shall submit an issue to the Github page of this project (https://github.com/zzzzzz9125/Miscz).";
                             break;
 
                         case "FormTitle":
@@ -3215,8 +3303,12 @@ namespace Test_Script
                             str0 = "Multi-Event Mode";
                             break;
 
+                        case "DebugModeText":
+                            str0 = "Debug Mode";
+                            break;
+
                         case "PreCropAtStartText":
-                            str0 = "Enter PreCrop Window At Start";
+                            str0 = "PreCrop At Start";
                             break;
 
                         case "Language":
