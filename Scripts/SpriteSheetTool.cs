@@ -524,8 +524,6 @@ namespace Test_Script
                                 dFullHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * (float)scaleFactor;
 
                                 KeyframeReset(keyframePreview);
-
-                                int a = int.Parse("aaa");
                             }
 
                             catch (Exception ex)
@@ -1975,8 +1973,8 @@ namespace Test_Script
                 {
                     return;
                 }
-                
             }
+
             if (countSelected > 1)
             {
                 refreshColor();
