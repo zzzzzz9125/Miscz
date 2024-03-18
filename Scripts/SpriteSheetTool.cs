@@ -389,6 +389,11 @@ namespace Test_Script
                                     logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(preCropPath) + ".log"));
                                 }
 
+                                if (File.Exists(preCropPath))
+                                {
+                                    File.Delete(preCropPath);
+                                }
+
                                 p.Start();
                                 p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", preCropCommand, preCropPath, logFile));
                                 p.WaitForExit();
@@ -1660,23 +1665,6 @@ namespace Test_Script
             enableRevise.Anchor = AnchorStyles.Left|AnchorStyles.Right;
             settingsL.Controls.Add(enableRevise);
 
-            CheckBox multiMode = new CheckBox();
-            multiMode.Text = LRZ("MultiModeText");
-            multiMode.Checked = myReg.GetValue("MultiMode") != null ? ((string)myReg.GetValue("MultiMode") == "1") : false;
-            multiMode.AutoSize = false;
-            multiMode.Margin = new Padding(0, 3, 0, 3);
-            multiMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
-            settingsL.Controls.Add(multiMode);
-            settingsL.SetColumnSpan(multiMode, 2);
-
-            CheckBox debugMode = new CheckBox();
-            debugMode.Text = LRZ("DebugModeText");
-            debugMode.Checked = myReg.GetValue("DebugMode") != null ? ((string)myReg.GetValue("DebugMode") == "1") : false;
-            debugMode.AutoSize = false;
-            debugMode.Margin = new Padding(0, 3, 0, 3);
-            debugMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
-            settingsL.Controls.Add(debugMode);
-
             bool preCropAS = myReg.GetValue("PreCropAtStart") != null ? (string)myReg.GetValue("PreCropAtStart") == "1" : true;
             CheckBox preCropAtStart = new CheckBox();
             preCropAtStart.Text = LRZ("PreCropAtStartText");
@@ -1686,6 +1674,23 @@ namespace Test_Script
             preCropAtStart.Anchor = AnchorStyles.Left|AnchorStyles.Right;
             settingsL.Controls.Add(preCropAtStart);
             settingsL.SetColumnSpan(preCropAtStart, 2);
+
+            CheckBox debugMode = new CheckBox();
+            debugMode.Text = LRZ("DebugModeText");
+            debugMode.Checked = myReg.GetValue("DebugMode") != null ? ((string)myReg.GetValue("DebugMode") == "1") : false;
+            debugMode.AutoSize = false;
+            debugMode.Margin = new Padding(0, 3, 0, 3);
+            debugMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(debugMode);
+
+            CheckBox multiMode = new CheckBox();
+            multiMode.Text = LRZ("MultiModeText");
+            multiMode.Checked = myReg.GetValue("MultiMode") != null ? ((string)myReg.GetValue("MultiMode") == "1") : false;
+            multiMode.AutoSize = false;
+            multiMode.Margin = new Padding(0, 3, 0, 3);
+            multiMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(multiMode);
+            settingsL.SetColumnSpan(multiMode, 2);
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
