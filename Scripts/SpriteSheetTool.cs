@@ -8,13 +8,13 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-using ScriptPortal.Vegas;  // If you are using Sony Vegas Pro 13 or below, replace "ScriptPortal.Vegas" with "Sony.Vegas"
+using ScriptPortal.Vegas;  // If you are using Magix Vegas Pro 14 or above, replace "Sony.Vegas" with "ScriptPortal.Vegas"
 
 namespace Test_Script
 {
-
     public class Class
     {
+        public const string VERSION = "v.1.2.1";
         public Vegas myVegas;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
@@ -43,21 +43,6 @@ namespace Test_Script
             myVegas = vegas;
             Project project = myVegas.Project;
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false;
-            InterfaceType colorType;
-            myVegas.GetInterfaceType(out colorType);
-            switch (colorType)
-            {
-                case InterfaceType.Dark:
-                case InterfaceType.Medium:
-                    backColor = Color.FromArgb(45,45,45);
-                    foreColor = Color.FromArgb(200,200,200);
-                    break;
-                case InterfaceType.Light:
-                case InterfaceType.White:
-                    backColor = Color.FromArgb(200,200,200);
-                    foreColor = Color.FromArgb(45,45,45);
-                    break;
-            }
             string regPath = "Software\\MisczToolsForVegasPro\\SpriteSheetTool";
             if (ctrlMode)
             {
@@ -65,6 +50,14 @@ namespace Test_Script
             }
             myReg = Registry.CurrentUser.CreateSubKey(regPath);
             language = myReg.GetValue("Language") != null ? int.Parse((string)myReg.GetValue("Language")) : (myVegas.AppCultureInfo.TwoLetterISOLanguageName == "zh" ? 1 : 0);
+
+            backColor = Color.FromArgb(45,45,45);
+            foreColor = Color.FromArgb(200,200,200);
+            if (myReg.GetValue("DarkMode") != null ? (string)myReg.GetValue("DarkMode") == "0" : double.Parse(Regex.Split(myVegas.Version, " ")[1]) < 15)
+            {
+                backColor = Color.FromArgb(153,153,153);
+                foreColor = Color.FromArgb(0,0,0);
+            }
 
             MediaBin spritesBin = null;
             foreach (IMediaBinNode node in project.MediaPool.RootMediaBin)
@@ -81,13 +74,11 @@ namespace Test_Script
                 project.MediaPool.RootMediaBin.Add(spritesBin);
             }
 
-            PlugInNode pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.vegascreativesoftware:border}");
-            if (pluginBorder == null)
-            {
-                pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.sonycreativesoftware:border}");
-            }
+            PlugInNode pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.vegascreativesoftware:border}") ?? myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.sonycreativesoftware:border}") ?? myVegas.VideoFX.GetChildByUniqueID("{7F6B9FB2-61D8-4D24-999B-405396B27769}");
+
             scrWidth = project.Video.Width;
             scrHeight = project.Video.Height;
+
             foreach (Track myTrack in project.Tracks)
             {
                 if (myTrack.IsVideo())
@@ -216,25 +207,46 @@ namespace Test_Script
                                 }
 
                                 // Add a white boarder to show the boundaries of the SpriteSheet image
-                                Effect effectBorder = new Effect(pluginBorder);
-                                vEvent.Effects.Insert(0, effectBorder);
-                                effectBorder.ApplyBeforePanCrop = true;
-                                OFXEffect ofxBorder = effectBorder.OFXEffect;
-                                OFXChoiceParameter borderChoice = (OFXChoiceParameter)ofxBorder["Type"];
-                                borderChoice.Value = borderChoice.Choices[2];
-                                OFXDoubleParameter borderSize = (OFXDoubleParameter)ofxBorder["Size"];
-                                borderSize.Value = 0.015;
-                                myVegas.UpdateUI();
+                                if (pluginBorder != null)
+                                {
+                                    Effect effectBorder = new Effect(pluginBorder);
+                                    vEvent.Effects.Insert(0, effectBorder);
+                                    effectBorder.ApplyBeforePanCrop = true;
+                                    if (pluginBorder.IsOFX)
+                                    {
+                                        OFXEffect ofxBorder = effectBorder.OFXEffect;
+                                        OFXChoiceParameter borderChoice = (OFXChoiceParameter)ofxBorder["Type"];
+                                        borderChoice.Value = borderChoice.Choices[2];
+                                        OFXDoubleParameter borderSize = (OFXDoubleParameter)ofxBorder["Size"];
+                                        borderSize.Value = 0.015;
+                                    }
+
+                                    else
+                                    {
+                                        foreach (EffectPreset dxtPreset in pluginBorder.Presets)
+                                        {
+                                            if (dxtPreset.Name == "SpriteSheet")
+                                            {
+                                                effectBorder.Preset = "SpriteSheet";
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    myVegas.UpdateUI();
+                                }
 
                                 SpriteSheetSetWindow();
 
                                 effectCount = vEvent.Effects.Count;
 
-                                for (int i = effectCount - 1; i >= 0; i--)
+                                if (pluginBorder != null)
                                 {
-                                    if (vEvent.Effects[i].PlugIn.UniqueID == pluginBorder.UniqueID)
+                                    for (int i = effectCount - 1; i >= 0; i--)
                                     {
-                                        vEvent.Effects.RemoveAt(i);
+                                        if (vEvent.Effects[i].PlugIn.UniqueID == pluginBorder.UniqueID)
+                                        {
+                                            vEvent.Effects.RemoveAt(i);
+                                        }
                                     }
                                 }
 
@@ -368,7 +380,7 @@ namespace Test_Script
 
                             if (cropMode == 0)
                             {
-                                progressForm.Show(myVegas.TimelineWindow);
+                                progressForm.Show();
                             }
 
                             string logPath = Path.Combine(Path.GetTempPath(), "MisczToolsForVegasPro", "SpriteSheetTool", "ffmpeg-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
@@ -698,7 +710,7 @@ namespace Test_Script
                 form.StartPosition = FormStartPosition.WindowsDefaultBounds;
             }
             form.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            form.Text = LRZ("FormTitle");
+            form.Text = string.Format("{0} {1}", LRZ("FormTitle"), VERSION);
             form.FormClosing += new FormClosingEventHandler(form_FormClosing);
             form.Load += new EventHandler(form_Load);
 
@@ -1117,44 +1129,51 @@ namespace Test_Script
 
             while (!canClose && !canContinue)
             {
-
                 IntPtr a = GetForegroundWindow();
                 try
                 {
                     Delay(300);
+
+                    if (GetForegroundWindow() == myVegas.MainWindow.Handle)
+                    {
+                        if (gridForm != null)
+                        {
+                            gridForm.Hide();
+                            form.Activate();
+                            if (a == gridForm.Handle || a == Handle1)
+                            {
+                                int gridHideDelay = myReg.GetValue("DelayGridHide") != null ? int.Parse((string)myReg.GetValue("DelayGridHide")) : 1200;
+                                if (gridHideDelay > 0)
+                                {
+                                    if (true == (bool)showGridButton.Tag)
+                                    {
+                                        showGridButton.Tag = false;
+                                        
+                                        showGridButton.Text = LRZ("ShowGrid");
+                                        Delay(gridHideDelay);
+                                    }
+                                    showGridButton.Tag = true;
+                                    gridForm.Show();
+                                    SetForegroundWindow(gridForm.Handle);
+                                    showGridButton.Text = LRZ("HideGrid");
+                                }
+                            }
+                            else
+                            {
+                                gridForm.Show();
+                            }
+                        }
+
+                        else
+                        {
+                            form.Activate();
+                        }
+                    }
+
                 }
                 catch
                 {
 
-                }
-
-                if (GetForegroundWindow() == myVegas.MainWindow.Handle)
-                {
-                    if (gridForm != null)
-                    {
-                        if (a == gridForm.Handle || a == Handle1)
-                        {
-                            int gridHideDelay = myReg.GetValue("DelayGridHide") != null ? int.Parse((string)myReg.GetValue("DelayGridHide")) : 1200;
-                            if (gridHideDelay > 0)
-                            {
-                                if (true == (bool)showGridButton.Tag)
-                                {
-                                    showGridButton.Tag = false;
-                                    gridForm.Hide();
-                                    showGridButton.Text = LRZ("ShowGrid");
-                                    Delay(gridHideDelay);
-                                }
-                                showGridButton.Tag = true;
-                                gridForm.Show();
-                                SetForegroundWindow(gridForm.Handle);
-                                showGridButton.Text = LRZ("HideGrid");
-                            }
-                        }
-                        else if (a == myVegas.MainWindow.Handle)
-                        {
-                            gridForm.Show();
-                        }
-                    }
                 }
 
                 if (!canClose)
@@ -1433,10 +1452,10 @@ namespace Test_Script
                 string str = (String) ctrl.Tag;
                 ctrl.Visible = str == "PreCrop" ? isPreCrop : str == "Frame" ? !isPreCrop : true;
             }
-            form.Text = isPreCrop ? (LRZ("FormTitle") + " - " + LRZ("PreCrop")) : LRZ("FormTitle");
+            form.Text = isPreCrop ? string.Format("{0} {1} - {2}", LRZ("FormTitle"), VERSION, LRZ("PreCrop")) : string.Format("{0} {1}", LRZ("FormTitle"), VERSION);
             countSelected = 0;
             form.ResumeLayout();
-            form.Show(myVegas.TimelineWindow);
+            form.Show();
         }
 
         public void preCropOk(bool cropMode = false)
@@ -1692,6 +1711,16 @@ namespace Test_Script
             settingsL.Controls.Add(multiMode);
             settingsL.SetColumnSpan(multiMode, 2);
 
+            bool isDarkMode = myReg.GetValue("DarkMode") != null ? (string)myReg.GetValue("DarkMode") == "1" : !(double.Parse(Regex.Split(myVegas.Version, " ")[1]) < 15);
+            CheckBox darkMode = new CheckBox();
+            darkMode.Text = LRZ("DarkModeText");
+            darkMode.Checked = isDarkMode;
+            darkMode.AutoSize = false;
+            darkMode.Margin = new Padding(0, 3, 0, 3);
+            darkMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(darkMode);
+            settingsL.SetColumnSpan(darkMode, 3);
+
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
             label.Text = LRZ("Language");
@@ -1750,9 +1779,9 @@ namespace Test_Script
                 myReg.SetValue("DelayGrid", gridDelayBar.Value.ToString());
                 myReg.SetValue("DelayGridHide", gridHideDelayBar.Value.ToString());
                 myReg.SetValue("EnableRevise", (enableRevise.Checked ? 1 : 0).ToString());
-                myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
-                myReg.SetValue("DebugMode", (debugMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("PreCropAtStart", (preCropAtStart.Checked ? 1 : 0).ToString());
+                myReg.SetValue("DebugMode", (debugMode.Checked ? 1 : 0).ToString());
+                myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("NumberingType", numberingBox.SelectedIndex.ToString());
 
                 string logPath = Path.Combine(Path.GetTempPath(), "MisczToolsForVegasPro", "SpriteSheetTool");
@@ -1761,10 +1790,27 @@ namespace Test_Script
                     Directory.Delete(logPath, true);
                 }
 
-                if (languageBox.SelectedIndex != language)
+                if ((languageBox.SelectedIndex != language) || (darkMode.Checked != isDarkMode))
                 {
-                    language = languageBox.SelectedIndex;
-                    myReg.SetValue("Language", language.ToString());
+                    if (languageBox.SelectedIndex != language)
+                    {
+                        language = languageBox.SelectedIndex;
+                        myReg.SetValue("Language", language.ToString());
+                    }
+                    if (darkMode.Checked != isDarkMode)
+                    {
+                        myReg.SetValue("DarkMode", (darkMode.Checked ? 1 : 0).ToString());
+                        if (darkMode.Checked)
+                        {
+                            backColor = Color.FromArgb(45,45,45);
+                            foreColor = Color.FromArgb(200,200,200);
+                        }
+                        else
+                        {
+                            backColor = Color.FromArgb(153,153,153);
+                            foreColor = Color.FromArgb(0,0,0);
+                        }
+                    }
                     form.Close();
                     SpriteSheetSetWindow();
                 }
@@ -2782,7 +2828,7 @@ namespace Test_Script
                             break;
 
                         case "FormTitle":
-                            str0 = "SpriteSheet 工具 v.1.2.0";
+                            str0 = "SpriteSheet 工具";
                             break;
 
                         case "CountText":
@@ -2881,6 +2927,18 @@ namespace Test_Script
                             str0 = "将 Sprite 表先切割成若干小块，按照顺序读取。\n单个小块读取完毕后再读取下一小块。\n默认为1×1，即不切割。";
                             break;
 
+                        case "ScaleFactorText":
+                            str0 = "缩放倍率";
+                            break;
+
+                        case "ScaleFactorTips":
+                            str0 = "用于设置 渲染出来的文件相较于原素材 的缩放倍率。\n“自动”表示缩放至当前工程大小。";
+                            break;
+
+                        case "Auto":
+                            str0 = "自动";
+                            break;
+
                         case "CropModeText":
                             str0 = "裁切模式";
                             break;
@@ -2949,10 +3007,6 @@ namespace Test_Script
                             str0 = "修改值时自动匹配项目比例";
                             break;
 
-                        case "NumberingText":
-                            str0 = "网格编号类型";
-                            break;
-
                         case "RenderAsSettings":
                             str0 = "渲染 设置";
                             break;
@@ -3001,32 +3055,28 @@ namespace Test_Script
                             str0 = "用于设置 自动模式 的延迟时间，以毫秒作为单位。\n此值不会影响预裁切时的自动跳转延迟。";
                             break;
 
-                        case "ScaleFactorText":
-                            str0 = "缩放倍率";
-                            break;
-
-                        case "ScaleFactorTips":
-                            str0 = "用于设置 渲染出来的文件相较于原素材 的缩放倍率。\n“自动”表示缩放至当前工程大小。";
-                            break;
-
-                        case "Auto":
-                            str0 = "自动";
+                        case "NumberingText":
+                            str0 = "网格编号类型";
                             break;
 
                         case "EnableReviseText":
                             str0 = "启用修改";
                             break;
 
-                        case "MultiModeText":
-                            str0 = "启用多事件模式";
+                        case "PreCropAtStartText":
+                            str0 = "启动时进入预裁切";
                             break;
 
                         case "DebugModeText":
                             str0 = "调试模式";
                             break;
 
-                        case "PreCropAtStartText":
-                            str0 = "启动时进入预裁切";
+                        case "MultiModeText":
+                            str0 = "启用多事件模式";
+                            break;
+
+                        case "DarkModeText":
+                            str0 = "深色模式";
                             break;
 
                         case "Language":
@@ -3067,7 +3117,7 @@ namespace Test_Script
                             break;
 
                         case "FormTitle":
-                            str0 = "SpriteSheetTool v.1.2.0";
+                            str0 = "SpriteSheetTool";
                             break;
 
                         case "CountText":
@@ -3162,6 +3212,18 @@ namespace Test_Script
                             str0 = "Cut (V. x H.)";
                             break;
 
+                        case "ScaleFactorText":
+                            str0 = "Scale Factor";
+                            break;
+
+                        case "ScaleFactorTips":
+                            str0 = "The scale factor of the rendered file relative to the source material.\nAuto: Scale to the current project size.";
+                            break;
+
+                        case "Auto":
+                            str0 = "Auto";
+                            break;
+
                         case "CropModeText":
                             str0 = "Crop Mode";
                             break;
@@ -3234,10 +3296,6 @@ namespace Test_Script
                             str0 = "Auto Match Project Aspect";
                             break;
 
-                        case "NumberingText":
-                            str0 = "Grid Numbering";
-                            break;
-
                         case "RenderAsSettings":
                             str0 = "RenderAs Settings";
                             break;
@@ -3286,32 +3344,28 @@ namespace Test_Script
                             str0 = "The delay time for Auto Mode, in milliseconds.\nThis value doesn't affect the delay during PreCropping.";
                             break;
 
-                        case "ScaleFactorText":
-                            str0 = "Scale Factor";
-                            break;
-
-                        case "ScaleFactorTips":
-                            str0 = "The scale factor of the rendered file relative to the source material.\nAuto: Scale to the current project size.";
-                            break;
-
-                        case "Auto":
-                            str0 = "Auto";
+                        case "NumberingText":
+                            str0 = "Grid Numbering";
                             break;
 
                         case "EnableReviseText":
                             str0 = "Enable Revise";
                             break;
 
-                        case "MultiModeText":
-                            str0 = "Multi-Event Mode";
+                        case "PreCropAtStartText":
+                            str0 = "PreCrop At Start";
                             break;
 
                         case "DebugModeText":
                             str0 = "Debug Mode";
                             break;
 
-                        case "PreCropAtStartText":
-                            str0 = "PreCrop At Start";
+                        case "MultiModeText":
+                            str0 = "Multi-Event Mode";
+                            break;
+
+                        case "DarkModeText":
+                            str0 = "Dark Theme";
                             break;
 
                         case "Language":
@@ -3440,5 +3494,6 @@ public class EntryPoint
     {
         Test_Script.Class test = new Test_Script.Class();
         test.Main(vegas);
+        Application.Exit();
     }
 }

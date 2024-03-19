@@ -6,12 +6,13 @@ using System.Collections;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 
-using ScriptPortal.Vegas;  // If you are using Sony Vegas Pro 13 or below, replace "ScriptPortal.Vegas" with "Sony.Vegas"
+using ScriptPortal.Vegas;  // "ScriptPortal.Vegas" for Magix Vegas Pro 14 or above, "Sony.Vegas" for Sony Vegas Pro 13 or below
 
 namespace Test_Script
 {
     public class Class
     {
+        public const string VERSION = "v.1.2.1";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
@@ -162,30 +163,19 @@ namespace Test_Script
 
         DialogResult ScaleWindow()
         {
-            InterfaceType colorType;
-            Color backColor = new Color(), foreColor = new Color();
-            myVegas.GetInterfaceType(out colorType);
-            switch (colorType)
-            {
-                case InterfaceType.Dark:
-                case InterfaceType.Medium:
-                    backColor = Color.FromArgb(45,45,45);
-                    foreColor = Color.FromArgb(200,200,200);
-                    break;
-                case InterfaceType.Light:
-                case InterfaceType.White:
-                    backColor = Color.FromArgb(200,200,200);
-                    foreColor = Color.FromArgb(45,45,45);
-                    break;
-            }
             Form form = new Form();
             form.SuspendLayout();
             form.ShowInTaskbar = false;
             form.AutoSize = true;
-            form.BackColor = backColor;
-            form.ForeColor = foreColor;
+            form.BackColor = Color.FromArgb(45,45,45);
+            form.ForeColor = Color.FromArgb(200,200,200);
+            if (double.Parse(Regex.Split(myVegas.Version, " ")[1]) < 15)
+            {
+            form.BackColor = Color.FromArgb(153,153,153);
+            form.ForeColor = Color.FromArgb(0,0,0);
+            }
             form.Font = new Font("Arial", 9);
-            form.Text = "PixelScalingTool v.1.2.0";
+            form.Text = "PixelScalingTool" + VERSION;
             form.FormBorderStyle = FormBorderStyle.FixedToolWindow;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.AutoSizeMode = AutoSizeMode.GrowAndShrink;
