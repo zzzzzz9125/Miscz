@@ -1487,7 +1487,10 @@ namespace Test_Script
                 int start = (int.Parse(frameStartYBox.Text) - 1) * count[0] + int.Parse(frameStartXBox.Text) - 1;
                 int end = (int.Parse(frameEndYBox.Text) - 1) * count[0] + int.Parse(frameEndXBox.Text) - 1;
                 ToIndexes(start, end);
-                isPreCrop = !isPreCrop;
+                if (!cropMode)
+                {
+                    isPreCrop = !isPreCrop;
+                }
                 countXBar.Value = count[0];
                 countYBar.Value = count[1];
                 if (!cropMode)
@@ -1946,6 +1949,7 @@ namespace Test_Script
             double gridSizeFactor = Math.Min(1.0 * preview[0] / spriteFrame[0], 1.0 * preview[1] / spriteFrame[1]);
             gridForm.Size = new Size((int)(gridSizeFactor * spriteFrame[0] + 40), (int)(gridSizeFactor * spriteFrame[1] + 70));
 
+    
             if (myReg.GetValue("GridCenter") != null)
             {
                 int[] arr = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("GridCenter")), ","), int.Parse);
@@ -2446,6 +2450,7 @@ namespace Test_Script
                 }
                 preCropOk(true);
                 spriteOk();
+                return;
             }
             countSelected = countSelectedSaved + 1;
 

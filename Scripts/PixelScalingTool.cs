@@ -285,5 +285,6 @@ public class EntryPoint
     {
         Test_Script.Class test = new Test_Script.Class();
         test.Main(vegas);
+        Application.Exit();
     }
 }
