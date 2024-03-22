@@ -509,6 +509,7 @@ namespace Test_Script
                                             importedMedia = Media.CreateInstance(project, reimportPath);
                                         }
                                         spritesBin.Add(importedMedia);
+                                        importedMedia.GetVideoStreamByIndex(0).PixelAspectRatio = dFullPixelAspect;
                                         importedMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
                                         vEvent.AddTake(importedMedia.GetVideoStreamByIndex(0), true);
                                         vEvent.ResampleMode = VideoResampleMode.Disable;
@@ -1951,8 +1952,9 @@ namespace Test_Script
             gridForm.Opacity = (myReg.GetValue("GridOpacity") != null ? int.Parse((string)myReg.GetValue("GridOpacity")) : 50) / 100.0;
             preview = myReg.GetValue("GridPreview") != null ? Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("GridPreview")), ","), int.Parse) : new int[] {480,270};
 
-            double gridSizeFactor = Math.Min(1.0 * preview[0] / spriteFrame[0], 1.0 * preview[1] / spriteFrame[1]);
-            gridForm.Size = new Size((int)(gridSizeFactor * spriteFrame[0] + 40), (int)(gridSizeFactor * spriteFrame[1] + 70));
+            double[] spriteFrameDisplay = new double[] {spriteFrame[0] * dFullPixelAspect, spriteFrame[1]};
+            double gridSizeFactor = Math.Min(1.0 * preview[0] / spriteFrameDisplay[0], 1.0 * preview[1] / spriteFrameDisplay[1]);
+            gridForm.Size = new Size((int)(gridSizeFactor * spriteFrameDisplay[0] + 40), (int)(gridSizeFactor * spriteFrameDisplay[1] + 70));
 
     
             if (myReg.GetValue("GridCenter") != null)
