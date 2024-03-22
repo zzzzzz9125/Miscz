@@ -31,7 +31,6 @@ namespace Test_Script
             {
                 if (myTrack.IsVideo())
                 {
-                    VideoTrack myVideoTrack = (VideoTrack) myTrack;
                     foreach (TrackEvent evnt in myTrack.Events)
                     {
                         if (evnt.Selected)
@@ -105,7 +104,6 @@ namespace Test_Script
                     string filePath = arrMedia.FilePath;
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
                     string renderCommand = string.Format("ffmpeg -y -loglevel 32 -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\"", filePath, scaleValue, outputPath); 
-                    int framesCount = 0;
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -118,21 +116,14 @@ namespace Test_Script
 
                         Directory.CreateDirectory(outputPath);
                         renderCommand = string.Format("cd /d \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -loglevel 32 -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\\%i\" ))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath)); 
-                        framesCount = GetFramesCount(filePath);
-                        filePath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
+                        outputPath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                     }
 
                     p.Start();
                     p.StandardInput.WriteLine(string.Format("({0}) >> {1} 2>&1 & exit", renderCommand, logFile));
                     p.WaitForExit();
 
-                    if((!arrMedia.IsImageSequence() && !File.Exists(outputPath)) || (arrMedia.IsImageSequence() && Directory.GetFiles(outputPath).Length == 0))
-                    {
-                        myVegas.ShowError("Rendering failed! Please make sure you have added FFMPEG to environment variables!", string.Format(arrMedia.IsImageSequence() ? "Output Directory {0} is empty." : "Output File {0} does not exist.", outputPath));
-                        return;
-                    }
-
-                    Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(filePath, framesCount, vStream.FrameRate) : Media.CreateInstance(project, outputPath);
+                    Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(filePath), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     arrMedia.ReplaceWith(newMedia);
                 }
             }
