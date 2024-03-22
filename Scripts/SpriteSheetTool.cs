@@ -14,7 +14,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.2";
+        public const string VERSION = "v.1.2.3";
         public Vegas myVegas;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
@@ -96,14 +96,6 @@ namespace Test_Script
 
                             vEvent = (VideoEvent) evnt;
 
-                            // Move the cursor
-                            if(!(myVegas.Transport.CursorPosition.CompareTo(vEvent.Start) >= 0 && myVegas.Transport.CursorPosition.CompareTo(vEvent.End) <= 0))
-                            {
-                                Timecode cursor = Timecode.FromNanos(vEvent.Start.Nanos + vEvent.Length.Nanos / 4);
-                                myVegas.Transport.CursorPosition = cursor;
-                                myVegas.Transport.ViewCursor(true);
-                            }
-
                             string filePath = vEvent.ActiveTake.Media.FilePath;
                             Take take0 = null, takeActiveSave = vEvent.ActiveTake, takeOriSave = null;
                             int number = -1, cropModeOri = 0;
@@ -182,15 +174,46 @@ namespace Test_Script
                             dFullHeight = videoStream.Height;
                             dFullPixelAspect = videoStream.PixelAspectRatio;
 
+                            bool keyframeSaveMode = vEvent.VideoMotion.Keyframes.Count > 1 || isRevise;
+
+                            // Move the cursor
+                            Timecode compareStart = Timecode.FromNanos(0), compareEnd = vEvent.Length;
+                            if (keyframeSaveMode)
+                            {
+                                if (vEvent.VideoMotion.Keyframes.Count > 1)
+                                {
+                                    compareEnd = vEvent.VideoMotion.Keyframes[1].Position;
+                                }
+                                compareStart = vEvent.VideoMotion.Keyframes[0].Position;
+                                compareStart = Timecode.FromNanos(compareStart.Nanos * 2 / 3 + compareEnd.Nanos / 3);
+                            }
+
+                            Timecode cursor = myVegas.Transport.CursorPosition - vEvent.Start;
+                            if(cursor <= compareStart || cursor >= compareEnd)
+                            {
+                                cursor = keyframeSaveMode ? compareStart : Timecode.FromNanos(compareStart.Nanos * 2 / 3 + compareEnd.Nanos / 3);
+                                myVegas.Transport.CursorPosition = vEvent.Start + cursor;
+                                myVegas.Transport.ViewCursor(true);
+                            }
+
                             if (!(myReg.GetValue("MultiMode") != null ? ((string)myReg.GetValue("MultiMode") == "1") : false) || count == null)
                             {
                                 boundsPreCrop = null;
-  
-                                vEvent.VideoMotion.Keyframes.Clear();
-                                keyframePreview = vEvent.VideoMotion.Keyframes[0];
+
+                                if (!keyframeSaveMode)
+                                {
+                                    keyframePreview = vEvent.VideoMotion.Keyframes[0];
+                                }
+                                else
+                                {
+                                    keyframePreview = new VideoMotionKeyframe(project, Timecode.FromNanos((vEvent.VideoMotion.Keyframes[0].Position + compareStart).Nanos / 2));
+                                    vEvent.VideoMotion.Keyframes.Add(keyframePreview);
+                                    KeyframeReset(keyframePreview);
+                                    keyframePreview.Type = VideoKeyframeType.Hold;
+                                }
                                 int effectCount = vEvent.Effects.Count;
 
-                                if (KeyframeChanged(keyframePreview))
+                                if (!keyframeSaveMode && KeyframeChanged(keyframePreview))
                                 {
                                     string message = LRZ("ResetCropCaution");
                                     string caption = LRZ("ResetCropCautionCaption");
@@ -259,10 +282,19 @@ namespace Test_Script
                                         {
                                             vEvent.Takes.Remove(take0);
                                         }
-                                        videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
-                                        dFullWidth = videoStream.Width;
-                                        dFullHeight = videoStream.Height;
-                                        KeyframeReset(keyframePreview);
+
+                                        if (!keyframeSaveMode)
+                                        {
+                                            videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
+                                            dFullWidth = videoStream.Width;
+                                            dFullHeight = videoStream.Height;
+                                            KeyframeReset(keyframePreview);
+                                        }
+                                    }
+
+                                    if (keyframeSaveMode)
+                                    {
+                                        vEvent.VideoMotion.Keyframes.Remove(keyframePreview);
                                     }
                                     break;
                                 }
@@ -435,7 +467,20 @@ namespace Test_Script
                                         label.Refresh();
                                     }
                                     p.WaitForExit();
-                                    File.Delete(preCropPath);
+
+                                    for (int i = 0; i < 10; i++)
+                                    {
+                                        try
+                                        {
+                                            File.Delete(preCropPath);
+                                            break;
+                                        }
+                                        catch
+                                        {
+                                            Delay(200);
+                                        }
+                                    }
+
                                     reimportPath = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_000.png");
                                     openFolder = reimportPath;
 
@@ -538,10 +583,19 @@ namespace Test_Script
                                     File.Delete(tmpPath);
                                 }
 
-                                dFullWidth = (cropMode == 1 ? cols : 1) * spriteFrame[0] * (float)scaleFactor;
-                                dFullHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * (float)scaleFactor;
 
-                                KeyframeReset(keyframePreview);
+                                if (!keyframeSaveMode)
+                                {
+                                    videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
+                                    dFullWidth = videoStream.Width;
+                                    dFullHeight = videoStream.Height;
+                                    KeyframeReset(keyframePreview);
+                                }
+                                
+                                else
+                                {
+                                    vEvent.VideoMotion.Keyframes.Remove(keyframePreview);
+                                }
 
                                 if (vEvent.Length < vEvent.ActiveTake.Media.Length)
                                 {
@@ -1471,8 +1525,7 @@ namespace Test_Script
                 spriteFrame = new int[] {spriteFrame[0] / count[0], spriteFrame[1] / count[1]};
                 location = new int[] {int.Parse(topLeftXBox.Text), int.Parse(topLeftYBox.Text), int.Parse(bottomRightXBox.Text), int.Parse(bottomRightYBox.Text)};
 
-                VideoMotionKeyframe keyframe = vEvent.VideoMotion.Keyframes[0];
-                KeyframePreCrop(keyframe);
+                KeyframePreCrop(keyframePreview);
                 myVegas.UpdateUI();
                 count = new int[] {location[2] - location[0] + 1, location[3] - location[1] + 1};
 
