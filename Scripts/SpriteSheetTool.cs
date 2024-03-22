@@ -8,13 +8,13 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-using ScriptPortal.Vegas;  // If you are using Magix Vegas Pro 14 or above, replace "Sony.Vegas" with "ScriptPortal.Vegas"
+using ScriptPortal.Vegas;  // "ScriptPortal.Vegas" for Magix Vegas Pro 14 or above, "Sony.Vegas" for Sony Vegas Pro 13 or below
 
 namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.1";
+        public const string VERSION = "v.1.2.2";
         public Vegas myVegas;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
