@@ -541,6 +541,11 @@ namespace Test_Script
                                 dFullHeight = (cropMode == 1 ? rows : 1) * spriteFrame[1] * (float)scaleFactor;
 
                                 KeyframeReset(keyframePreview);
+
+                                if (vEvent.Length < vEvent.ActiveTake.Media.Length)
+                                {
+                                    vEvent.Length = vEvent.ActiveTake.Media.Length;
+                                }
                             }
 
                             catch (Exception ex)
