@@ -12,7 +12,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.2";
+        public const string VERSION = "v.1.2.3";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
@@ -98,7 +98,7 @@ namespace Test_Script
             {
                 foreach (Media arrMedia in mediaList)
                 {
-                    VideoStream vStream = (VideoStream)arrMedia.Streams[0];
+                    VideoStream vStream = arrMedia.GetVideoStreamByIndex(0);
                     double scaleValue = scaleFactor >= 1 ? scaleFactor : Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
 
                     string filePath = arrMedia.FilePath;
