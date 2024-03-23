@@ -77,7 +77,7 @@ namespace Test_Script
             PlugInNode pluginBorder = myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.vegascreativesoftware:border}") ?? myVegas.VideoFX.GetChildByUniqueID("{Svfx:com.sonycreativesoftware:border}") ?? myVegas.VideoFX.GetChildByUniqueID("{7F6B9FB2-61D8-4D24-999B-405396B27769}");
 
             scrWidth = project.Video.Width;
-            scrHeight = project.Video.Height;
+            scrHeight = project.Video.Height / (float)project.Video.PixelAspectRatio;
 
             foreach (Track myTrack in project.Tracks)
             {
