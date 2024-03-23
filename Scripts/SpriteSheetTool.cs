@@ -148,6 +148,8 @@ namespace Test_Script
                                 continue;
                             }
 
+                            dFullPixelAspect = ((VideoStream)vEvent.ActiveTake.MediaStream).PixelAspectRatio;
+
                             Media oriMedia = Media.CreateInstance(project, filePath);
                             spritesBin.Add(oriMedia);
                             for (int i = vEvent.Takes.Count - 1; i >= 0; i--)
@@ -172,7 +174,7 @@ namespace Test_Script
                             VideoStream videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
                             dFullWidth = videoStream.Width;
                             dFullHeight = videoStream.Height;
-                            dFullPixelAspect = videoStream.PixelAspectRatio;
+                            videoStream.PixelAspectRatio = dFullPixelAspect;
 
                             bool keyframeSaveMode = vEvent.VideoMotion.Keyframes.Count > 1 || isRevise;
 
