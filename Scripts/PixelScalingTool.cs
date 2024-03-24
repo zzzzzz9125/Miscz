@@ -12,7 +12,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.3";
+        public const string VERSION = "v.1.2.4";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;

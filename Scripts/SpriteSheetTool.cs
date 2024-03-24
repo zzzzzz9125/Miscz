@@ -14,7 +14,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.3";
+        public const string VERSION = "v.1.2.4";
         public Vegas myVegas;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
@@ -96,6 +96,7 @@ namespace Test_Script
 
                             vEvent = (VideoEvent) evnt;
 
+                            Media initialMedia = vEvent.ActiveTake.Media;
                             string filePath = vEvent.ActiveTake.Media.FilePath;
                             Take take0 = null, takeActiveSave = vEvent.ActiveTake, takeOriSave = null;
                             int number = -1, cropModeOri = 0;
@@ -530,61 +531,47 @@ namespace Test_Script
                                     ExplorerFile(openFolder);
                                 }
 
-                                for (int i = vEvent.Takes.Count - 1; i >= 0; i--)
+                                if (!take0.Equals(takeOriSave) || isRevise)
                                 {
-                                    Take take = vEvent.Takes[i];
-
-                                    if (take.MediaPath == reimportPath)
+                                    if (!take0.Equals(takeOriSave))
                                     {
-                                        vEvent.ActiveTake = take;
-                                    }
-
-                                    else if (i != 0 && take.MediaPath == filePath || (take.Media.IsImageSequence() && take.Equals(takeActiveSave)))
-                                    {
-                                        vEvent.Takes.RemoveAt(i);
-                                    }
-
-                                    else if (i == 0 && vEvent.ActiveTake.MediaPath != reimportPath)
-                                    {
-                                        Media importedMedia;
-                                        if (cropMode == 0 && Regex.IsMatch(reimportPath, @"(_000\.png)$"))
-                                        {
-                                            importedMedia = project.MediaPool.AddImageSequence(reimportPath, spritesArr.Count, frameRate);
-                                        }
-                                        else
-                                        {
-                                            importedMedia = Media.CreateInstance(project, reimportPath);
-                                        }
-                                        spritesBin.Add(importedMedia);
-                                        importedMedia.GetVideoStreamByIndex(0).PixelAspectRatio = dFullPixelAspect;
-                                        importedMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
-                                        vEvent.AddTake(importedMedia.GetVideoStreamByIndex(0), true);
-                                        vEvent.ResampleMode = VideoResampleMode.Disable;
-                                        vEvent.Loop = myReg.GetValue("EnableLoop") != null ? ((string)myReg.GetValue("EnableLoop") == "1") : true;
+                                        vEvent.Takes.Remove(take0);
                                     }
                                 }
 
-                                // To fix the problem that media files are not refreshed in Revise Mode
+                                Media importedMedia;
+                                if (cropMode == 0 && Regex.IsMatch(reimportPath, @"(_000\.png)$"))
+                                {
+                                    importedMedia = project.MediaPool.AddImageSequence(reimportPath, spritesArr.Count, frameRate);
+                                }
+                                else
+                                {
+                                    importedMedia = Media.CreateInstance(project, reimportPath);
+                                }
+                                spritesBin.Add(importedMedia);
+                                importedMedia.GetVideoStreamByIndex(0).PixelAspectRatio = dFullPixelAspect;
+                                importedMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
+
                                 if (isRevise)
                                 {
-                                    string tmpPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_tmp" + Path.GetExtension(filePath));
-                                    File.Copy(reimportPath, tmpPath, true);
-                                    Media tmpMedia = Media.CreateInstance(project, tmpPath);
-                                    vEvent.ActiveTake.Media.ReplaceWith(tmpMedia);
-                                    Media importedMedia;
-                                    if (cropMode == 0 && Regex.IsMatch(reimportPath, @"(_000\.png)$"))
+                                    initialMedia.ReplaceWith(importedMedia);
+                                    foreach (Take take in vEvent.Takes)
                                     {
-                                        importedMedia = project.MediaPool.AddImageSequence(reimportPath, spritesArr.Count, frameRate);
+                                        if (take.Media == importedMedia)
+                                        {
+                                            vEvent.ActiveTake = take;
+                                            break;
+                                        }
                                     }
-                                    else
-                                    {
-                                        importedMedia = Media.CreateInstance(project, reimportPath);
-                                    }
-                                    spritesBin.Add(importedMedia);
-                                    tmpMedia.ReplaceWith(importedMedia);
-                                    File.Delete(tmpPath);
                                 }
 
+                                else
+                                {
+                                    vEvent.AddTake(importedMedia.GetVideoStreamByIndex(0), true);
+                                }
+
+                                vEvent.ResampleMode = VideoResampleMode.Disable;
+                                vEvent.Loop = myReg.GetValue("EnableLoop") != null ? ((string)myReg.GetValue("EnableLoop") == "1") : true;
 
                                 if (!keyframeSaveMode)
                                 {
