@@ -122,22 +122,19 @@ namespace Test_Script
                     p.WaitForExit();
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(filePath), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     arrMedia.ReplaceWith(newMedia);
+                    int a = int.Parse("aa");
                 }
             }
 
             catch (Exception ex)
             {
-                string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
-                LogFile myLogFile = new LogFile(myVegas, logPath);
-                myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n\r\n{1}", logPath, logText));
-                myLogFile.Close();
                 if (MessageBox.Show(string.Format("FFmpeg Rendering Error! {0}\n\nDo you want to see the FFmpeg logs?", ex.Message), "Rendering Error!", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
+                    string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
+                    LogFile myLogFile = new LogFile(myVegas, logPath);
+                    myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n\r\n{1}", logPath, logText));
+                    myLogFile.Close();
                     myLogFile.ShowLogAsDialog("FFmpeg Logs");
-                }
-                else
-                {
-                    File.Delete(logPath);
                 }
             }
         }
