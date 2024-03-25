@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Drawing;
 using System.Diagnostics;
 using System.Collections;
@@ -12,18 +13,16 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.4";
+        public const string VERSION = "v.1.2.5";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
-        CheckBox debugMode;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
             myVegas.ResumePlaybackOnScriptExit = true;
             Project project = myVegas.Project;
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, isRevise = false;
-            string logFile = "nul";
             double scaleFactor = 0;
             ArrayList mediaList = new ArrayList();
 
@@ -74,10 +73,6 @@ namespace Test_Script
                 if (DialogResult.OK == ScaleWindow())
                 {
                     double.TryParse(scaleBox.Text, out scaleFactor);
-                    if (debugMode.Checked)
-                    {
-                        logFile = string.Format("\"{0}\"", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss"))));
-                    }
                 }
 
                 else
@@ -90,10 +85,11 @@ namespace Test_Script
             p.StartInfo.FileName = "cmd.exe";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardInput = true;
-            p.StartInfo.RedirectStandardOutput = false;
+            p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = false;
             p.StartInfo.CreateNoWindow = true;
 
+            string logText = "";
             try
             {
                 foreach (Media arrMedia in mediaList)
@@ -120,9 +116,10 @@ namespace Test_Script
                     }
 
                     p.Start();
-                    p.StandardInput.WriteLine(string.Format("({0}) >> {1} 2>&1 & exit", renderCommand, logFile));
+                    while (p.StandardOutput.ReadLine() != "") { }
+                    p.StandardInput.WriteLine(string.Format("({0}) 2>&1 & exit", renderCommand));
+                    logText = string.Format("{0}\r\n\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
-
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(filePath), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     arrMedia.ReplaceWith(newMedia);
                 }
@@ -130,15 +127,17 @@ namespace Test_Script
 
             catch (Exception ex)
             {
-                myVegas.ShowError("FFmpeg Rendering Error!\n\n" + ex.Message, "Rendering failed, please make sure you have added FFmpeg to environment variables, then try again. If this problem still occurred, please enable Debug Mode, check the FFmpeg log files, and shall submit an issue to the Github page of this project (https://github.com/zzzzzz9125/Miscz).");
-            }
-
-            finally
-            {
-                if (logFile != "nul")
+                string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
+                LogFile myLogFile = new LogFile(myVegas, logPath);
+                myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n\r\n{1}", logPath, logText));
+                myLogFile.Close();
+                if (MessageBox.Show(string.Format("FFmpeg Rendering Error! {0}\n\nDo you want to see the FFmpeg logs?", ex.Message), "Rendering Error!", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    p.Start();
-                    p.StandardInput.WriteLine(string.Format("{0} & exit", logFile));
+                    myLogFile.ShowLogAsDialog("FFmpeg Logs");
+                }
+                else
+                {
+                    File.Delete(logPath);
                 }
             }
         }
@@ -212,14 +211,6 @@ namespace Test_Script
             scaleBox.Text = "Auto";
             l.Controls.Add(scaleBox);
             scaleBox.TextChanged += new EventHandler(scaleBox_TextChanged);
-
-            debugMode = new CheckBox();
-            debugMode.Text = "Debug Mode";
-            debugMode.Checked = false;
-            debugMode.Margin = new Padding(3, 3, 3, 3);
-            debugMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
-            l.Controls.Add(debugMode);
-            l.SetColumnSpan(debugMode, 3);
 
             FlowLayoutPanel panel = new FlowLayoutPanel();
             panel.FlowDirection = FlowDirection.RightToLeft;
