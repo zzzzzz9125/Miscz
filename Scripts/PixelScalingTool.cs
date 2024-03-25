@@ -122,7 +122,6 @@ namespace Test_Script
                     p.WaitForExit();
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(filePath), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     arrMedia.ReplaceWith(newMedia);
-                    int a = int.Parse("aa");
                 }
             }
 
