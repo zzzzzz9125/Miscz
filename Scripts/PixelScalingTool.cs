@@ -102,7 +102,7 @@ namespace Test_Script
 
                     string filePath = arrMedia.FilePath;
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
-                    string renderCommand = string.Format("ffmpeg -y -loglevel 32 -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\"", filePath, scaleValue, outputPath); 
+                    string renderCommand = string.Format("ffmpeg -y -loglevel 32 -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor {3} \"{2}\"", filePath, scaleValue, outputPath, SpecialFormatSettings(Path.GetExtension(filePath))); 
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -114,7 +114,7 @@ namespace Test_Script
                         }
 
                         Directory.CreateDirectory(outputPath);
-                        renderCommand = string.Format("cd /d \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -loglevel 32 -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor \"{2}\\%i\" ))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath)); 
+                        renderCommand = string.Format("cd /d \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -loglevel 32 -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor {4} \"{2}\\%i\" ))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath), SpecialFormatSettings(Path.GetExtension(filePath))); 
                         outputPath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                     }
 
@@ -150,6 +150,18 @@ namespace Test_Script
             int.TryParse(Regex.Match(filePath, string.Format(@"([0-9]+)(?=(\{0})$)", Path.GetExtension(filePath))).Value, out indexEnd);
             int count = indexEnd - indexStart + 1;
             return count;
+        }
+
+        public static string SpecialFormatSettings(string format)
+        {
+            string str = "";
+            switch (format)
+            {
+                case ".png":
+                    str = "-pix_fmt rgb32";
+                    break;
+            }
+            return str;
         }
 
         DialogResult ScaleWindow()
