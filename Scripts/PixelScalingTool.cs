@@ -38,7 +38,6 @@ namespace Test_Script
                             string filePath = vEvent.ActiveTake.Media.FilePath;
                             string oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$", "") + Path.GetExtension(filePath));
 
-                            isRevise = (Regex.IsMatch(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$") && File.Exists(oriPath)) || isRevise;
                             if (!File.Exists(oriPath))
                             {
                                 oriPath = filePath;
@@ -47,11 +46,15 @@ namespace Test_Script
                             if (vEvent.ActiveTake.Media.IsImageSequence())
                             {
                                 oriPath = Path.Combine(Regex.Replace(Path.GetDirectoryName(filePath), @"(_Scaled)$", ""), Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
-                                isRevise = (Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Scaled)$") && File.Exists(oriPath)) || isRevise;
                                 if (!File.Exists(oriPath))
                                 {
                                     oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                                 }
+                                isRevise = (Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Scaled)$") && File.Exists(oriPath)) || isRevise;
+                            }
+                            else
+                            {
+                                isRevise = (Regex.IsMatch(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$") && File.Exists(oriPath)) || isRevise;
                             }
 
                             if (File.Exists(oriPath))
@@ -117,11 +120,13 @@ namespace Test_Script
 
                     p.Start();
                     while (p.StandardOutput.ReadLine() != "") { }
-                    p.StandardInput.WriteLine(string.Format("({0}) 2>&1 & exit", renderCommand));
-                    logText = string.Format("{0}\r\n\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
+                    p.StandardInput.WriteLine(string.Format("echo off & ({0}) 2>&1 & exit", renderCommand));
+                    logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(filePath), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     arrMedia.ReplaceWith(newMedia);
+
+                    Media oriMedia = newMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileName(outputPath)), GetFramesCount(filePath), newMedia.GetVideoStreamByIndex(0).FrameRate) : Media.CreateInstance(project, filePath);
                 }
             }
 
@@ -131,7 +136,7 @@ namespace Test_Script
                 {
                     string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
                     LogFile myLogFile = new LogFile(myVegas, logPath);
-                    myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n\r\n{1}", logPath, logText));
+                    myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n{1}", logPath, logText));
                     myLogFile.Close();
                     myLogFile.ShowLogAsDialog("FFmpeg Logs");
                 }
