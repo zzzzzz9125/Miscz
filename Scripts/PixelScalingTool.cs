@@ -25,6 +25,29 @@ namespace Test_Script
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, isRevise = false;
             double scaleFactor = 0;
             ArrayList mediaList = new ArrayList();
+            string ffmpegPath = null;
+
+            foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+            {
+                if (!String.IsNullOrEmpty(test.Trim()) && File.Exists(Path.Combine(test.Trim(), "ffmpeg.exe")))
+                {
+                    ffmpegPath = Path.Combine(test.Trim(), "ffmpeg.exe");
+                    break;
+                }
+            }
+
+            if (!File.Exists(ffmpegPath))
+            {
+                if (DialogResult.Yes == MessageBox.Show("Detected that ffmpeg.exe is not added to Environment Variables!\n\nDo you want to continue anyway?", "ffmpeg.exe Not Found!", MessageBoxButtons.YesNo))
+                {
+                    ffmpegPath = "ffmpeg.exe";
+                }
+
+                else
+                {
+                    return;
+                }
+            }
 
             foreach (Track myTrack in myVegas.Project.Tracks)
             {
@@ -102,7 +125,7 @@ namespace Test_Script
 
                     string filePath = arrMedia.FilePath;
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
-                    string renderCommand = string.Format("ffmpeg -y -loglevel 32 -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor {3} \"{2}\"", filePath, scaleValue, outputPath, SpecialFormatSettings(Path.GetExtension(filePath))); 
+                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor {3} \"{2}\"", ffmpegPath, filePath, scaleValue, outputPath, SpecialFormatSettings(Path.GetExtension(filePath))); 
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -114,7 +137,7 @@ namespace Test_Script
                         }
 
                         Directory.CreateDirectory(outputPath);
-                        renderCommand = string.Format("cd /d \"{0}\" & (for %i in (*{3}) do (ffmpeg -y -loglevel 32 -i \"%i\" -vf scale=iw*{1}:ih*{1} -sws_flags neighbor {4} \"{2}\\%i\" ))", Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath), SpecialFormatSettings(Path.GetExtension(filePath))); 
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{4}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {5} \"{3}\\%i\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath), SpecialFormatSettings(Path.GetExtension(filePath))); 
                         outputPath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                     }
 
@@ -132,7 +155,7 @@ namespace Test_Script
 
             catch (Exception ex)
             {
-                if (MessageBox.Show(string.Format("FFmpeg Rendering Error! {0}\n\nDo you want to see the FFmpeg logs?", ex.Message), "Rendering Error!", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                if (DialogResult.Yes == MessageBox.Show(string.Format("FFmpeg Rendering Error! {0}\n\nDo you want to see the FFmpeg logs?", ex.Message), "Rendering Error!", MessageBoxButtons.YesNo))
                 {
                     string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
                     LogFile myLogFile = new LogFile(myVegas, logPath);
