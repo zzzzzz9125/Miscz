@@ -125,7 +125,7 @@ namespace Test_Script
 
                     string filePath = arrMedia.FilePath;
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
-                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, SpecialFormatSettings(Path.GetExtension(filePath))); 
+                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, SpecialFormatSettings(Path.GetExtension(filePath)));
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -178,7 +178,7 @@ namespace Test_Script
         public static string SpecialFormatSettings(string format)
         {
             string str = "";
-            switch (format)
+            switch (format.ToLower())
             {
                 case ".png":
                     str = "-pix_fmt rgb32";
