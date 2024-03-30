@@ -58,31 +58,43 @@ namespace Test_Script
                         if (evnt.Selected)
                         {
                             VideoEvent vEvent = (VideoEvent) evnt;
-                            string filePath = vEvent.ActiveTake.Media.FilePath;
-                            string oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$", "") + Path.GetExtension(filePath));
+                            VideoStream vStream = (VideoStream) vEvent.ActiveTake.MediaStream;
+                            string filePath = vEvent.ActiveTake.Media.FilePath, oriPath = null;
+                            bool isReviseSingle = Regex.IsMatch(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$");
 
-                            if (!File.Exists(oriPath))
+                            if (!vEvent.ActiveTake.Media.IsImageSequence())
                             {
-                                oriPath = filePath;
+                                oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$", "") + Path.GetExtension(filePath));
+                                if (!File.Exists(oriPath))
+                                {
+                                    if (Path.GetExtension(filePath).ToLower() == ".mov")
+                                    {
+                                        oriPath = Regex.Replace(oriPath, @"(\.mov)$", ".gif", RegexOptions.IgnoreCase);
+                                    }
+
+                                    isReviseSingle = isReviseSingle && File.Exists(oriPath);
+                                    if (!File.Exists(oriPath))
+                                    {
+                                        oriPath = filePath;
+                                    }
+                                }
                             }
 
-                            if (vEvent.ActiveTake.Media.IsImageSequence())
+                            else
                             {
                                 oriPath = Path.Combine(Regex.Replace(Path.GetDirectoryName(filePath), @"(_Scaled)$", ""), Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
+
+                                isReviseSingle = Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Scaled)$") && File.Exists(oriPath);
                                 if (!File.Exists(oriPath))
                                 {
                                     oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                                 }
-                                isRevise = (Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Scaled)$") && File.Exists(oriPath)) || isRevise;
-                            }
-                            else
-                            {
-                                isRevise = (Regex.IsMatch(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$") && File.Exists(oriPath)) || isRevise;
                             }
 
                             if (File.Exists(oriPath))
                             {
-                                Media arrMedia = vEvent.ActiveTake.Media.IsImageSequence() ? project.MediaPool.AddImageSequence(oriPath, GetFramesCount(filePath), ((VideoStream)vEvent.ActiveTake.MediaStream).FrameRate) : Media.CreateInstance(project, oriPath);
+                                isRevise = isReviseSingle || isRevise;
+                                Media arrMedia = vEvent.ActiveTake.Media.IsImageSequence() ? project.MediaPool.AddImageSequence(oriPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, oriPath);
                                 if (!mediaList.Contains(arrMedia))
                                 {
                                     mediaList.Add(arrMedia);
@@ -124,8 +136,8 @@ namespace Test_Script
                     double scaleValue = scaleFactor >= 1 ? scaleFactor : Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
 
                     string filePath = arrMedia.FilePath;
-                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath));
-                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, SpecialFormatSettings(Path.GetExtension(filePath)));
+                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + SpecialFormat(Path.GetExtension(filePath)));
+                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, SpecialEncode(Path.GetExtension(filePath)));
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -137,7 +149,7 @@ namespace Test_Script
                         }
 
                         Directory.CreateDirectory(outputPath);
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{4}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {5} \"{3}\\%i\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath), SpecialFormatSettings(Path.GetExtension(filePath))); 
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{4}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {5} \"{3}\\%i\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath), SpecialEncode(Path.GetExtension(filePath))); 
                         outputPath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
                     }
 
@@ -146,10 +158,11 @@ namespace Test_Script
                     p.StandardInput.WriteLine(string.Format("echo off & ({0}) 2>&1 & exit", renderCommand));
                     logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
-                    Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(filePath), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
+                    Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     arrMedia.ReplaceWith(newMedia);
 
-                    Media oriMedia = newMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileName(outputPath)), GetFramesCount(filePath), newMedia.GetVideoStreamByIndex(0).FrameRate) : Media.CreateInstance(project, filePath);
+                    vStream = newMedia.GetVideoStreamByIndex(0);
+                    Media oriMedia = newMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileName(outputPath)), GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, filePath);
                 }
             }
 
@@ -166,22 +179,35 @@ namespace Test_Script
             }
         }
 
-        public static int GetFramesCount(string filePath)
+        public static int GetFramesCount(VideoStream vStream)
         {
-            int indexStart = 0, indexEnd = 0;
-            int.TryParse(Regex.Match(filePath, string.Format(@"([0-9]+)(?=\{0}\s-\s)", Path.GetExtension(filePath))).Value, out indexStart);
-            int.TryParse(Regex.Match(filePath, string.Format(@"([0-9]+)(?=(\{0})$)", Path.GetExtension(filePath))).Value, out indexEnd);
-            int count = indexEnd - indexStart + 1;
+            int count = (int)Timecode.FromNanos((long)(vStream.Length.Nanos * vStream.FrameRate / vStream.Length.FrameRate)).FrameCount;
             return count;
         }
 
-        public static string SpecialFormatSettings(string format)
+        public static string SpecialEncode(string format)
         {
             string str = "";
             switch (format.ToLower())
             {
                 case ".png":
                     str = "-pix_fmt rgb32";
+                    break;
+
+                case ".gif":
+                    str = "-c:v prores_ks -profile:v 4444";
+                    break;
+            }
+            return str;
+        }
+
+        public static string SpecialFormat(string format)
+        {
+            string str = format;
+            switch (format.ToLower())
+            {
+                case ".gif":
+                    str = ".mov";
                     break;
             }
             return str;
