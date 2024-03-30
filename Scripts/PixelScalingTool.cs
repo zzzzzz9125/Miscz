@@ -60,40 +60,40 @@ namespace Test_Script
                             VideoEvent vEvent = (VideoEvent) evnt;
                             VideoStream vStream = (VideoStream) vEvent.ActiveTake.MediaStream;
                             string filePath = vEvent.ActiveTake.Media.FilePath, oriPath = null;
-                            bool isReviseSingle = Regex.IsMatch(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$");
 
                             if (!vEvent.ActiveTake.Media.IsImageSequence())
                             {
-                                oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"(_Scaled)$", "") + Path.GetExtension(filePath));
+                                oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"^(.+(?=(_Scaled)$))").Value + Path.GetExtension(filePath));
                                 if (!File.Exists(oriPath))
                                 {
                                     if (Path.GetExtension(filePath).ToLower() == ".mov")
                                     {
-                                        oriPath = Regex.Replace(oriPath, @"(\.mov)$", ".gif", RegexOptions.IgnoreCase);
-                                    }
-
-                                    isReviseSingle = isReviseSingle && File.Exists(oriPath);
-                                    if (!File.Exists(oriPath))
-                                    {
-                                        oriPath = filePath;
+                                        oriPath = Path.ChangeExtension(oriPath, ".gif");
                                     }
                                 }
                             }
 
                             else
                             {
-                                oriPath = Path.Combine(Regex.Replace(Path.GetDirectoryName(filePath), @"(_Scaled)$", ""), Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
-
-                                isReviseSingle = Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Scaled)$") && File.Exists(oriPath);
+                                filePath = Regex.Match(filePath, string.Format(@"^(.+\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value;
+                                oriPath = Path.Combine(Regex.Match(Path.GetDirectoryName(filePath), @"^(.+(?=(_Scaled)$))").Value, Path.GetFileName(filePath));
                                 if (!File.Exists(oriPath))
                                 {
-                                    oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
+                                    if (Path.GetExtension(filePath).ToLower() == ".png")
+                                    {
+                                        oriPath = Path.ChangeExtension(oriPath, ".gif");
+                                    }
                                 }
+                            }
+
+                            if (!File.Exists(oriPath))
+                            {
+                                oriPath = filePath;
                             }
 
                             if (File.Exists(oriPath))
                             {
-                                isRevise = isReviseSingle || isRevise;
+                                isRevise = (oriPath != filePath) || isRevise;
                                 Media arrMedia = vEvent.ActiveTake.Media.IsImageSequence() ? project.MediaPool.AddImageSequence(oriPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, oriPath);
                                 arrMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
                                 if (!mediaList.Contains(arrMedia))
@@ -142,16 +142,17 @@ namespace Test_Script
 
                     if (arrMedia.IsImageSequence())
                     {
-                        outputPath = Path.GetDirectoryName(filePath) + "_Scaled";
+                        filePath = Regex.Match(filePath, string.Format(@"^(.+\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value;
 
+                        outputPath = Path.GetDirectoryName(filePath) + "_Scaled";
                         if (Directory.Exists(outputPath))
                         {
                             Directory.Delete(outputPath, true);
                         }
-
                         Directory.CreateDirectory(outputPath);
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{4}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {5} \"{3}\\%i\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, Path.GetExtension(filePath), SpecialEncode(Path.GetExtension(filePath))); 
-                        outputPath = Path.Combine(outputPath, Regex.Match(Path.GetFileName(filePath), string.Format(@"^(([^<>/\\\|:""\*\?]*)([0-9]+)\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value);
+
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{5}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\\%~ni{6}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, SpecialEncode(Path.GetExtension(filePath), true), Path.GetExtension(filePath), SpecialFormat(Path.GetExtension(filePath), true)); 
+                        outputPath = Path.ChangeExtension(Path.Combine(outputPath, Path.GetFileName(filePath)), SpecialFormat(Path.GetExtension(filePath), true));
                     }
 
                     p.Start();
@@ -164,7 +165,7 @@ namespace Test_Script
                     vStream.AlphaChannel = VideoAlphaType.Straight;
                     arrMedia.ReplaceWith(newMedia);
 
-                    Media oriMedia = newMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileName(outputPath)), GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, filePath);
+                    Media oriMedia = newMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(filePath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, filePath);
                     oriMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
                 }
             }
@@ -175,7 +176,7 @@ namespace Test_Script
                 {
                     string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
                     LogFile myLogFile = new LogFile(myVegas, logPath);
-                    myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n{1}", logPath, logText));
+                    myLogFile.AddLogEntry(string.Format("If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n\r\nError Message: {2}\r\n{1}", logPath, logText, ex.Message));
                     myLogFile.Close();
                     myLogFile.ShowLogAsDialog("FFmpeg Logs");
                 }
@@ -188,7 +189,7 @@ namespace Test_Script
             return count;
         }
 
-        public static string SpecialEncode(string format)
+        public static string SpecialEncode(string format, bool isImageSequence = false)
         {
             string str = "";
             switch (format.ToLower())
@@ -198,19 +199,19 @@ namespace Test_Script
                     break;
 
                 case ".gif":
-                    str = "-c:v prores_ks -profile:v 4444";
+                    str = isImageSequence ? "-pix_fmt rgb32" : "-c:v prores_ks -profile:v 4444";
                     break;
             }
             return str;
         }
 
-        public static string SpecialFormat(string format)
+        public static string SpecialFormat(string format, bool isImageSequence = false)
         {
             string str = format;
             switch (format.ToLower())
             {
                 case ".gif":
-                    str = ".mov";
+                    str = isImageSequence ? ".png" : ".mov";
                     break;
             }
             return str;
