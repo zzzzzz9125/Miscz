@@ -95,6 +95,7 @@ namespace Test_Script
                             {
                                 isRevise = isReviseSingle || isRevise;
                                 Media arrMedia = vEvent.ActiveTake.Media.IsImageSequence() ? project.MediaPool.AddImageSequence(oriPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, oriPath);
+                                arrMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
                                 if (!mediaList.Contains(arrMedia))
                                 {
                                     mediaList.Add(arrMedia);
@@ -159,10 +160,12 @@ namespace Test_Script
                     logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
+                    vStream = newMedia.GetVideoStreamByIndex(0);
+                    vStream.AlphaChannel = VideoAlphaType.Straight;
                     arrMedia.ReplaceWith(newMedia);
 
-                    vStream = newMedia.GetVideoStreamByIndex(0);
                     Media oriMedia = newMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileName(outputPath)), GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, filePath);
+                    oriMedia.GetVideoStreamByIndex(0).AlphaChannel = VideoAlphaType.Straight;
                 }
             }
 
