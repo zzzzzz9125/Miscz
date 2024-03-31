@@ -394,14 +394,6 @@ namespace Test_Script
 
                             int[] render = myReg.GetValue("Render") != null ? render = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse) : new int[] {0, 1, 0, 0, 0};
 
-                            Process p = new Process();
-                            p.StartInfo.FileName = "cmd.exe";
-                            p.StartInfo.UseShellExecute = false;
-                            p.StartInfo.RedirectStandardInput = true;
-                            p.StartInfo.RedirectStandardOutput = true;
-                            p.StartInfo.RedirectStandardError = false;
-                            p.StartInfo.CreateNoWindow = true;
-
                             Form progressForm = new Form();
                             progressForm.BackColor = backColor;
                             progressForm.ForeColor = foreColor;
@@ -459,7 +451,7 @@ namespace Test_Script
                                     File.Delete(preCropPath);
                                 }
 
-                                logText += FFmpegDoRender(p, preCropCommand, prg, label);
+                                logText += FFmpegDoRender(preCropCommand, prg, label);
 
                                 string reimportPath = preCropPath, openFolder = reimportPath;
 
@@ -473,7 +465,7 @@ namespace Test_Script
                                         string outputFile = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + (cropMode == 2 ? string.Format("{0:000}", number) : string.Format("{0:000}", Mod(i - offset[0], spritesArr.Count))) +".png");
                                         string renderCommand = string.Format(renderParameter, preCropPath, spriteFrame[0], spriteFrame[1], c * spriteFrame[0], r * spriteFrame[1], scaleFactor, outputFile);
 
-                                        logText += FFmpegDoRender(p, renderCommand, prg, label);
+                                        logText += FFmpegDoRender(renderCommand, prg, label);
                                     }
 
                                     for (int i = 0; i < 10; i++)
@@ -503,7 +495,7 @@ namespace Test_Script
                                             renderCommand[i] = string.Format("\"{0}\" -y -loglevel 32 -r {1} -f image2 -i \"{2}\" {3} \"{4}\"", ffmpegPath, frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i], renderPath[i]);
                                             if (render[i + 2] > 0)
                                             {
-                                                logText += FFmpegDoRender(p, renderCommand[i], prg, label);
+                                                logText += FFmpegDoRender(renderCommand[i], prg, label);
                                                 openFolder = renderPath[i];
                                             }
                                         }
@@ -709,16 +701,29 @@ namespace Test_Script
             return c;
         }
 
-        public static string FFmpegDoRender(Process p, string command, ProgressBar prg, Label label)
+        public static string FFmpegDoRender(string command, ProgressBar prg = null, Label label = null)
         {
+            Process p = new Process();
+            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardInput = true;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = false;
+            p.StartInfo.CreateNoWindow = true;
+
             p.Start();
             while (p.StandardOutput.ReadLine() != "") { }
             p.StandardInput.WriteLine(string.Format("echo off & {0} 2>&1 & exit", command));
             string logTxt = string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
             p.WaitForExit();
-            prg.Value += 1;
-            label.Text = Regex.Replace(label.Text, @"\.", "") + new string('.', prg.Value / 6 % 4);
-            label.Refresh();
+
+            if (prg != null && label != null)
+            {
+                prg.Value += 1;
+                label.Text = Regex.Replace(label.Text, @"\.", "") + new string('.', prg.Value / 6 % 4);
+                label.Refresh();
+            }
+
             return logTxt;
         }
 
