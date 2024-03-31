@@ -125,26 +125,29 @@ namespace Test_Script
                             string filePath = vEvent.ActiveTake.Media.FilePath;
                             Take take0 = null, takeActiveSave = vEvent.ActiveTake, takeOriSave = null;
                             int number = -1, cropModeOri = 0;
-                            bool isRevise = true;
+                            bool isRevise = false;
                             if (Regex.IsMatch(Path.GetDirectoryName(filePath), @"_(Single)?(Crop)?$") && File.Exists(Regex.Replace(Path.GetDirectoryName(filePath), @"_(Single)?(Crop)?$", ".png")))
                             {
                                 int.TryParse(Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"((?<=_)[0-9][0-9][0-9])$").Value, out number);
                                 cropModeOri = Regex.IsMatch(Path.GetDirectoryName(filePath), @"(_Single)$") ? 2 : 1;
                                 filePath = Regex.Replace(Path.GetDirectoryName(filePath), @"_(Single)?(Crop)?$", ".png");
+                                isRevise = true;
                             }
-                            
+
                             else if (vEvent.ActiveTake.Media.IsImageSequence() || Regex.IsMatch(filePath, @"(_000\.png)$"))
                             {
                                 if (File.Exists(Path.GetDirectoryName(filePath) + ".png"))
                                 {
                                     number = 0;
                                     filePath = Path.GetDirectoryName(filePath) + ".png";
+                                    isRevise = true;
                                 }
 
                                 else if (File.Exists(Regex.Replace(Path.GetDirectoryName(filePath), @"(_[0-9][0-9])$", ".png")))
                                 {
                                     int.TryParse(Regex.Match(Path.GetDirectoryName(filePath), @"((?<=_)[0-9][0-9])$").Value, out number);
                                     filePath = Regex.Replace(Path.GetDirectoryName(filePath), @"(_[0-9][0-9])$", ".png");
+                                    isRevise = true;
                                 }
                             }
 
@@ -154,18 +157,15 @@ namespace Test_Script
                                 {
                                     number = 0;
                                     filePath = Regex.Replace(filePath, @"((\.gif)|((_ProRes|_PNG)?\.mov))$", ".png");
+                                    isRevise = true;
                                 }
 
                                 else if (File.Exists(Regex.Replace(filePath, @"(_[0-9][0-9]((\.gif)|((_ProRes|_PNG)?\.mov)))$", ".png")))
                                 {
                                     int.TryParse(Regex.Match(filePath, @"(?<=_)[0-9][0-9](?=((\.gif)|((_ProRes|_PNG)?\.mov))$)").Value, out number);
                                     filePath = Regex.Replace(filePath, @"(_[0-9][0-9]((\.gif)|((_ProRes|_PNG)?\.mov)))$", ".png");
+                                    isRevise = true;
                                 }
-                            }
-
-                            else
-                            {
-                                isRevise = false;
                             }
 
                             if (!File.Exists(filePath))
@@ -341,6 +341,7 @@ namespace Test_Script
 
                             int cols = location[2] - location[0] + 1, rows = location[3] - location[1] + 1;
                             double scaleFactor = myReg.GetValue("ScaleFactor") != null ? double.Parse((string)myReg.GetValue("ScaleFactor")) : 0;
+
                             if (scaleFactor < 1)
                             {
                                 scaleFactor = Math.Ceiling(Math.Max(1, Math.Min(scrWidth / spriteFrame[0] / (cropMode == 1 ? cols : 1), scrHeight / spriteFrame[1] / (cropMode == 1 ? rows : 1))));
@@ -443,7 +444,7 @@ namespace Test_Script
                             {
                                 // PreCrop
                                 string preCropPath = cropMode == 0 ? (filePath + "_Crop.png") : Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) +".png");
-                                string renderParameter = string.Format("\"{0}\"", ffmpegPath) + " -y -loglevel 32 -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor \"{6}\"";
+                                string renderParameter = string.Format("\"{0}\"", ffmpegPath) + " -y -loglevel 32 -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor -pix_fmt rgb32 \"{6}\"";
                                 string preCropCommand = string.Format(renderParameter, filePath, spriteFrame[0] * cols, spriteFrame[1] * rows, spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1), cropMode == 0 ? 1 : scaleFactor, preCropPath);
 
                                 if (File.Exists(preCropPath))
@@ -1486,6 +1487,7 @@ namespace Test_Script
                     scaleBar.Maximum = (int)Math.Ceiling(a);
                 }
                 scaleBar.Value = (int)Math.Floor(Math.Max(a, scaleBar.Minimum));
+                myReg.SetValue("ScaleFactor", ((TextBox)sender).Text);
             }
         }
 

@@ -134,7 +134,7 @@ namespace Test_Script
                 foreach (Media arrMedia in mediaList)
                 {
                     VideoStream vStream = arrMedia.GetVideoStreamByIndex(0);
-                    double scaleValue = Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
+                    double scaleValue = Math.Ceiling(Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height));
                     if (scaleValue <= 1)
                     {
                         continue;
