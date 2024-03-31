@@ -1487,8 +1487,8 @@ namespace Test_Script
                     scaleBar.Maximum = (int)Math.Ceiling(a);
                 }
                 scaleBar.Value = (int)Math.Floor(Math.Max(a, scaleBar.Minimum));
-                myReg.SetValue("ScaleFactor", ((TextBox)sender).Text);
             }
+            myReg.SetValue("ScaleFactor", Convert.ToString(a));
         }
 
         private void scaleBar_ValueChanged(object sender, EventArgs e)
