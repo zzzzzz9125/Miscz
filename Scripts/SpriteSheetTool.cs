@@ -469,19 +469,6 @@ namespace Test_Script
                                         logText += FFmpegDoRender(renderCommand, prg, label);
                                     }
 
-                                    for (int i = 0; i < 10; i++)
-                                    {
-                                        try
-                                        {
-                                            File.Delete(preCropPath);
-                                            break;
-                                        }
-                                        catch
-                                        {
-                                            Delay(200);
-                                        }
-                                    }
-
                                     reimportPath = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_000.png");
                                     openFolder = reimportPath;
 
@@ -527,6 +514,14 @@ namespace Test_Script
                                     }
                                 }
 
+                                if (isRevise)
+                                {
+                                    // to avoid the problem where the media file doesn't refresh
+                                    Media tmpMedia = Media.CreateInstance(project, preCropPath);
+                                    initialMedia.ReplaceWith(tmpMedia);
+                                    initialMedia = tmpMedia;
+                                }
+
                                 Media importedMedia;
                                 if (cropMode == 0 && Regex.IsMatch(reimportPath, @"(_000\.png)$"))
                                 {
@@ -543,6 +538,7 @@ namespace Test_Script
                                 if (isRevise)
                                 {
                                     initialMedia.ReplaceWith(importedMedia);
+                                    
                                     foreach (Take take in vEvent.Takes)
                                     {
                                         if (take.Media == importedMedia)
@@ -561,22 +557,14 @@ namespace Test_Script
                                 vEvent.ResampleMode = VideoResampleMode.Disable;
                                 vEvent.Loop = myReg.GetValue("EnableLoop") != null ? ((string)myReg.GetValue("EnableLoop") == "1") : true;
 
-                                if (!keyframeSaveMode)
-                                {
-                                    videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
-                                    dFullWidth = videoStream.Width;
-                                    dFullHeight = videoStream.Height;
-                                    KeyframeReset(keyframePreview);
-                                }
-                                
-                                else
-                                {
-                                    vEvent.VideoMotion.Keyframes.Remove(keyframePreview);
-                                }
-
                                 if (vEvent.Length < vEvent.ActiveTake.Media.Length)
                                 {
                                     vEvent.Length = vEvent.ActiveTake.Media.Length;
+                                }
+
+                                if (cropMode == 0)
+                                {
+                                    File.Delete(preCropPath);
                                 }
 
                                 progressForm.Close();
@@ -592,6 +580,22 @@ namespace Test_Script
                                     myLogFile.Close();
                                     progressForm.Close();
                                     myLogFile.ShowLogAsDialog("FFmpeg Logs");
+                                }
+                            }
+
+                            finally
+                            {
+                                if (!keyframeSaveMode)
+                                {
+                                    videoStream = (VideoStream)vEvent.ActiveTake.MediaStream;
+                                    dFullWidth = videoStream.Width;
+                                    dFullHeight = videoStream.Height;
+                                    KeyframeReset(keyframePreview);
+                                }
+                                
+                                else
+                                {
+                                    vEvent.VideoMotion.Keyframes.Remove(keyframePreview);
                                 }
                             }
                         }
