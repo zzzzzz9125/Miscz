@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Drawing;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -14,7 +15,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.4";
+        public const string VERSION = "v.1.2.5";
         public Vegas myVegas;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
@@ -78,6 +79,30 @@ namespace Test_Script
 
             scrWidth = project.Video.Width;
             scrHeight = project.Video.Height / (float)project.Video.PixelAspectRatio;
+
+            string ffmpegPath = null;
+
+            foreach (string str in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+            {
+                if (!String.IsNullOrEmpty(str.Trim()) && File.Exists(Path.Combine(str.Trim(), "ffmpeg.exe")))
+                {
+                    ffmpegPath = Path.Combine(str.Trim(), "ffmpeg.exe");
+                    break;
+                }
+            }
+
+            if (!File.Exists(ffmpegPath))
+            {
+                if (DialogResult.Yes == MessageBox.Show(LRZ("FFmpegNotFound"), "ffmpeg.exe Not Found!", MessageBoxButtons.YesNo))
+                {
+                    ffmpegPath = "ffmpeg.exe";
+                }
+
+                else
+                {
+                    return;
+                }
+            }
 
             foreach (Track myTrack in project.Tracks)
             {
@@ -368,23 +393,26 @@ namespace Test_Script
                             }
 
                             int[] render = myReg.GetValue("Render") != null ? render = Array.ConvertAll(Regex.Split(Convert.ToString(myReg.GetValue("Render")), ","), int.Parse) : new int[] {0, 1, 0, 0, 0};
-                            bool isDebug = myReg.GetValue("DebugMode") != null ? ((string)myReg.GetValue("DebugMode") == "1") : false;
 
                             Process p = new Process();
                             p.StartInfo.FileName = "cmd.exe";
                             p.StartInfo.UseShellExecute = false;
                             p.StartInfo.RedirectStandardInput = true;
-                            p.StartInfo.RedirectStandardOutput = false;
+                            p.StartInfo.RedirectStandardOutput = true;
                             p.StartInfo.RedirectStandardError = false;
                             p.StartInfo.CreateNoWindow = true;
 
                             Form progressForm = new Form();
-                            progressForm.ShowInTaskbar = false;
-                            progressForm.AutoSize = true;
                             progressForm.BackColor = backColor;
                             progressForm.ForeColor = foreColor;
                             progressForm.Font = LRZFont(9);
                             progressForm.FormBorderStyle = FormBorderStyle.FixedToolWindow;
+                            progressForm.MaximizeBox = false;
+                            progressForm.MinimizeBox = false;
+                            progressForm.HelpButton = false;
+                            progressForm.ShowInTaskbar = false;
+                            progressForm.TopMost = true;
+                            progressForm.AutoSize = true;
                             progressForm.StartPosition = FormStartPosition.CenterScreen;
                             progressForm.FormBorderStyle = FormBorderStyle.None;
                             progressForm.AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -418,35 +446,21 @@ namespace Test_Script
                                 progressForm.Show();
                             }
 
-                            string logPath = Path.Combine(Path.GetTempPath(), "MisczToolsForVegasPro", "SpriteSheetTool", "ffmpeg-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
-                            if (isDebug && !Directory.Exists(logPath))
-                            {
-                                Directory.CreateDirectory(logPath);
-                            }
-
+                            string logText = "";
                             try
                             {
                                 // PreCrop
                                 string preCropPath = cropMode == 0 ? (filePath + "_Crop.png") : Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) +".png");
-                                string renderParameter = "ffmpeg -y -loglevel 32 -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor";
-                                string preCropCommand = string.Format(renderParameter, filePath, spriteFrame[0] * cols, spriteFrame[1] * rows, spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1), cropMode == 0 ? 1 : scaleFactor);
-                                string logFile = "nul";
-                                if (isDebug)
-                                {
-                                    logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(preCropPath) + ".log"));
-                                }
+                                string renderParameter = string.Format("\"{0}\"", ffmpegPath) + " -y -loglevel 32 -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor \"{6}\"";
+                                string preCropCommand = string.Format(renderParameter, filePath, spriteFrame[0] * cols, spriteFrame[1] * rows, spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1), cropMode == 0 ? 1 : scaleFactor, preCropPath);
 
                                 if (File.Exists(preCropPath))
                                 {
                                     File.Delete(preCropPath);
                                 }
 
-                                p.Start();
-                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", preCropCommand, preCropPath, logFile));
-                                p.WaitForExit();
-                                prg.Value += 1;
-                                label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
-                                label.Refresh();
+                                logText += FFmpegDoRender(p, preCropCommand, prg, label);
+
                                 string reimportPath = preCropPath, openFolder = reimportPath;
 
                                 if (cropMode == 0)
@@ -456,20 +470,11 @@ namespace Test_Script
                                     {
                                         int r = (int)spritesArr[i] / cols;
                                         int c = (int)spritesArr[i] % cols;
-                                        string renderCommand = string.Format(renderParameter, preCropPath, spriteFrame[0], spriteFrame[1], c * spriteFrame[0], r * spriteFrame[1], scaleFactor);
                                         string outputFile = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + (cropMode == 2 ? string.Format("{0:000}", number) : string.Format("{0:000}", Mod(i - offset[0], spritesArr.Count))) +".png");
-                                        if (isDebug)
-                                        {
-                                            logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(outputFile) + ".log"));
-                                        }
+                                        string renderCommand = string.Format(renderParameter, preCropPath, spriteFrame[0], spriteFrame[1], c * spriteFrame[0], r * spriteFrame[1], scaleFactor, outputFile);
 
-                                        p.Start();
-                                        p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", renderCommand, outputFile, logFile));
-                                        prg.Value += 1;
-                                        label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
-                                        label.Refresh();
+                                        logText += FFmpegDoRender(p, renderCommand, prg, label);
                                     }
-                                    p.WaitForExit();
 
                                     for (int i = 0; i < 10; i++)
                                     {
@@ -494,24 +499,14 @@ namespace Test_Script
                                         string [] renderPath = new string[] {".gif", (render[4] > 0 ? "_PNG.mov" : ".mov"), (render[3] > 0 ? "_ProRes.mov" : ".mov")};
                                         for (int i = 0; i < render.Length - 2; i++)
                                         {
-                                            renderCommand[i] = string.Format("ffmpeg -y -loglevel 32 -r {0} -f image2 -i \"{1}\" {2}", frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i]);
                                             renderPath[i] = Path.Combine(Path.GetDirectoryName(outputDirectory), Path.GetFileNameWithoutExtension(filePath) + (number > 0 ? ("_" + string.Format("{0:00}", number)) : null) + renderPath[i]);
+                                            renderCommand[i] = string.Format("\"{0}\" -y -loglevel 32 -r {1} -f image2 -i \"{2}\" {3} \"{4}\"", ffmpegPath, frameRate, Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_%03d.png"), renderCommand[i], renderPath[i]);
                                             if (render[i + 2] > 0)
                                             {
-                                                if (isDebug)
-                                                {
-                                                    logFile = string.Format("\"{0}\"", Path.Combine(logPath, Path.GetFileName(renderPath[i]) + ".log"));
-                                                }
-
-                                                p.Start();
-                                                p.StandardInput.WriteLine(string.Format("{0} \"{1}\" > {2} 2>&1 & exit", renderCommand[i], renderPath[i], logFile));
+                                                logText += FFmpegDoRender(p, renderCommand[i], prg, label);
                                                 openFolder = renderPath[i];
-                                                prg.Value += 1;
-                                                label.Text = LRZ("Rendering") + new string('.', prg.Value / 6 % 4);
-                                                label.Refresh();
                                             }
                                         }
-                                        p.WaitForExit();
 
                                         if (render[0] > 0)
                                         {
@@ -590,32 +585,20 @@ namespace Test_Script
                                 {
                                     vEvent.Length = vEvent.ActiveTake.Media.Length;
                                 }
+
+                                progressForm.Close();
                             }
 
                             catch (Exception ex)
                             {
-                                myVegas.ShowError(LRZ("RenderingError") + ex.Message, LRZ("RenderingErrorDetails"));
-                            }
-
-                            finally
-                            {
-                                if (isDebug)
+                                if (DialogResult.Yes == MessageBox.Show(string.Format(LRZ("RenderingErrorDetails"), ex.Message), LRZ("RenderingError"), MessageBoxButtons.YesNo))
                                 {
-                                    string logFile = logPath + ".log";
-                                    string newlogFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Path.GetFileName(logFile));
-                                    p.Start();
-                                    p.StandardInput.WriteLine(string.Format("type \"{0}\\*.log\" >> {1} & exit", logPath, logFile));
-                                    p.WaitForExit();
-                                    Directory.Delete(logPath, true);
-                                    File.Copy(logFile, newlogFile, true);
-                                    p.Start();
-                                    p.StandardInput.WriteLine(string.Format("\"{0}\" & exit", newlogFile));
-                                }
-
-                                if (cropMode == 0)
-                                {
+                                    string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), string.Format("ffmpeg-{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
+                                    LogFile myLogFile = new LogFile(myVegas, logPath);
+                                    myLogFile.AddLogEntry(string.Format(LRZ("LogText"), logPath, logText, ex.Message));
+                                    myLogFile.Close();
                                     progressForm.Close();
-                                    myVegas.UpdateUI();
+                                    myLogFile.ShowLogAsDialog("FFmpeg Logs");
                                 }
                             }
                         }
@@ -724,6 +707,19 @@ namespace Test_Script
         {
             int c = (int)(a - Math.Floor(a / b) * b);
             return c;
+        }
+
+        public static string FFmpegDoRender(Process p, string command, ProgressBar prg, Label label)
+        {
+            p.Start();
+            while (p.StandardOutput.ReadLine() != "") { }
+            p.StandardInput.WriteLine(string.Format("echo off & {0} 2>&1 & exit", command));
+            string logTxt = string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
+            p.WaitForExit();
+            prg.Value += 1;
+            label.Text = Regex.Replace(label.Text, @"\.", "") + new string('.', prg.Value / 6 % 4);
+            label.Refresh();
+            return logTxt;
         }
 
         private void SpriteSheetSetWindow()
@@ -1745,13 +1741,14 @@ namespace Test_Script
             settingsL.Controls.Add(preCropAtStart);
             settingsL.SetColumnSpan(preCropAtStart, 2);
 
-            CheckBox debugMode = new CheckBox();
-            debugMode.Text = LRZ("DebugModeText");
-            debugMode.Checked = myReg.GetValue("DebugMode") != null ? ((string)myReg.GetValue("DebugMode") == "1") : false;
-            debugMode.AutoSize = false;
-            debugMode.Margin = new Padding(0, 3, 0, 3);
-            debugMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
-            settingsL.Controls.Add(debugMode);
+            bool isDarkMode = myReg.GetValue("DarkMode") != null ? (string)myReg.GetValue("DarkMode") == "1" : !(double.Parse(Regex.Split(myVegas.Version, " ")[1]) < 15);
+            CheckBox darkMode = new CheckBox();
+            darkMode.Text = LRZ("DarkModeText");
+            darkMode.Checked = isDarkMode;
+            darkMode.AutoSize = false;
+            darkMode.Margin = new Padding(0, 3, 0, 3);
+            darkMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
+            settingsL.Controls.Add(darkMode);
 
             CheckBox multiMode = new CheckBox();
             multiMode.Text = LRZ("MultiModeText");
@@ -1761,16 +1758,6 @@ namespace Test_Script
             multiMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
             settingsL.Controls.Add(multiMode);
             settingsL.SetColumnSpan(multiMode, 2);
-
-            bool isDarkMode = myReg.GetValue("DarkMode") != null ? (string)myReg.GetValue("DarkMode") == "1" : !(double.Parse(Regex.Split(myVegas.Version, " ")[1]) < 15);
-            CheckBox darkMode = new CheckBox();
-            darkMode.Text = LRZ("DarkModeText");
-            darkMode.Checked = isDarkMode;
-            darkMode.AutoSize = false;
-            darkMode.Margin = new Padding(0, 3, 0, 3);
-            darkMode.Anchor = AnchorStyles.Left|AnchorStyles.Right;
-            settingsL.Controls.Add(darkMode);
-            settingsL.SetColumnSpan(darkMode, 3);
 
             label = new Label();
             label.Margin = new Padding(6, 6, 6, 6);
@@ -1831,15 +1818,8 @@ namespace Test_Script
                 myReg.SetValue("DelayGridHide", gridHideDelayBar.Value.ToString());
                 myReg.SetValue("EnableRevise", (enableRevise.Checked ? 1 : 0).ToString());
                 myReg.SetValue("PreCropAtStart", (preCropAtStart.Checked ? 1 : 0).ToString());
-                myReg.SetValue("DebugMode", (debugMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("MultiMode", (multiMode.Checked ? 1 : 0).ToString());
                 myReg.SetValue("NumberingType", numberingBox.SelectedIndex.ToString());
-
-                string logPath = Path.Combine(Path.GetTempPath(), "MisczToolsForVegasPro", "SpriteSheetTool");
-                if (!debugMode.Checked && Directory.Exists(logPath))
-                {
-                    Directory.Delete(logPath, true);
-                }
 
                 if ((languageBox.SelectedIndex != language) || (darkMode.Checked != isDarkMode))
                 {
@@ -2857,6 +2837,10 @@ namespace Test_Script
                 case 1:
                     switch(str)
                     {
+                        case "FFmpegNotFound":
+                            str0 = "检测到 ffmpeg.exe 未添加到环境变量内！\n注意：如果你是刚刚添加的，请先重启 Vegas，再尝试运行该脚本。\n\n是否无视该提示继续？";
+                            break;
+
                         case "ResetCropCaution":
                             str0 = "检测到当前图像已被裁切，是否重置裁切图像？";
                             break;
@@ -2874,11 +2858,15 @@ namespace Test_Script
                             break;
 
                         case "RenderingError":
-                            str0 = "FFmpeg 渲染失败！\n\n";
+                            str0 = "渲染失败！";
                             break;
 
                         case "RenderingErrorDetails":
-                            str0 = "渲染失败，请先确保你已将 FFmpeg 添加至环境变量内，再重试。若仍然多次出现该报错，请启用设置中的“调试模式”，查看 FFmpeg 的日志文件，并向本项目的 Github 页面（https://github.com/zzzzzz9125/Miscz）提交 Issues。";
+                            str0 = "FFmpeg 渲染失败！{0}\n\n是否查看 FFmpeg 日志？";
+                            break;
+
+                        case "LogText":
+                            str0 = "如遇任何问题，请在本项目的 Github 页面上提交议题 (issue)，并附上此日志文件。\r\nGithub 页面：https://github.com/zzzzzz9125/Miscz/issues\r\n日志文件已保存至 {0}。\r\n\r\n报错消息：{2}\r\n{1}";
                             break;
 
                         case "FormTitle":
@@ -3121,16 +3109,12 @@ namespace Test_Script
                             str0 = "启动时进入预裁切";
                             break;
 
-                        case "DebugModeText":
-                            str0 = "调试模式";
+                        case "DarkModeText":
+                            str0 = "深色模式";
                             break;
 
                         case "MultiModeText":
                             str0 = "启用多事件模式";
-                            break;
-
-                        case "DarkModeText":
-                            str0 = "深色模式";
                             break;
 
                         case "Language":
@@ -3146,6 +3130,10 @@ namespace Test_Script
                 default:
                     switch(str)
                     {
+                        case "FFmpegNotFound":
+                            str0 = "Detected that ffmpeg.exe is not added to Environment Variables!\nNote: If you just added it, please restart Vegas first, then retry.\n\nDo you want to continue anyway?";
+                            break;
+
                         case "ResetCropCaution":
                             str0 = "Detected that the current image has been cropped. Do you want to reset the cropped image?";
                             break;
@@ -3163,11 +3151,15 @@ namespace Test_Script
                             break;
 
                         case "RenderingError":
-                            str0 = "FFmpeg Rendering Error!\n\n";
+                            str0 = "Rendering Error!";
                             break;
 
                         case "RenderingErrorDetails":
-                            str0 = "Rendering failed, please make sure you have added FFmpeg to environment variables, then try again. If this problem still occurred, please enable Debug Mode in Settings, check the FFmpeg log files, and shall submit an issue to the Github page of this project (https://github.com/zzzzzz9125/Miscz).";
+                            str0 = "FFmpeg Rendering Error! {0}\n\nDo you want to see the FFmpeg logs?";
+                            break;
+
+                        case "LogText":
+                            str0 = "If anything goes wrong, please submit an issue to the Github page below with this log.\r\nGithub Page: https://github.com/zzzzzz9125/Miscz/issues\r\nThe log file has been saved to {0}.\r\n\r\nError Message: {2}\r\n{1}";
                             break;
 
                         case "FormTitle":
@@ -3410,16 +3402,12 @@ namespace Test_Script
                             str0 = "PreCrop At Start";
                             break;
 
-                        case "DebugModeText":
-                            str0 = "Debug Mode";
+                        case "DarkModeText":
+                            str0 = "Dark Theme";
                             break;
 
                         case "MultiModeText":
                             str0 = "Multi-Event Mode";
-                            break;
-
-                        case "DarkModeText":
-                            str0 = "Dark Theme";
                             break;
 
                         case "Language":

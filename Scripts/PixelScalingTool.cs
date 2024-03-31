@@ -27,18 +27,18 @@ namespace Test_Script
             ArrayList mediaList = new ArrayList();
             string ffmpegPath = null;
 
-            foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+            foreach (string str in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
             {
-                if (!String.IsNullOrEmpty(test.Trim()) && File.Exists(Path.Combine(test.Trim(), "ffmpeg.exe")))
+                if (!String.IsNullOrEmpty(str.Trim()) && File.Exists(Path.Combine(str.Trim(), "ffmpeg.exe")))
                 {
-                    ffmpegPath = Path.Combine(test.Trim(), "ffmpeg.exe");
+                    ffmpegPath = Path.Combine(str.Trim(), "ffmpeg.exe");
                     break;
                 }
             }
 
             if (!File.Exists(ffmpegPath))
             {
-                if (DialogResult.Yes == MessageBox.Show("Detected that ffmpeg.exe is not added to Environment Variables!\n\nDo you want to continue anyway?", "ffmpeg.exe Not Found!", MessageBoxButtons.YesNo))
+                if (DialogResult.Yes == MessageBox.Show("Detected that ffmpeg.exe is not added to Environment Variables!\nNote: If you just added it, please restart Vegas first, then retry.\n\nDo you want to continue anyway?", "ffmpeg.exe Not Found!", MessageBoxButtons.YesNo))
                 {
                     ffmpegPath = "ffmpeg.exe";
                 }
@@ -134,7 +134,12 @@ namespace Test_Script
                 foreach (Media arrMedia in mediaList)
                 {
                     VideoStream vStream = arrMedia.GetVideoStreamByIndex(0);
-                    double scaleValue = scaleFactor >= 1 ? scaleFactor : Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
+                    double scaleValue = Math.Ceiling(Math.Max(1, Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height)));
+                    if (scaleValue <= 1)
+                    {
+                        continue;
+                    }
+                    scaleValue = scaleFactor >= 1 ? scaleFactor : scaleValue;
 
                     string filePath = arrMedia.FilePath;
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + SpecialFormat(Path.GetExtension(filePath)));
@@ -160,6 +165,7 @@ namespace Test_Script
                     p.StandardInput.WriteLine(string.Format("echo off & ({0}) 2>&1 & exit", renderCommand));
                     logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
+
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     vStream = newMedia.GetVideoStreamByIndex(0);
                     vStream.AlphaChannel = VideoAlphaType.Straight;
