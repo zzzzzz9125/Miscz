@@ -20,7 +20,7 @@
 
 **现在如果你想使用 v.1.2.0 及以上的新版 MisczTools 脚本，你需要提前将 [FFmpeg](https://ffmpeg.org/download.html) 添加至环境变量中。方法请自行百度。**
 
-文件下载可转到最新的 Releases。中国国内替代下载链接：https://share.weiyun.com/BFrp1QKx 。
+文件下载可转到最新的 [Releases](https://github.com/zzzzzz9125/Miscz/releases/)。中国国内替代下载链接：https://share.weiyun.com/BFrp1QKx 。
 
 <br>
 
@@ -86,7 +86,7 @@ See this tutorial: https://www.bilibili.com/read/cv33279086 (Chinese Only sorry,
 
 **Now if you want to use MisczTools Scripts (v.1.2.0 or later version), you must add [FFmpeg](https://ffmpeg.org/download.html) to the environment variables in advance. Google it if you don't know how to.**
 
-You can go to the latest Releases for file downloads.
+You can go to the [Latest Releases](https://github.com/zzzzzz9125/Miscz/releases/) for file downloads.
 
 <br>
 
