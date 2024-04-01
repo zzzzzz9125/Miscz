@@ -72,7 +72,7 @@ A collection of tools for Vegas Pro to provide pixel image related features, con
 
 <br>Starting with v.1.2.0, MisczTools Scripts no longer depend on MisczOFX, but instead use [FFmpeg](https://ffmpeg.org/download.html) logic for rendering.
 
-Currently, the MisczTools cripts consist of two scripts: PixelScalingTool Script and SpriteSheetTool Script.
+Currently, the MisczTools Scripts consist of two scripts: PixelScalingTool Script and SpriteSheetTool Script.
 
 [PixelScalingTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) provides a one-click way to scale Pixel Art materials, [SpriteSheetTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) provides cutting, playback, rerendering and other functions for Sprite Sheets.
 
