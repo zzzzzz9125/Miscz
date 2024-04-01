@@ -80,7 +80,7 @@ See this tutorial: https://www.bilibili.com/read/cv33279086 (Chinese Only sorry,
 
 <br>
 
-## Installation instructions: 
+## Installation instructions
 
 **Note: Starting with v.1.2.0, since MisczTools Scripts no longer depend on MisczOFX, the version of MisczOFX remains at v.1.1.0 and is not intended to be updated for the time being.**
 
