@@ -59,14 +59,10 @@ namespace Test_Script
                         {
                             VideoEvent vEvent = (VideoEvent) evnt;
                             VideoStream vStream = (VideoStream) vEvent.ActiveTake.MediaStream;
-                            string filePath = vEvent.ActiveTake.Media.FilePath, oriPath = null;
+                            string filePath = vEvent.ActiveTake.Media.FilePath;
+                            string oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"^(.+(?=(_Scaled)$))").Value + Path.GetExtension(filePath));
 
-                            if (!vEvent.ActiveTake.Media.IsImageSequence())
-                            {
-                                oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"^(.+(?=(_Scaled)$))").Value + Path.GetExtension(filePath));
-                            }
-
-                            else
+                            if (vEvent.ActiveTake.Media.IsImageSequence())
                             {
                                 filePath = Regex.Match(filePath, string.Format(@"^(.+\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value;
                                 oriPath = Path.Combine(Regex.Match(Path.GetDirectoryName(filePath), @"^(.+(?=(_Scaled)$))").Value, Path.GetFileName(filePath));
