@@ -39,15 +39,15 @@ Sony Vegas Pro: `C:\ProgramData\Sony\Vegas Pro\Script Menu\`
 
 `C:\ProgramData\Vegas Pro\17.0\Script Menu\`
 
-`C:\Users\<username\Documents\Vegas Script Menu\`
+`C:\Users\<username>\Documents\Vegas Script Menu\`
 
-`C:\Users\<username\AppData\Local\Vegas Pro\17.0\Script Menu\`
+`C:\Users\<username>\AppData\Local\Vegas Pro\17.0\Script Menu\`
 
-`C:\Users\<username\AppData\Roaming\Vegas Pro\17.0\Script Menu\`
+`C:\Users\<username>\AppData\Roaming\Vegas Pro\17.0\Script Menu\`
 
-`C:\Users\<username\AppData\Local\Vegas Pro\Script Menu\`
+`C:\Users\<username>\AppData\Local\Vegas Pro\Script Menu\`
 
-`C:\Users\<username\AppData\Roaming\Vegas Pro\Script Menu\`
+`C:\Users\<username>\AppData\Roaming\Vegas Pro\Script Menu\`
 
 如果上述文件夹不存在，请手动创建。
 
@@ -76,11 +76,11 @@ Currently, the MisczTools Scripts consist of two scripts: PixelScalingTool Scrip
 
 [PixelScalingTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) provides a one-click way to scale Pixel Art materials, [SpriteSheetTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) provides cutting, playback, rerendering and other functions for Sprite Sheets.
 
-See this tutorial: https://www.bilibili.com/read/cv33279086 (Chinese Only sorry, I will write an English ver. sometime).
+See this tutorial: https://docs.google.com/document/d/16Y-K3HpCDFPTQizYzijga0BBi6Th47RksKh_EZ0B0B8 .
 
 <br>
 
-## Installation instructions
+## Installation Instructions
 
 **Note: Starting with v.1.2.0, since MisczTools Scripts no longer depend on MisczOFX, the version of MisczOFX remains at v.1.1.0 and is not intended to be updated for the time being.**
 
@@ -105,15 +105,15 @@ If this doesn't work, try: (17.0 = your Vegas Pro version number)
 
 `C:\ProgramData\Vegas Pro\17.0\Script Menu\`
 
-`C:\Users\<username\Documents\Vegas Script Menu\`
+`C:\Users\<username>\Documents\Vegas Script Menu\`
 
-`C:\Users\<username\AppData\Local\Vegas Pro\17.0\Script Menu\`
+`C:\Users\<username>\AppData\Local\Vegas Pro\17.0\Script Menu\`
 
-`C:\Users\<username\AppData\Roaming\Vegas Pro\17.0\Script Menu\`
+`C:\Users\<username>\AppData\Roaming\Vegas Pro\17.0\Script Menu\`
 
-`C:\Users\<username\AppData\Local\Vegas Pro\Script Menu\`
+`C:\Users\<username>\AppData\Local\Vegas Pro\Script Menu\`
 
-`C:\Users\<username\AppData\Roaming\Vegas Pro\Script Menu\`
+`C:\Users\<username>\AppData\Roaming\Vegas Pro\Script Menu\`
 
 If no folder exists, create one, then put the files in.
 
