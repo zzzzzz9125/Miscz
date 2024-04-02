@@ -13,7 +13,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.5";
+        public const string VERSION = "v.1.2.6";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
@@ -142,8 +142,9 @@ namespace Test_Script
                     scaleValue = scaleFactor >= 1 ? scaleFactor : scaleValue;
 
                     string filePath = arrMedia.FilePath;
-                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + SpecialFormat(Path.GetExtension(filePath)));
-                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, SpecialEncode(Path.GetExtension(filePath)));
+                    string[] speFormat = SpecialFormat(Path.GetExtension(filePath), arrMedia.IsImageSequence() || arrMedia.Length.Nanos == 0);
+                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + speFormat[1]);
+                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, speFormat[0]);
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -156,8 +157,8 @@ namespace Test_Script
                         }
                         Directory.CreateDirectory(outputPath);
 
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{5}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\\%~ni{6}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, SpecialEncode(Path.GetExtension(filePath), true), Path.GetExtension(filePath), SpecialFormat(Path.GetExtension(filePath), true)); 
-                        outputPath = Path.ChangeExtension(Path.Combine(outputPath, Path.GetFileName(filePath)), SpecialFormat(Path.GetExtension(filePath), true));
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{5}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\\%~ni{6}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, speFormat[0], Path.GetExtension(filePath), speFormat[1]); 
+                        outputPath = Path.ChangeExtension(Path.Combine(outputPath, Path.GetFileName(filePath)), speFormat[1]);
                     }
 
                     p.Start();
@@ -195,29 +196,17 @@ namespace Test_Script
             return count;
         }
 
-        public static string SpecialEncode(string format, bool isImageSequence = false)
+        public static string[] SpecialFormat(string format, bool isImage = false)
         {
-            string str = "";
+            string[] str = new string[]{"", format};
             switch (format.ToLower())
             {
                 case ".png":
-                    str = "-pix_fmt rgb32";
+                    str[0] = "-pix_fmt rgb32";
                     break;
 
                 case ".gif":
-                    str = isImageSequence ? "-pix_fmt rgb32" : "-c:v prores_ks -profile:v 4444";
-                    break;
-            }
-            return str;
-        }
-
-        public static string SpecialFormat(string format, bool isImageSequence = false)
-        {
-            string str = format;
-            switch (format.ToLower())
-            {
-                case ".gif":
-                    str = isImageSequence ? ".png" : ".mov";
+                    str = isImage ? new string[]{"-pix_fmt rgb32", ".png"} : new string[]{"-c:v prores_ks -profile:v 4444", ".mov"};
                     break;
             }
             return str;
