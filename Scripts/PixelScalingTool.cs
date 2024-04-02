@@ -64,31 +64,28 @@ namespace Test_Script
                             if (!vEvent.ActiveTake.Media.IsImageSequence())
                             {
                                 oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"^(.+(?=(_Scaled)$))").Value + Path.GetExtension(filePath));
-                                if (!File.Exists(oriPath))
-                                {
-                                    if (Path.GetExtension(filePath).ToLower() == ".mov")
-                                    {
-                                        oriPath = Path.ChangeExtension(oriPath, ".gif");
-                                    }
-                                }
                             }
 
                             else
                             {
                                 filePath = Regex.Match(filePath, string.Format(@"^(.+\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value;
                                 oriPath = Path.Combine(Regex.Match(Path.GetDirectoryName(filePath), @"^(.+(?=(_Scaled)$))").Value, Path.GetFileName(filePath));
-                                if (!File.Exists(oriPath))
-                                {
-                                    if (Path.GetExtension(filePath).ToLower() == ".png")
-                                    {
-                                        oriPath = Path.ChangeExtension(oriPath, ".gif");
-                                    }
-                                }
                             }
 
                             if (!File.Exists(oriPath))
                             {
-                                oriPath = filePath;
+                                switch (Path.GetExtension(filePath).ToLower())
+                                {
+                                    case ".png":
+                                    case ".mov":
+                                        oriPath = Path.ChangeExtension(oriPath, ".gif");
+                                        break;
+                                }
+
+                                if (!File.Exists(oriPath))
+                                {
+                                    oriPath = filePath;
+                                }
                             }
 
                             if (File.Exists(oriPath))
