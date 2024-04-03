@@ -15,7 +15,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.5";
+        public const string VERSION = "v.1.2.6";
         public Vegas myVegas;
         bool canContinue, canClose, isPreCrop;
         float scrWidth, scrHeight, dFullWidth, dFullHeight;
@@ -443,7 +443,7 @@ namespace Test_Script
                             try
                             {
                                 // PreCrop
-                                string preCropPath = cropMode == 0 ? (filePath + "_Crop.png") : Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) +".png");
+                                string preCropPath = filePath + "_Crop.png";
                                 string renderParameter = string.Format("\"{0}\"", ffmpegPath) + " -y -loglevel 32 -i \"{0}\" -vf crop={1}:{2}:{3}:{4},scale=iw*{5}:ih*{5} -sws_flags neighbor -pix_fmt rgb32 \"{6}\"";
                                 string preCropCommand = string.Format(renderParameter, filePath, spriteFrame[0] * cols, spriteFrame[1] * rows, spriteFrame[0] * (location[0] - 1), spriteFrame[1] * (location[1] - 1), cropMode == 0 ? 1 : scaleFactor, preCropPath);
 
@@ -454,7 +454,7 @@ namespace Test_Script
 
                                 logText += FFmpegDoRender(preCropCommand, prg, label);
 
-                                string reimportPath = preCropPath, openFolder = reimportPath;
+                                string reimportPath = Path.Combine(outputDirectory, Path.GetFileName(outputDirectory) + "_" + string.Format("{0:000}", number) +".png"), openFolder = reimportPath;
 
                                 if (cropMode == 0)
                                 {
@@ -501,22 +501,25 @@ namespace Test_Script
                                     }
                                 }
 
+                                else
+                                {
+                                    File.Copy(preCropPath, reimportPath, true);
+                                }
+
                                 if ((myReg.GetValue("DisplayInFolder") != null ? ((string)myReg.GetValue("DisplayInFolder") == "1") : false) && File.Exists(openFolder))
                                 {
                                     ExplorerFile(openFolder);
                                 }
 
-                                if (!take0.Equals(takeOriSave) || isRevise)
+                                if (!take0.Equals(takeOriSave))
                                 {
-                                    if (!take0.Equals(takeOriSave))
-                                    {
-                                        vEvent.Takes.Remove(take0);
-                                    }
+                                    vEvent.Takes.Remove(take0);
                                 }
 
+                                // to avoid the problem where the media file doesn't refresh
+                                // don't merge it with "if (isRevise)" below, or it will cause an order problem
                                 if (isRevise)
                                 {
-                                    // to avoid the problem where the media file doesn't refresh
                                     Media tmpMedia = Media.CreateInstance(project, preCropPath);
                                     initialMedia.ReplaceWith(tmpMedia);
                                     initialMedia = tmpMedia;
@@ -562,10 +565,7 @@ namespace Test_Script
                                     vEvent.Length = vEvent.ActiveTake.Media.Length;
                                 }
 
-                                if (cropMode == 0)
-                                {
-                                    File.Delete(preCropPath);
-                                }
+                                File.Delete(preCropPath);
 
                                 progressForm.Close();
                             }
