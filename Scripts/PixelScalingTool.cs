@@ -17,6 +17,8 @@ namespace Test_Script
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
+        ComboBox algorithmBox;
+        public string[] algorithmsList;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
@@ -26,6 +28,9 @@ namespace Test_Script
             double scaleFactor = 0;
             ArrayList mediaList = new ArrayList();
             string ffmpegPath = null;
+
+            algorithmsList = new string[]{"neighbor", "bicubic", "fast_bilinear", "bilinear", "experimental", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"};
+            int indexAL = 0;
 
             foreach (string str in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
             {
@@ -105,6 +110,7 @@ namespace Test_Script
                 if (DialogResult.OK == ScaleWindow())
                 {
                     double.TryParse(scaleBox.Text, out scaleFactor);
+                    indexAL = algorithmBox.SelectedIndex;
                 }
 
                 else
@@ -137,7 +143,7 @@ namespace Test_Script
                     string filePath = arrMedia.FilePath;
                     string[] speFormat = SpecialFormat(Path.GetExtension(filePath), arrMedia.IsImageSequence() || arrMedia.Length.Nanos == 0);
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + speFormat[1]);
-                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\"", ffmpegPath, filePath, scaleValue, outputPath, speFormat[0]);
+                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {5} \"{4}\"", ffmpegPath, filePath, scaleValue, algorithmsList[indexAL], outputPath, speFormat[0]);
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -150,7 +156,7 @@ namespace Test_Script
                         }
                         Directory.CreateDirectory(outputPath);
 
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{5}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags neighbor {4} \"{3}\\%~ni{6}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, outputPath, speFormat[0], Path.GetExtension(filePath), speFormat[1]); 
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{6}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {5} \"{4}\\%~ni{7}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, algorithmsList[indexAL], outputPath, speFormat[0], Path.GetExtension(filePath), speFormat[1]); 
                         outputPath = Path.ChangeExtension(Path.Combine(outputPath, Path.GetFileName(filePath)), speFormat[1]);
                     }
 
@@ -265,6 +271,20 @@ namespace Test_Script
             scaleBox.Text = "Auto";
             l.Controls.Add(scaleBox);
             scaleBox.TextChanged += new EventHandler(scaleBox_TextChanged);
+
+            label = new Label();
+            label.Margin = new Padding(3, 6, 3, 6);
+            label.Text = "Algorithm";
+            label.AutoSize = true;
+            l.Controls.Add(label);
+
+            algorithmBox = new ComboBox();
+            algorithmBox.DataSource = algorithmsList;
+            algorithmBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            algorithmBox.Margin = new Padding(3, 6, 3, 6);
+            algorithmBox.Dock = DockStyle.Fill;
+            l.Controls.Add(algorithmBox);
+            l.SetColumnSpan(algorithmBox, 2);
 
             FlowLayoutPanel panel = new FlowLayoutPanel();
             panel.FlowDirection = FlowDirection.RightToLeft;
