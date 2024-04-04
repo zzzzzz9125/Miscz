@@ -1,5 +1,6 @@
 # MisczTools for Vegas Pro
 ## 介绍
+![封面](https://github.com/zzzzzz9125/Miscz/assets/109144770/b7594b8a-881a-427e-89e0-f7cef2315fd0)
 一个为 Vegas Pro 提供像素图像相关功能的工具合集，由 **MisczOFX** 和 **MisczTools 脚本** 这两部分组成。
 
 <br>MisczOFX 由 [openfx-misc](https://github.com/NatronGitHub/openfx-misc) 修改而来，是可用于 Vegas Pro 的 OFX 插件。改版修改了原插件的部分效果，并精简成为 Mz_TransformOFX、Mz_PositionOFX、Mz_Card3DOFX、Mz_CornerPinOFX、Mz_SpriteSheet 这五个 FX，可以实现像素图形的硬边缘放大变换、Sprite 表播放等功能。MisczTools 脚本 v.1.2.0 以前的版本完全基于 MisczOFX，提供像素放大和 Sprite 表播放的一键脚本操作。
@@ -66,6 +67,7 @@ Sony Vegas Pro: `C:\ProgramData\Sony\Vegas Pro\Script Menu\`
 
 # MisczTools for Vegas Pro
 ## Introduction
+![cover](https://github.com/zzzzzz9125/Miscz/assets/109144770/cb5e7e09-fe7e-4d11-9494-0c403e023823)
 A collection of tools for Vegas Pro to provide pixel image related features, consisting of two parts: **MisczOFX** and **MisczTools Scripts**.
 
 <br>MisczOFX, modified by [openfx-misc](https://github.com/NatronGitHub/openfx-misc), is an OFX plug-in available for Vegas Pro. The revision modified part of the effects of the original plug-in, and simplified into 5 FX: Mz_TransformOFX, Mz_PositionOFX, Mz_Card3DOFX, Mz_CornerPinOFX and Mz_SpriteSheet. They can realize the functions of scaling and transformation of pixel graphics and Sprite Sheets playback. Previous versions (older than v.1.2.0) of the MisczTools Scripts were based entirely on MisczOFX, providing one-click script operations for Pixel Scaling and Sprite Sheets Playback.
