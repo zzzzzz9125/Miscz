@@ -10,7 +10,7 @@
 
 [PixelScalingTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) 提供对原素材的一键像素放大功能，而 [SpriteSheetTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) 提供对 Sprite 表的切割、播放、重渲染等功能。
 
-使用教程详见：https://www.bilibili.com/read/cv33279086 。
+使用教程详见：[https://www.bilibili.com/read/cv33279086](https://www.bilibili.com/read/cv33279086)。
 
 <br>
 
@@ -20,7 +20,7 @@
 
 **现在如果你想使用 v.1.2.0 及以上的新版 MisczTools 脚本，你需要提前将 [FFmpeg](https://ffmpeg.org/download.html) 添加至环境变量中。方法请自行百度。**
 
-文件下载可转到最新的 [Releases](https://github.com/zzzzzz9125/Miscz/releases/)。中国国内替代下载链接：https://share.weiyun.com/BFrp1QKx 。
+文件下载可转到最新的 [Releases](https://github.com/zzzzzz9125/Miscz/releases/)。中国国内替代下载链接：[https://share.weiyun.com/BFrp1QKx](https://share.weiyun.com/BFrp1QKx)。
 
 <br>
 
@@ -76,7 +76,7 @@ Currently, the MisczTools Scripts consist of two scripts: PixelScalingTool Scrip
 
 [PixelScalingTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) provides a one-click way to scale Pixel Art materials, [SpriteSheetTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) provides cutting, playback, rerendering and other functions for Sprite Sheets.
 
-See this tutorial: https://docs.google.com/document/d/16Y-K3HpCDFPTQizYzijga0BBi6Th47RksKh_EZ0B0B8 .
+See this tutorial: [https://docs.google.com/document/d/16Y-K3HpCDFPTQizYzijga0BBi6Th47RksKh_EZ0B0B8](https://docs.google.com/document/d/16Y-K3HpCDFPTQizYzijga0BBi6Th47RksKh_EZ0B0B8).
 
 <br>
 
