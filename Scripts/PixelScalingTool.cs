@@ -18,7 +18,7 @@ namespace Test_Script
         TextBox scaleBox;
         TrackBar scaleBar;
         ComboBox algorithmBox;
-        public string[] algorithmsList;
+        string[] algorithmsList;
         public void Main(Vegas vegas)
         {
             myVegas = vegas;
@@ -143,7 +143,7 @@ namespace Test_Script
                     string filePath = arrMedia.FilePath;
                     string[] speFormat = SpecialFormat(Path.GetExtension(filePath), arrMedia.IsImageSequence() || arrMedia.Length.Nanos == 0);
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + speFormat[1]);
-                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {5} \"{4}\"", ffmpegPath, filePath, scaleValue, algorithmsList[indexAL], outputPath, speFormat[0]);
+                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\"", ffmpegPath, filePath, scaleValue, algorithmsList[indexAL], speFormat[0], outputPath);
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -156,7 +156,7 @@ namespace Test_Script
                         }
                         Directory.CreateDirectory(outputPath);
 
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{6}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {5} \"{4}\\%~ni{7}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, algorithmsList[indexAL], outputPath, speFormat[0], Path.GetExtension(filePath), speFormat[1]); 
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{6}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\\%~ni{7}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, algorithmsList[indexAL], speFormat[0], outputPath, Path.GetExtension(filePath), speFormat[1]); 
                         outputPath = Path.ChangeExtension(Path.Combine(outputPath, Path.GetFileName(filePath)), speFormat[1]);
                     }
 
@@ -281,7 +281,7 @@ namespace Test_Script
             algorithmBox = new ComboBox();
             algorithmBox.DataSource = algorithmsList;
             algorithmBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            algorithmBox.Margin = new Padding(3, 6, 3, 6);
+            algorithmBox.Margin = new Padding(3, 3, 3, 6);
             algorithmBox.Dock = DockStyle.Fill;
             l.Controls.Add(algorithmBox);
             l.SetColumnSpan(algorithmBox, 2);
