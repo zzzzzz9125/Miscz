@@ -437,6 +437,7 @@ namespace Test_Script
                             if (cropMode == 0)
                             {
                                 progressForm.Show();
+                                progressForm.Refresh();
                             }
 
                             string logText = "";
