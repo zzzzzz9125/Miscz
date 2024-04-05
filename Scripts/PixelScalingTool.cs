@@ -65,28 +65,31 @@ namespace Test_Script
                             VideoEvent vEvent = (VideoEvent) evnt;
                             VideoStream vStream = (VideoStream) vEvent.ActiveTake.MediaStream;
                             string filePath = vEvent.ActiveTake.Media.FilePath;
-                            string oriPath = Path.Combine(Path.GetDirectoryName(filePath), Regex.Match(Path.GetFileNameWithoutExtension(filePath), @"^(.+(?=(_Scaled)$))").Value + Path.GetExtension(filePath));
+                            string oriPath = filePath;
 
                             if (vEvent.ActiveTake.Media.IsImageSequence())
                             {
                                 filePath = Regex.Match(filePath, string.Format(@"^(.+\{0}(?=\s-\s))", Path.GetExtension(filePath))).Value;
                                 oriPath = Path.Combine(Regex.Match(Path.GetDirectoryName(filePath), @"^(.+(?=(_Scaled)$))").Value, Path.GetFileName(filePath));
+                                if (!File.Exists(oriPath) && Path.GetExtension(filePath).ToLower() == ".png")
+                                {
+                                    oriPath = Path.ChangeExtension(oriPath, ".gif");
+                                    if (!File.Exists(oriPath))
+                                    {
+                                        oriPath = Path.ChangeExtension(oriPath, ".psd");
+                                    }
+                                }
+                            }
+
+                            else
+                            {
+                                oriPath = Regex.Replace(oriPath, @"(?<=_Scaled\.[A-Za-z0-9]+)(\.[A-Za-z0-9]+)*$", "");  // Delete ".yyy(.zzz)" from "AAA_Scaled.xxx.yyy(.zzz)"
+                                oriPath = Regex.Replace(oriPath, @"_Scaled(?=\.[A-Za-z0-9]+$)", "");                    // Delete "_Scaled" from "AAA_Scaled.xxx"
                             }
 
                             if (!File.Exists(oriPath))
                             {
-                                switch (Path.GetExtension(filePath).ToLower())
-                                {
-                                    case ".png":
-                                    case ".mov":
-                                        oriPath = Path.ChangeExtension(oriPath, ".gif");
-                                        break;
-                                }
-
-                                if (!File.Exists(oriPath))
-                                {
-                                    oriPath = filePath;
-                                }
+                                oriPath = filePath;
                             }
 
                             if (File.Exists(oriPath))
@@ -142,7 +145,7 @@ namespace Test_Script
 
                     string filePath = arrMedia.FilePath;
                     string[] speFormat = SpecialFormat(Path.GetExtension(filePath), arrMedia.IsImageSequence() || arrMedia.Length.Nanos == 0);
-                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + speFormat[1]);
+                    string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath) + speFormat[1]);
                     string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\"", ffmpegPath, filePath, scaleValue, algorithmsList[indexAL], speFormat[0], outputPath);
 
                     if (arrMedia.IsImageSequence())
@@ -156,12 +159,13 @@ namespace Test_Script
                         }
                         Directory.CreateDirectory(outputPath);
 
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{6}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\\%~ni{7}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, algorithmsList[indexAL], speFormat[0], outputPath, Path.GetExtension(filePath), speFormat[1]); 
-                        outputPath = Path.ChangeExtension(Path.Combine(outputPath, Path.GetFileName(filePath)), speFormat[1]);
+                        string tmpExt = string.IsNullOrEmpty(speFormat[1]) ? Path.GetExtension(filePath) : speFormat[1];
+                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{6}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\\%~ni{7}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, algorithmsList[indexAL], speFormat[0], outputPath, Path.GetExtension(filePath), tmpExt); 
+                        outputPath = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(filePath) + tmpExt);
                     }
 
                     p.Start();
-                    while (p.StandardOutput.ReadLine() != "") { }
+                    while (!string.IsNullOrEmpty(p.StandardOutput.ReadLine())) { }
                     p.StandardInput.WriteLine(string.Format("echo off & ({0}) 2>&1 & exit", renderCommand));
                     logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
@@ -197,11 +201,15 @@ namespace Test_Script
 
         public static string[] SpecialFormat(string format, bool isImage = false)
         {
-            string[] str = new string[]{"", format};
+            string[] str = new string[]{"", ""};
             switch (format.ToLower())
             {
                 case ".png":
                     str[0] = "-pix_fmt rgb32";
+                    break;
+
+                case ".psd":
+                    str = new string[]{"-pix_fmt rgb32", ".png"};
                     break;
 
                 case ".gif":
