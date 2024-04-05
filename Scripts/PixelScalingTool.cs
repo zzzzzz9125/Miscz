@@ -13,7 +13,7 @@ namespace Test_Script
 {
     public class Class
     {
-        public const string VERSION = "v.1.2.6";
+        public const string VERSION = "v.1.2.7";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
@@ -65,7 +65,8 @@ namespace Test_Script
                             VideoEvent vEvent = (VideoEvent) evnt;
                             VideoStream vStream = (VideoStream) vEvent.ActiveTake.MediaStream;
                             string filePath = vEvent.ActiveTake.Media.FilePath;
-                            string oriPath = filePath;
+                            string oriPath = Regex.Replace(filePath, @"(?<=_Scaled\.[A-Za-z0-9]+)(\.[A-Za-z0-9]+)*$", "");  // Delete ".yyy(.zzz)" from "AAA_Scaled.xxx.yyy(.zzz)"
+                            oriPath = Regex.Replace(oriPath, @"_Scaled(?=\.[A-Za-z0-9]+$)", "");                            // Delete "_Scaled" from "AAA_Scaled.xxx"
 
                             if (vEvent.ActiveTake.Media.IsImageSequence())
                             {
@@ -79,12 +80,6 @@ namespace Test_Script
                                         oriPath = Path.ChangeExtension(oriPath, ".psd");
                                     }
                                 }
-                            }
-
-                            else
-                            {
-                                oriPath = Regex.Replace(oriPath, @"(?<=_Scaled\.[A-Za-z0-9]+)(\.[A-Za-z0-9]+)*$", "");  // Delete ".yyy(.zzz)" from "AAA_Scaled.xxx.yyy(.zzz)"
-                                oriPath = Regex.Replace(oriPath, @"_Scaled(?=\.[A-Za-z0-9]+$)", "");                    // Delete "_Scaled" from "AAA_Scaled.xxx"
                             }
 
                             if (!File.Exists(oriPath))
