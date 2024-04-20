@@ -7,17 +7,15 @@
 
 <br>从 v.1.2.0 开始，MisczTools 脚本不再依赖于 MisczOFX，而是转而使用 [FFmpeg](https://ffmpeg.org/download.html) 逻辑进行重渲染操作。
 
-目前，MisczTools 脚本包含两个脚本：PixelScalingTool 脚本 和 SpriteSheetTool 脚本。
+目前，MisczTools 脚本包含三个脚本：PixelScalingTool 脚本 、SpriteSheetTool 脚本 和 PsdLayerSplitter 脚本。
 
-[PixelScalingTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) 提供对原素材的一键像素放大功能，而 [SpriteSheetTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) 提供对 Sprite 表的切割、播放、重渲染等功能。
+[PixelScalingTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) 提供对原素材的一键像素放大功能，[SpriteSheetTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) 提供对 Sprite 表的切割、播放、重渲染等功能，[PsdLayerSplitter 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PsdLayerSplitter.cs) 提供 .psd 文件的分图层功能。
 
 使用教程详见：[https://www.bilibili.com/read/cv33279086](https://www.bilibili.com/read/cv33279086)。
 
 <br>
 
 ## 安装说明
-
-**注意，从 v.1.2.0 开始，由于 MisczTools 脚本不再依赖于 MisczOFX，因此 MisczOFX 的版本号仍停留在 v.1.1.0 版，并且暂时不打算有更新意向。**
 
 **现在如果你想使用 v.1.2.0 及以上的新版 MisczTools 脚本，你需要提前将 [FFmpeg](https://ffmpeg.org/download.html) 添加至环境变量中。方法请自行百度。**
 
@@ -28,7 +26,7 @@
 ### 脚本安装
 自动安装：下载对应的版本的 .exe 安装包，安装。Vegas Pro 14 及以上，请下载 Magix 版，Vegas Pro 13 及以下，请下载 Sony 版。
 
-手动安装：下载 `MisczTools_v.1.2.x.zip` 并解压。将脚本文件放置于对应文件夹中。推荐使用以下两个路径：
+手动安装：下载 `MisczTools_v.1.3.x.zip` 并解压。将脚本文件放置于对应文件夹中。推荐使用以下两个路径：
 
 Magix Vegas Pro: `C:\ProgramData\Vegas Pro\Script Menu\`
 
@@ -55,9 +53,9 @@ Sony Vegas Pro: `C:\ProgramData\Sony\Vegas Pro\Script Menu\`
 <br>
 
 ### MisczOFX 安装
-自动安装：下载 `MisczOFX_v.1.1.0_Chinese.exe` 并运行，解压到默认路径即可。
+自动安装：下载 `MisczOFX_v.1.3.x_Chinese.exe` 并运行，解压到默认路径即可。
 
-手动安装：下载 `MisczTools_v.1.2.x.zip` 并解压，将 `Miscz.ofx.bundle` 放置到以下路径： `C:\Program Files\Common Files\OFX\Plugins\`
+手动安装：下载 `MisczTools_v.1.3.x.zip` 并解压，将 `Miscz.ofx.bundle` 放置到以下路径： `C:\Program Files\Common Files\OFX\Plugins\`
 
 如果上述文件夹不存在，请手动创建。
 
@@ -74,17 +72,15 @@ A collection of tools for Vegas Pro to provide pixel image related features, con
 
 <br>Starting with v.1.2.0, MisczTools Scripts no longer depend on MisczOFX, but instead use [FFmpeg](https://ffmpeg.org/download.html) logic for rendering.
 
-Currently, the MisczTools Scripts consist of two scripts: PixelScalingTool Script and SpriteSheetTool Script.
+Currently, the MisczTools Scripts consist of three scripts: PixelScalingTool Script, SpriteSheetTool Script and PsdLayerSplitter Script.
 
-[PixelScalingTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) provides a one-click way to scale Pixel Art materials, [SpriteSheetTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) provides cutting, playback, rerendering and other functions for Sprite Sheets.
+[PixelScalingTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) provides a one-click way to scale Pixel Art materials, [SpriteSheetTool Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) provides cutting, playback, rerendering and other functions for Sprite Sheets, [PsdLayerSplitter Script](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PsdLayerSplitter.cs) can split layers of a .psd file quickly in Vegas.
 
 See this tutorial: [https://docs.google.com/document/d/16Y-K3HpCDFPTQizYzijga0BBi6Th47RksKh_EZ0B0B8](https://docs.google.com/document/d/16Y-K3HpCDFPTQizYzijga0BBi6Th47RksKh_EZ0B0B8).
 
 <br>
 
 ## Installation Instructions
-
-**Note: Starting with v.1.2.0, since MisczTools Scripts no longer depend on MisczOFX, the version of MisczOFX remains at v.1.1.0 and is not intended to be updated for the time being.**
 
 **Now if you want to use MisczTools Scripts (v.1.2.0 or later version), you must add [FFmpeg](https://ffmpeg.org/download.html) to the environment variables in advance. Google it if you don't know how to.**
 
@@ -95,7 +91,7 @@ You can go to the [Latest Releases](https://github.com/zzzzzz9125/Miscz/releases
 ### Scripts Install
 Auto Install: Download the .exe file you need and install it. For Vegas Pro 14 or above, please download Magix version. For Vegas Pro 13 or below, please download Sony version.
 
-Manual Install: Download `MisczTools_v.1.2.x.zip`, decompress it, and then put the script files into the following path. These two paths are recommended:
+Manual Install: Download `MisczTools_v.1.3.x.zip`, decompress it, and then put the script files into the following path. These two paths are recommended:
 
 Magix Vegas Pro: `C:\ProgramData\Vegas Pro\Script Menu\`
 
@@ -122,8 +118,8 @@ If no folder exists, create one, then put the files in.
 <br>
 
 ### MisczOFX Install
-Auto Install: Download and run `MisczOFX_v.1.1.0_English.exe`, decompress it to the default path.
+Auto Install: Download and run `MisczOFX_v.1.3.x_English.exe`, decompress it to the default path.
 
-Manual Install: Download `MisczTools_v.1.2.x.zip`, decompress it. For English users, delete `Miscz.ofx.bundle\Contents\Resources\Miscz.xml` first. Then put the `Miscz.ofx.bundle` into the following path: `C:\Program Files\Common Files\OFX\Plugins\`
+Manual Install: Download `MisczTools_v.1.3.x.zip`, decompress it. For English users, delete `Miscz.ofx.bundle\Contents\Resources\Miscz.xml` first. Then put the `Miscz.ofx.bundle` into the following path: `C:\Program Files\Common Files\OFX\Plugins\`
 
 If no folder exists, create one, then put the files in.
