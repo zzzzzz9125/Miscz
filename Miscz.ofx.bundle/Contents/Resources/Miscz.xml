@@ -5,6 +5,117 @@
             <OfxPropLabel>Mz_TransformOFX</OfxPropLabel>
             <OfxPropPluginDescription>平移/旋转/缩放2D图像。</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
+                <OfxParamTypeGroup name="periodic">
+                    <OfxPropLabel>周期运动</OfxPropLabel>
+                </OfxParamTypeGroup>
+
+                <OfxParamTypeDouble name="periodicRadius">
+                    <OfxPropLabel>半径</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的半径。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicFrequency">
+                    <OfxPropLabel>频率</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的频率。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicAutorotate">
+                    <OfxPropLabel>自转</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的自转速度。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicScale">
+                    <OfxPropLabel>缩放</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的缩放。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicScaleStep">
+                    <OfxPropLabel>缩放步长</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的缩放步长。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicOffset">
+                    <OfxPropLabel>偏移</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的偏移。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicSkip">
+                    <OfxPropLabel>瞬移</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的瞬移步数。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeINTEGER name="periodicN">
+                    <OfxPropLabel>N边形</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的点个数/边个数。1表示圆，2表示线段，3或以上表示多边形。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeINTEGER name="periodicInterval">
+                    <OfxPropLabel>间隔</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的点间隔。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeDouble name="periodicRotate">
+                    <OfxPropLabel>旋转</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicBend">
+                    <OfxPropLabel>弯曲</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的弯曲。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicDeform">
+                    <OfxPropLabel>形变</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的形变。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeChoice name="periodicCurve">
+                    <OfxPropLabel>曲线类型</OfxPropLabel>
+                    <OfxParamPropHint>运动曲线类型。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>默认</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>缓动</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>平方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>平方缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>平方缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>立方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>立方缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>立方缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四次方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四次缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四次缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>五次方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>五次缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>五次缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>指数</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>指数缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>指数缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>圆形</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>圆形缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>圆形缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>回退</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>回退缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>回退缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>线性</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeDouble2D name="periodicBezierP1">
+                    <OfxPropLabel>贝塞尔点1</OfxPropLabel>
+                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeDouble2D name="periodicBezierP2">
+                    <OfxPropLabel>贝塞尔点2</OfxPropLabel>
+                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeBoolean name="periodicSymmetry">
+                    <OfxPropLabel>曲线对称</OfxPropLabel>
+                    <OfxParamPropHint>使相邻的两个运动曲线呈对称状态。</OfxParamPropHint>
+                </OfxParamTypeBoolean>
+
                 <OfxParamTypeDouble2D name="translate">
                     <OfxPropLabel>平移</OfxPropLabel>
                     <OfxParamPropHint>X和Y的平移值(以像素为单位)。也可以通过单击拖动预览窗口中的定位点来调整。</OfxParamPropHint>
@@ -14,6 +125,11 @@
                     <OfxPropLabel>旋转</OfxPropLabel>
                     <OfxParamPropHint>绕中心旋转的角度(以度为单位)。</OfxParamPropHint>
                 </OfxParamTypeDouble>
+
+                <OfxParamTypeBoolean name="faceToCenter">
+                    <OfxPropLabel>面朝中心</OfxPropLabel>
+                    <OfxParamPropHint>使运动物体自动面朝中心。</OfxParamPropHint>
+                </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="scale">
                     <OfxPropLabel>缩放</OfxPropLabel>
@@ -118,7 +234,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxParamPropHint>用黑色填充源图像外面的区域。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
-                <OfxParamTypeGroup name="motionBlur">
+                <OfxParamTypeGroup name="motionBlurGroup">
                     <OfxPropLabel>运动模糊</OfxPropLabel>
                 </OfxParamTypeGroup>
 
@@ -129,7 +245,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeBoolean name="directionalBlur">
                     <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0，“用黑色填充外部区域”参数对结果可能会有很大影响。</OfxParamPropHint>
+                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
@@ -155,6 +271,16 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxPropLabel>自定义抵消值</OfxPropLabel>
                     <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
                 </OfxParamTypeDouble>
+
+                <OfxParamTypeBoolean name="maskInvert">
+                    <OfxPropLabel>反转遮罩</OfxPropLabel>
+                    <OfxParamPropHint>启用后，反转遮罩效果。(注：Vegas的遮罩功能未接入OFX的API，因此该选项无效。)</OfxParamPropHint>
+                </OfxParamTypeBoolean>
+
+                <OfxParamTypeDouble name="mix">
+                    <OfxPropLabel>混合</OfxPropLabel>
+                    <OfxParamPropHint>变换后的图像与原始图像之间的混合值。</OfxParamPropHint>
+                </OfxParamTypeDouble>
             </OfxImageEffectContext>
         </OfxResourceSet>
     </OfxPlugin>
@@ -164,6 +290,117 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
             <OfxPropLabel>Mz_TransformMaskedOFX</OfxPropLabel>
             <OfxPropPluginDescription>平移/旋转/缩放2D图像，并使用可选遮罩。</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
+                <OfxParamTypeGroup name="periodic">
+                    <OfxPropLabel>周期运动</OfxPropLabel>
+                </OfxParamTypeGroup>
+
+                <OfxParamTypeDouble name="periodicRadius">
+                    <OfxPropLabel>半径</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的半径。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicFrequency">
+                    <OfxPropLabel>频率</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的频率。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicAutorotate">
+                    <OfxPropLabel>自转</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的自转速度。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicScale">
+                    <OfxPropLabel>缩放</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的缩放。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicScaleStep">
+                    <OfxPropLabel>缩放步长</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的缩放步长。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicOffset">
+                    <OfxPropLabel>偏移</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的偏移。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicSkip">
+                    <OfxPropLabel>瞬移</OfxPropLabel>
+                    <OfxParamPropHint>周期运动的瞬移步数。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeINTEGER name="periodicN">
+                    <OfxPropLabel>N边形</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的点个数/边个数。1表示圆，2表示线段，3或以上表示多边形。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeINTEGER name="periodicInterval">
+                    <OfxPropLabel>间隔</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的点间隔。</OfxParamPropHint>
+                </OfxParamTypeINTEGER>
+
+                <OfxParamTypeDouble name="periodicRotate">
+                    <OfxPropLabel>旋转</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicBend">
+                    <OfxPropLabel>弯曲</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的弯曲。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicDeform">
+                    <OfxPropLabel>形变</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的形变。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeChoice name="periodicCurve">
+                    <OfxPropLabel>曲线类型</OfxPropLabel>
+                    <OfxParamPropHint>运动曲线类型。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>默认</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>缓动</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>平方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>平方缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>平方缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>立方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>立方缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>立方缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四次方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四次缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四次缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>五次方</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>五次缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>五次缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>指数</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>指数缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>指数缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>圆形</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>圆形缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>圆形缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>回退</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>回退缓入</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>回退缓出</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>线性</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeDouble2D name="periodicBezierP1">
+                    <OfxPropLabel>贝塞尔点1</OfxPropLabel>
+                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeDouble2D name="periodicBezierP2">
+                    <OfxPropLabel>贝塞尔点2</OfxPropLabel>
+                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeBoolean name="periodicSymmetry">
+                    <OfxPropLabel>曲线对称</OfxPropLabel>
+                    <OfxParamPropHint>使相邻的两个运动曲线呈对称状态。</OfxParamPropHint>
+                </OfxParamTypeBoolean>
+
                 <OfxParamTypeDouble2D name="translate">
                     <OfxPropLabel>平移</OfxPropLabel>
                     <OfxParamPropHint>X和Y的平移值(以像素为单位)。也可以通过单击拖动预览窗口中的定位点来调整。</OfxParamPropHint>
@@ -173,6 +410,11 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxPropLabel>旋转</OfxPropLabel>
                     <OfxParamPropHint>绕中心旋转的角度(以度为单位)。</OfxParamPropHint>
                 </OfxParamTypeDouble>
+
+                <OfxParamTypeBoolean name="faceToCenter">
+                    <OfxPropLabel>面朝中心</OfxPropLabel>
+                    <OfxParamPropHint>使运动物体自动面朝中心。</OfxParamPropHint>
+                </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="scale">
                     <OfxPropLabel>缩放</OfxPropLabel>
@@ -274,8 +516,12 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeBoolean name="black_outside">
                     <OfxPropLabel>用黑色填充外部区域</OfxPropLabel>
-                    <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
+                    <OfxParamPropHint>用黑色填充源图像外面的区域。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
+
+                <OfxParamTypeGroup name="motionBlurGroup">
+                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble name="motionBlur">
                     <OfxPropLabel>运动模糊</OfxPropLabel>
@@ -284,7 +530,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeBoolean name="directionalBlur">
                     <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0，“用黑色填充外部区域”参数对结果可能会有很大影响。</OfxParamPropHint>
+                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
@@ -370,12 +616,12 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypePushButton name="copyFrom">
-                    <OfxPropLabel>复制From点参数</OfxPropLabel>
+                    <OfxPropLabel>从From点复制</OfxPropLabel>
                     <OfxParamPropHint>将From点参数复制到To点(包括动画)。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyFromSingle">
-                    <OfxPropLabel>复制From点参数(单关键帧)</OfxPropLabel>
+                    <OfxPropLabel>从From点复制(单帧)</OfxPropLabel>
                     <OfxParamPropHint>将当前的From点参数复制到To点。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
@@ -400,8 +646,8 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypePushButton name="setToInputRod">
-                    <OfxPropLabel>设置为输入杆</OfxPropLabel>
-                    <OfxParamPropHint>将定义源区域的值复制到From点。</OfxParamPropHint>
+                    <OfxPropLabel>设置为输入RoD</OfxPropLabel>
+                    <OfxParamPropHint>将源定义区域(Region of Definition)的值复制到From点。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyTo">
@@ -410,7 +656,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyToSingle">
-                    <OfxPropLabel>从To点复制(单关键帧)</OfxPropLabel>
+                    <OfxPropLabel>从To点复制(单帧)</OfxPropLabel>
                     <OfxParamPropHint>将当前的To点参数复制到From点。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
@@ -485,6 +731,10 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
+                <OfxParamTypeGroup name="motionBlurGroup">
+                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                </OfxParamTypeGroup>
+
                 <OfxParamTypeDouble name="motionBlur">
                     <OfxPropLabel>运动模糊</OfxPropLabel>
                     <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
@@ -492,7 +742,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeBoolean name="directionalBlur">
                     <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0，“用黑色填充外部区域”参数对结果可能会有很大影响。</OfxParamPropHint>
+                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
@@ -517,6 +767,16 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 <OfxParamTypeDouble name="shutterCustomOffset">
                     <OfxPropLabel>自定义抵消值</OfxPropLabel>
                     <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeBoolean name="maskInvert">
+                    <OfxPropLabel>反转遮罩</OfxPropLabel>
+                    <OfxParamPropHint>启用后，反转遮罩效果。(注：Vegas的遮罩功能未接入OFX的API，因此该选项无效。)</OfxParamPropHint>
+                </OfxParamTypeBoolean>
+
+                <OfxParamTypeDouble name="mix">
+                    <OfxPropLabel>混合</OfxPropLabel>
+                    <OfxParamPropHint>变换后的图像与原始图像之间的混合值。</OfxParamPropHint>
                 </OfxParamTypeDouble>
             </OfxImageEffectContext>
         </OfxResourceSet>
@@ -568,12 +828,12 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypePushButton name="copyFrom">
-                    <OfxPropLabel>复制From点参数</OfxPropLabel>
+                    <OfxPropLabel>从From点复制</OfxPropLabel>
                     <OfxParamPropHint>将From点参数复制到To点(包括动画)。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyFromSingle">
-                    <OfxPropLabel>复制From点参数(单关键帧)</OfxPropLabel>
+                    <OfxPropLabel>从From点复制(单帧)</OfxPropLabel>
                     <OfxParamPropHint>将当前的From点参数复制到To点。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
@@ -598,8 +858,8 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypePushButton name="setToInputRod">
-                    <OfxPropLabel>设置为输入杆</OfxPropLabel>
-                    <OfxParamPropHint>将定义源区域的值复制到From点。</OfxParamPropHint>
+                    <OfxPropLabel>设置为输入RoD</OfxPropLabel>
+                    <OfxParamPropHint>将源定义区域(Region of Definition)的值复制到From点。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyTo">
@@ -608,7 +868,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyFromSingle">
-                    <OfxPropLabel>从To点复制(单关键帧)</OfxPropLabel>
+                    <OfxPropLabel>从To点复制(单帧)</OfxPropLabel>
                     <OfxParamPropHint>将当前的To点参数复制到From点。</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
@@ -683,6 +943,10 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
+                <OfxParamTypeGroup name="motionBlurGroup">
+                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                </OfxParamTypeGroup>
+
                 <OfxParamTypeDouble name="motionBlur">
                     <OfxPropLabel>运动模糊</OfxPropLabel>
                     <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
@@ -690,7 +954,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeBoolean name="directionalBlur">
                     <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0，“用黑色填充外部区域”参数对结果可能会有很大影响。</OfxParamPropHint>
+                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
@@ -1509,6 +1773,10 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
+                <OfxParamTypeGroup name="motionBlurGroup">
+                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                </OfxParamTypeGroup>
+
                 <OfxParamTypeDouble name="motionBlur">
                     <OfxPropLabel>运动模糊</OfxPropLabel>
                     <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
@@ -1516,7 +1784,7 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
 
                 <OfxParamTypeBoolean name="directionalBlur">
                     <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0，“用黑色填充外部区域”参数对结果可能会有很大影响。</OfxParamPropHint>
+                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
