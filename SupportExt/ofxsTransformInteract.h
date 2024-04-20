@@ -33,9 +33,80 @@
 #define kParamTransformTranslate "transformTranslate"
 #define kParamTransformTranslateLabel "Translate"
 #define kParamTransformTranslateHint "Translation along the x and y axes in pixels. Can also be adjusted by clicking and dragging the center handle in the Viewer."
+
+#define kGroupTransformPeriodic "periodic"
+#define kGroupTransformPeriodicLabel "Periodic Motion"
+
+#define kParamTransformPeriodicRadius "periodicRadius"
+#define kParamTransformPeriodicRadiusLabel "Radius"
+#define kParamTransformPeriodicRadiusHint "Radius of the trajectory of periodic motion."
+
+#define kParamTransformPeriodicFrequency "periodicFrequency"
+#define kParamTransformPeriodicFrequencyLabel "Frequency"
+#define kParamTransformPeriodicFrequencyHint "Frequency of periodic motion."
+
+#define kParamTransformPeriodicAutorotate "periodicAutorotate"
+#define kParamTransformPeriodicAutorotateLabel "Autorotate"
+#define kParamTransformPeriodicAutorotateHint "Autorotation speed of periodic motion."
+
+#define kParamTransformPeriodicScale "periodicScale"
+#define kParamTransformPeriodicScaleLabel "Scale"
+#define kParamTransformPeriodicScaleHint "Scale value of periodic motion."
+
+#define kParamTransformPeriodicScaleStep "periodicScaleStep"
+#define kParamTransformPeriodicScaleStepLabel "Scale Step"
+#define kParamTransformPeriodicScaleStepHint "Scale step of periodic motion."
+
+#define kParamTransformPeriodicOffset "periodicOffset"
+#define kParamTransformPeriodicOffsetLabel "Offset"
+#define kParamTransformPeriodicOffsetHint "Offset of periodic motion."
+
+#define kParamTransformPeriodicSkip "periodicSkip"
+#define kParamTransformPeriodicSkipLabel "Skip"
+#define kParamTransformPeriodicSkipHint "Number of steps of periodic motion you want to skip."
+
+#define kParamTransformPeriodicRotate "periodicRotate"
+#define kParamTransformPeriodicRotateLabel "Rotate"
+#define kParamTransformPeriodicRotateHint "Rotation of the trajectory of periodic motion, in degrees."
+
+#define kParamTransformPeriodicN "periodicN"
+#define kParamTransformPeriodicNLabel "N-sided"
+#define kParamTransformPeriodicNHint "Point/Side numbers of polygon of the trajectory of periodic motion. 1 is a circle, 2 is a two-point line, and 3 or more is a polygon."
+
+#define kParamTransformPeriodicInterval "periodicInterval"
+#define kParamTransformPeriodicIntervalLabel "Interval"
+#define kParamTransformPeriodicIntervalHint "Point interval of the trajectory of periodic motion."
+
+#define kParamTransformPeriodicBend "periodicBend"
+#define kParamTransformPeriodicBendLabel "Bend"
+#define kParamTransformPeriodicBendHint "Bend of the trajectory of periodic motion."
+
+#define kParamTransformPeriodicDeform "periodicDeform"
+#define kParamTransformPeriodicDeformLabel "Deform"
+#define kParamTransformPeriodicDeformHint "Deformation of the trajectory of periodic motion."
+
+#define kParamTransformPeriodicCurve "periodicCurve"
+#define kParamTransformPeriodicCurveLabel "Curve Type"
+#define kParamTransformPeriodicCurveHint "Motion Curve Type."
+
+#define kParamTransformPeriodicBezierP1 "periodicBezierP1"
+#define kParamTransformPeriodicBezierP1Label "Bezier P1"
+#define kParamTransformPeriodicBezierP2 "periodicBezierP2"
+#define kParamTransformPeriodicBezierP2Label "Bezier P2"
+#define kParamTransformPeriodicBezierPHint "Bezier Curve P1 & P2"
+
+#define kParamTransformPeriodicSymmetry "periodicSymmetry"
+#define kParamTransformPeriodicSymmetryLabel "Curve Symmetry"
+#define kParamTransformPeriodicSymmetryHint "It allows the two adjacent motion curves to be symmetric."
+
 #define kParamTransformRotate "transformRotate"
 #define kParamTransformRotateLabel "Rotate"
 #define kParamTransformRotateHint "Rotation angle in degrees around the Center. Can also be adjusted by clicking and dragging the rotation bar in the Viewer."
+
+#define kParamTransformFaceToCenter "faceToCenter"
+#define kParamTransformFaceToCenterLabel "Face To Center"
+#define kParamTransformFaceToCenterHint "It allows the moving object to automatically face to the center."
+
 #define kParamTransformScale "transformScale"
 #define kParamTransformScaleLabel "Scale"
 #define kParamTransformScaleHint "Scale factor along the x and y axes. Can also be adjusted by clicking and dragging the outer circle or the diameter handles in the Viewer."
@@ -46,7 +117,7 @@
 
 #define kParamTransformFlip "flip"
 #define kParamTransformFlipLabel "Vertical (flip)"
-#define kParamTransformFlipHint "Upside-down (swap top and bottom). Only possible if input is not interlaced."
+#define kParamTransformFlipHint "Upside-down (swap top and bottom)."
 
 #define kParamTransformScaleUniform "transformScaleUniform"
 #define kParamTransformScaleUniformLabel "Uniform"
@@ -93,22 +164,54 @@ namespace OFX {
     struct TransformParams {
         OfxPointD center;
         OfxPointD translate;
+        double periodicRadius;
+        double periodicRotate;
+        double periodicDeform;
+        double periodicBend;
+        int periodicN;
+        int periodicInterval;
+        OfxPointD periodicBezierP1;
+        OfxPointD periodicBezierP2;
+        bool periodicSymmetry;
+        double periodicFrequency;
+        double periodicAutorotate;
+        double periodicScale;
+        double periodicScaleStep;
+        double periodicOffset;
+        double periodicSkip;
         OfxPointD scale;
         bool flop;
         bool flip;
         bool scaleUniform;
         double rotate;
+        bool faceToCenter;
         double skewX, skewY;
         int skewOrder;
         bool inverted;
         TransformParams() {
             center = { 0., 0. };
             translate = { 0., 0. };
+            periodicRadius = 0.;
+            periodicRotate = 0.;
+            periodicDeform = 1.;
+            periodicBend = 0.;
+            periodicN = 1;
+            periodicInterval = 1;
+            periodicBezierP1 = { 0., 0. };
+            periodicBezierP2 = { 1., 1. };
+            periodicSymmetry = false;
+            periodicFrequency = 0;
+            periodicAutorotate = 0;
+            periodicScale = 1;
+            periodicScaleStep = 0;
+            periodicOffset = 0;
+            periodicSkip = 0;
             scale = { 1., 1. };
             flop = false;
             flip = false;
             scaleUniform = false;
             rotate = 0.;
+            faceToCenter = false;
             skewX = 0.;
             skewY = 0.;
             skewOrder = 0;
@@ -221,6 +324,22 @@ namespace OFX {
         // NON-GENERIC
         OFX::Double2DParam* _translate;
         OFX::DoubleParam* _rotate;
+        OFX::BooleanParam* _faceToCenter;
+        OFX::DoubleParam* _periodicRadius;
+        OFX::DoubleParam* _periodicRotate;
+        OFX::DoubleParam* _periodicDeform;
+        OFX::DoubleParam* _periodicBend;
+        OFX::IntParam* _periodicN;
+        OFX::IntParam* _periodicInterval;
+        OFX::Double2DParam* _periodicBezierP1;
+        OFX::Double2DParam* _periodicBezierP2;
+        OFX::BooleanParam* _periodicSymmetry;
+        OFX::DoubleParam* _periodicFrequency;
+        OFX::DoubleParam* _periodicAutorotate;
+        OFX::DoubleParam* _periodicScale;
+        OFX::DoubleParam* _periodicScaleStep;
+        OFX::DoubleParam* _periodicOffset;
+        OFX::DoubleParam* _periodicSkip;
         OFX::Double2DParam* _scale;
         OFX::BooleanParam* _flop;
         OFX::BooleanParam* _flip;

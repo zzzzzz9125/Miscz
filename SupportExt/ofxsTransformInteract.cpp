@@ -48,6 +48,10 @@
 #include <GL/gl.h>
 #endif
 
+#ifndef M_PI
+#define M_PI        3.14159265358979323846264338327950288   /* pi             */
+#endif
+
 #include "ofxsMatrix2D.h"
 #include "ofxsTransform3x3.h"
 #include "ofxsPositionInteract.h"
@@ -73,21 +77,325 @@ namespace OFX {
             bool hasAmount,
             bool noTranslate)
     {
+        // periodic
+        {
+            GroupParamDescriptor* group = desc.defineGroupParam(kGroupTransformPeriodic);
+            if (group) {
+                group->setLabel(kGroupTransformPeriodicLabel);
+                group->setAsTab();
+                if (page) {
+                    page->addChild(*group);
+                }
+            }
+
+            // periodicRadius
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicRadius);
+                param->setLabel(kParamTransformPeriodicRadiusLabel);
+                param->setHint(kParamTransformPeriodicRadiusHint);
+                param->setDefault(0);
+                param->setRange(0, DBL_MAX);
+                param->setDisplayRange(0, 1);
+                param->setIncrement(0.05);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicFrequency
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicFrequency);
+                param->setLabel(kParamTransformPeriodicFrequencyLabel);
+                param->setHint(kParamTransformPeriodicFrequencyHint);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(-5, 5);
+                param->setIncrement(0.1);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicAutorotate
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicAutorotate);
+                param->setLabel(kParamTransformPeriodicAutorotateLabel);
+                param->setHint(kParamTransformPeriodicAutorotateHint);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(-10, 10);
+                param->setIncrement(1.);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicScale
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicScale);
+                param->setLabel(kParamTransformPeriodicScaleLabel);
+                param->setHint(kParamTransformPeriodicScaleHint);
+                param->setDefault(1);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(0, 5);
+                param->setIncrement(0.05);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicScaleStep
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicScaleStep);
+                param->setLabel(kParamTransformPeriodicScaleStepLabel);
+                param->setHint(kParamTransformPeriodicScaleStepHint);
+                param->setDefault(0);
+                param->setRange(-INT_MAX, INT_MAX);
+                param->setDisplayRange(0, 20);
+                param->setIncrement(1);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicOffset
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicOffset);
+                param->setLabel(kParamTransformPeriodicOffsetLabel);
+                param->setHint(kParamTransformPeriodicOffsetHint);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(0, 1);
+                param->setIncrement(0.05);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicSkip
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicSkip);
+                param->setLabel(kParamTransformPeriodicSkipLabel);
+                param->setHint(kParamTransformPeriodicSkipHint);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(0, 10);
+                param->setIncrement(0.5);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicN
+            {
+                IntParamDescriptor* param = desc.defineIntParam(kParamTransformPeriodicN);
+                param->setLabel(kParamTransformPeriodicNLabel);
+                param->setHint(kParamTransformPeriodicNHint);
+                param->setDefault(1);
+                param->setRange(1, INT_MAX);
+                param->setDisplayRange(1, 20);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicInterval
+            {
+                IntParamDescriptor* param = desc.defineIntParam(kParamTransformPeriodicInterval);
+                param->setLabel(kParamTransformPeriodicIntervalLabel);
+                param->setHint(kParamTransformPeriodicIntervalHint);
+                param->setDefault(1);
+                param->setRange(1, INT_MAX);
+                param->setDisplayRange(1, 20);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicRotate
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicRotate);
+                param->setLabel(kParamTransformPeriodicRotateLabel);
+                param->setHint(kParamTransformPeriodicRotateHint);
+                param->setDoubleType(eDoubleTypeAngle);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(-1800, 1800);
+                param->setIncrement(30);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicBend
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicBend);
+                param->setLabel(kParamTransformPeriodicBendLabel);
+                param->setHint(kParamTransformPeriodicBendHint);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(-1, 1);
+                param->setIncrement(.1);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicDeform
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicDeform);
+                param->setLabel(kParamTransformPeriodicDeformLabel);
+                param->setHint(kParamTransformPeriodicDeformHint);
+                param->setDefault(1);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(0, 10);
+                param->setIncrement(.1);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicCurve
+            {
+                ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamTransformPeriodicCurve);
+                param->setLabel(kParamTransformPeriodicCurveLabel);
+                param->setHint(kParamTransformPeriodicCurveHint);
+                param->setDefault(1);
+                param->appendOption("Custom");
+                param->appendOption("Default");
+                param->appendOption("Ease");
+                param->appendOption("Ease In");
+                param->appendOption("Ease Out");
+                param->appendOption("Quad");
+                param->appendOption("Quad In");
+                param->appendOption("Quad Out");
+                param->appendOption("Cubic");
+                param->appendOption("Cubic In");
+                param->appendOption("Cubic Out");
+                param->appendOption("Quart");
+                param->appendOption("Quart In");
+                param->appendOption("Quart Out");
+                param->appendOption("Quint");
+                param->appendOption("Quint In");
+                param->appendOption("Quint Out");
+                param->appendOption("Expo");
+                param->appendOption("Expo In");
+                param->appendOption("Expo Out");
+                param->appendOption("Circ");
+                param->appendOption("Circ In");
+                param->appendOption("Circ Out");
+                param->appendOption("Back");
+                param->appendOption("Back In");
+                param->appendOption("Back Out");
+                param->appendOption("Linear");
+                param->setAnimates(true);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicBezierP1
+            {
+                Double2DParamDescriptor* param = desc.defineDouble2DParam(kParamTransformPeriodicBezierP1);
+                param->setLabel(kParamTransformPeriodicBezierP1Label);
+                param->setHint(kParamTransformPeriodicBezierPHint);
+                param->setDefault(0, 0);
+                param->setRange(0, -DBL_MAX, 1, DBL_MAX);
+                param->setDisplayRange(0, 0, 1, 1);
+                param->setIncrement(.1);
+                param->setIsSecret(true);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicBezierP2
+            {
+                Double2DParamDescriptor* param = desc.defineDouble2DParam(kParamTransformPeriodicBezierP2);
+                param->setLabel(kParamTransformPeriodicBezierP2Label);
+                param->setHint(kParamTransformPeriodicBezierPHint);
+                param->setDefault(1, 1);
+                param->setRange(0, -DBL_MAX, 1, DBL_MAX);
+                param->setDisplayRange(0, 0, 1, 1);
+                param->setIncrement(.1);
+                param->setIsSecret(true);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicSymmetry
+            {
+                BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransformPeriodicSymmetry);
+                param->setLabel(kParamTransformPeriodicSymmetryLabel);
+                param->setHint(kParamTransformPeriodicSymmetryHint);
+                param->setDefault(false);
+                param->setAnimates(true);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+        }
+
         // translate
         if (!noTranslate) {
             Double2DParamDescriptor* param = desc.defineDouble2DParam(oldParams ? kParamTransformTranslateOld : kParamTransformTranslate);
             param->setLabel(kParamTransformTranslateLabel);
             param->setHint(kParamTransformTranslateHint);
             param->setDoubleType(eDoubleTypeXYAbsolute);
-            //param->setDoubleType(eDoubleTypeNormalisedXY); // deprecated in OpenFX 1.2
             param->setDefaultCoordinateSystem(eCoordinatesNormalised);
-            //param->setDoubleType(eDoubleTypeXYAbsolute);
-            //param->setDefaultCoordinateSystem(eCoordinatesCanonical);
-            //param->setDimensionLabels("x","y");
-            param->setDefault(0, 0);
-            param->setRange(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
-            param->setDisplayRange(-3840, -2160, 3840, 2160); // Resolve requires display range or values are clamped to (-1,1)
-            param->setIncrement(10.);
+            param->setDefault(0., 0.);
+            param->setRange(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
+            param->setDisplayRange(-0.5, -0.5, 0.5, 0.5); // Resolve requires display range or values are clamped to (-1,1)
+            param->setIncrement(0.05);
             if (group) {
                 param->setParent(*group);
             }
@@ -103,9 +411,24 @@ namespace OFX {
             param->setHint(kParamTransformRotateHint);
             param->setDoubleType(eDoubleTypeAngle);
             param->setDefault(0);
-            param->setRange(-DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
-            param->setDisplayRange(-3600, 3600);
-            param->setIncrement(0.1);
+            param->setRange(-DBL_MAX, DBL_MAX);
+            param->setDisplayRange(-1800, 1800);
+            param->setIncrement(30);
+            if (group) {
+                param->setParent(*group);
+            }
+            if (page) {
+                page->addChild(*param);
+            }
+        }
+
+        // faceToCenter
+        {
+            BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransformFaceToCenter);
+            param->setLabel(kParamTransformFaceToCenterLabel);
+            param->setHint(kParamTransformFaceToCenterHint);
+            param->setDefault(false);
+            param->setAnimates(true);
             if (group) {
                 param->setParent(*group);
             }
@@ -123,7 +446,7 @@ namespace OFX {
             //param->setDimensionLabels("w","h");
             param->setDefault(1, 1);
             param->setRange(-SCALE_MAX, -SCALE_MAX, SCALE_MAX, SCALE_MAX);
-            param->setDisplayRange(0.1, 0.1, 100, 100);
+            param->setDisplayRange(0, 0, 10, 10);
             param->setIncrement(0.01);
             param->setLayoutHint(eLayoutHintNoNewLine, 1);
             if (group) {
@@ -139,7 +462,6 @@ namespace OFX {
             BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransformFlop);
             param->setLabel(kParamTransformFlopLabel);
             param->setHint(kParamTransformFlopHint);
-            // don't check it by default: it is easy to obtain Uniform scaling using the slider or the interact
             param->setDefault(false);
             param->setAnimates(true);
             if (group) {
@@ -155,7 +477,6 @@ namespace OFX {
             BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransformFlip);
             param->setLabel(kParamTransformFlipLabel);
             param->setHint(kParamTransformFlipHint);
-            // don't check it by default: it is easy to obtain Uniform scaling using the slider or the interact
             param->setDefault(false);
             param->setAnimates(true);
             if (group) {
@@ -171,7 +492,6 @@ namespace OFX {
             BooleanParamDescriptor* param = desc.defineBooleanParam(oldParams ? kParamTransformScaleUniformOld : kParamTransformScaleUniform);
             param->setLabel(kParamTransformScaleUniformLabel);
             param->setHint(kParamTransformScaleUniformHint);
-            // don't check it by default: it is easy to obtain Uniform scaling using the slider or the interact
             param->setDefault(true);
             param->setAnimates(true);
             if (group) {
@@ -188,7 +508,7 @@ namespace OFX {
             param->setLabel(kParamTransformSkewXLabel);
             param->setHint(kParamTransformSkewXHint);
             param->setDefault(0);
-            param->setRange(-DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
+            param->setRange(-DBL_MAX, DBL_MAX);
             param->setDisplayRange(-1., 1.);
             param->setIncrement(0.01);
             if (group) {
@@ -205,7 +525,7 @@ namespace OFX {
             param->setLabel(kParamTransformSkewYLabel);
             param->setHint(kParamTransformSkewYHint);
             param->setDefault(0);
-            param->setRange(-DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
+            param->setRange(-DBL_MAX, DBL_MAX);
             param->setDisplayRange(-1., 1.);
             param->setIncrement(0.01);
             if (group) {
@@ -240,7 +560,7 @@ namespace OFX {
             param->setHint(kParamTransformAmountHint);
             param->setDoubleType(eDoubleTypeScale);
             param->setDefault(1.);
-            param->setRange(-DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
+            param->setRange(-DBL_MAX, DBL_MAX);
             param->setDisplayRange(0., 1.);
             param->setIncrement(0.01);
             if (group) {
@@ -259,11 +579,11 @@ namespace OFX {
             //param->setDoubleType(eDoubleTypeNormalisedXY); // deprecated in OpenFX 1.2
             //param->setDimensionLabels("x","y");
             param->setDoubleType(eDoubleTypeXYAbsolute);
-            param->setDefault(960, 540);
-            param->setDefaultCoordinateSystem(eCoordinatesCanonical);
-            param->setRange(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
-            param->setDisplayRange(-10000, -10000, 10000, 10000); // Resolve requires display range or values are clamped to (-1,1)
-            param->setIncrement(1.);
+            param->setDefault(.5, .5);
+            param->setDefaultCoordinateSystem(eCoordinatesNormalised);
+            param->setRange(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
+            param->setDisplayRange(0, 0, 1, 1); // Resolve requires display range or values are clamped to (-1,1)
+            param->setIncrement(.1);
             param->setLayoutHint(eLayoutHintNoNewLine, 1);
             if (group) {
                 param->setParent(*group);
@@ -273,11 +593,12 @@ namespace OFX {
             }
         }
 
-        // resetcenter
+        // resetCenter
         {
             PushButtonParamDescriptor* param = desc.definePushButtonParam(oldParams ? kParamTransformResetCenterOld : kParamTransformResetCenter);
             param->setLabel(kParamTransformResetCenterLabel);
             param->setHint(kParamTransformResetCenterHint);
+            param->setIsSecret(true);
             if (group) {
                 param->setParent(*group);
             }
@@ -323,7 +644,7 @@ namespace OFX {
             param->setLabel(kParamTransformInteractiveLabel);
             param->setHint(kParamTransformInteractiveHint);
             param->setDefault(true);
-            param->setIsSecret(true);
+            param->setIsSecretAndDisabled(true);
             param->setEvaluateOnChange(false);
             if (group) {
                 param->setParent(*group);
@@ -355,6 +676,22 @@ namespace OFX {
         , _interactiveDrag(false)
         , _translate(NULL)
         , _rotate(NULL)
+        , _faceToCenter(NULL)
+        , _periodicRadius(NULL)
+        , _periodicRotate(NULL)
+        , _periodicDeform(NULL)
+        , _periodicBend(NULL)
+        , _periodicN(NULL)
+        , _periodicInterval(NULL)
+        , _periodicBezierP1(NULL)
+        , _periodicBezierP2(NULL)
+        , _periodicSymmetry(NULL)
+        , _periodicFrequency(NULL)
+        , _periodicAutorotate(NULL)
+        , _periodicScale(NULL)
+        , _periodicScaleStep(NULL)
+        , _periodicOffset(NULL)
+        , _periodicSkip(NULL)
         , _scale(NULL)
         , _flop(NULL)
         , _flip(NULL)
@@ -400,6 +737,22 @@ namespace OFX {
             _center = _effect->fetchDouble2DParam(kParamTransformCenter);
             _interactive = _effect->fetchBooleanParam(kParamTransformInteractive);
         }
+        _periodicRadius = _effect->fetchDoubleParam(kParamTransformPeriodicRadius);
+        _periodicRotate = _effect->fetchDoubleParam(kParamTransformPeriodicRotate);
+        _periodicDeform = _effect->fetchDoubleParam(kParamTransformPeriodicDeform);
+        _periodicBend = _effect->fetchDoubleParam(kParamTransformPeriodicBend);
+        _periodicN = _effect->fetchIntParam(kParamTransformPeriodicN);
+        _periodicInterval = _effect->fetchIntParam(kParamTransformPeriodicInterval);
+        _periodicBezierP1 = _effect->fetchDouble2DParam(kParamTransformPeriodicBezierP1);
+        _periodicBezierP2 = _effect->fetchDouble2DParam(kParamTransformPeriodicBezierP2);
+        _periodicSymmetry = _effect->fetchBooleanParam(kParamTransformPeriodicSymmetry);
+        _periodicFrequency = _effect->fetchDoubleParam(kParamTransformPeriodicFrequency);
+        _periodicAutorotate = _effect->fetchDoubleParam(kParamTransformPeriodicAutorotate);
+        _periodicScale = _effect->fetchDoubleParam(kParamTransformPeriodicScale);
+        _periodicScaleStep = _effect->fetchDoubleParam(kParamTransformPeriodicScaleStep);
+        _periodicOffset = _effect->fetchDoubleParam(kParamTransformPeriodicOffset);
+        _periodicSkip = _effect->fetchDoubleParam(kParamTransformPeriodicSkip);
+        _faceToCenter = _effect->fetchBooleanParam(kParamTransformFaceToCenter);
         _flop = _effect->fetchBooleanParam(kParamTransformFlop);
         _flip = _effect->fetchBooleanParam(kParamTransformFlip);
         _interactOpen = _effect->fetchBooleanParam(kParamTransformInteractOpen);
@@ -409,12 +762,60 @@ namespace OFX {
         if (effect->paramExists(kParamHiDPI)) {
             _hiDPI = effect->fetchBooleanParam(kParamHiDPI);
         }
-        assert(_rotate && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
+        assert(_rotate && _scaleUniform && _faceToCenter && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
         if (_translate) {
             _interact->addParamToSlaveTo(_translate);
         }
         if (_rotate) {
             _interact->addParamToSlaveTo(_rotate);
+        }
+        if (_faceToCenter) {
+            _interact->addParamToSlaveTo(_faceToCenter);
+        }
+        if (_periodicRadius) {
+            _interact->addParamToSlaveTo(_periodicRadius);
+        }
+        if (_periodicRotate) {
+            _interact->addParamToSlaveTo(_periodicRotate);
+        }
+        if (_periodicDeform) {
+            _interact->addParamToSlaveTo(_periodicDeform);
+        }
+        if (_periodicBend) {
+            _interact->addParamToSlaveTo(_periodicBend);
+        }
+        if (_periodicN) {
+            _interact->addParamToSlaveTo(_periodicN);
+        }
+        if (_periodicInterval) {
+            _interact->addParamToSlaveTo(_periodicInterval);
+        }
+        if (_periodicBezierP1) {
+            _interact->addParamToSlaveTo(_periodicBezierP1);
+        }
+        if (_periodicBezierP2) {
+            _interact->addParamToSlaveTo(_periodicBezierP2);
+        }
+        if (_periodicSymmetry) {
+            _interact->addParamToSlaveTo(_periodicSymmetry);
+        }
+        if (_periodicFrequency) {
+            _interact->addParamToSlaveTo(_periodicFrequency);
+        }
+        if (_periodicAutorotate) {
+            _interact->addParamToSlaveTo(_periodicAutorotate);
+        }
+        if (_periodicScale) {
+            _interact->addParamToSlaveTo(_periodicScale);
+        }
+        if (_periodicScaleStep) {
+            _interact->addParamToSlaveTo(_periodicScaleStep);
+        }
+        if (_periodicOffset) {
+            _interact->addParamToSlaveTo(_periodicOffset);
+        }
+        if (_periodicSkip) {
+            _interact->addParamToSlaveTo(_periodicSkip);
         }
         if (_scale) {
             _interact->addParamToSlaveTo(_scale);
@@ -455,6 +856,51 @@ namespace OFX {
         if (_translate) {
             _translate->getValueAtTime(time, tp.translate.x, tp.translate.y);
         }
+        if (_periodicRadius) {
+            _periodicRadius->getValueAtTime(time, tp.periodicRadius);
+        }
+        if (_periodicRotate) {
+            _periodicRotate->getValueAtTime(time, tp.periodicRotate);
+        }
+        if (_periodicDeform) {
+            _periodicDeform->getValueAtTime(time, tp.periodicDeform);
+        }
+        if (_periodicBend) {
+            _periodicBend->getValueAtTime(time, tp.periodicBend);
+        }
+        if (_periodicN) {
+            _periodicN->getValueAtTime(time, tp.periodicN);
+        }
+        if (_periodicInterval) {
+            _periodicInterval->getValueAtTime(time, tp.periodicInterval);
+        }
+        if (_periodicBezierP1) {
+            _periodicBezierP1->getValueAtTime(time, tp.periodicBezierP1.x, tp.periodicBezierP1.y);
+        }
+        if (_periodicBezierP2) {
+            _periodicBezierP2->getValueAtTime(time, tp.periodicBezierP2.x, tp.periodicBezierP2.y);
+        }
+        if (_periodicSymmetry) {
+            _periodicSymmetry->getValueAtTime(time, tp.periodicSymmetry);
+        }
+        if (_periodicFrequency) {
+            _periodicFrequency->getValueAtTime(time, tp.periodicFrequency);
+        }
+        if (_periodicAutorotate) {
+            _periodicAutorotate->getValueAtTime(time, tp.periodicAutorotate);
+        }
+        if (_periodicScale) {
+            _periodicScale->getValueAtTime(time, tp.periodicScale);
+        }
+        if (_periodicScaleStep) {
+            _periodicScaleStep->getValueAtTime(time, tp.periodicScaleStep);
+        }
+        if (_periodicOffset) {
+            _periodicOffset->getValueAtTime(time, tp.periodicOffset);
+        }
+        if (_periodicSkip) {
+            _periodicSkip->getValueAtTime(time, tp.periodicSkip);
+        }
         if (_scale) {
             _scale->getValueAtTime(time, tp.scale.x, tp.scale.y);
         }
@@ -469,6 +915,9 @@ namespace OFX {
         }
         if (_rotate) {
             _rotate->getValueAtTime(time, tp.rotate);
+        }
+        if (_faceToCenter) {
+            _faceToCenter->getValueAtTime(time, tp.faceToCenter);
         }
         if (_skewX) {
             _skewX->getValueAtTime(time, tp.skewX);
@@ -1282,8 +1731,10 @@ namespace OFX {
 
             dx = _orientation == eOrientationVertical ? 0 : dx;
             dy = _orientation == eOrientationHorizontal ? 0 : dy;
+
             double newx = tp.translate.x + dx;
             double newy = tp.translate.y + dy;
+
             // round newx/y to the closest int, 1/10 int, etc
             // this make parameter editing easier
             newx = fround(newx, pscale.x);

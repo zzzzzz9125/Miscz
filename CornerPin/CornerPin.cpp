@@ -68,7 +68,7 @@ using namespace OFX;
 OFXS_NAMESPACE_ANONYMOUS_ENTER
 
 #define kPluginName "Mz_CornerPinOFX"
-#define kPluginMaskedName "Mz_CornerPinMaskedOFX"
+#define kPluginMaskedName "Mz_CornerPinOFX"
 #define kPluginGrouping "Transform"
 #define kPluginDescription \
     "Allows an image to fit another in translation, rotation and scale.\n" \
@@ -103,7 +103,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
     "See also: https://web.archive.org/web/20220627032200/http://www.opticalenquiry.com/nuke/index.php?title=CornerPin"
 
 #define kPluginIdentifier "net.sf.openfx.MzCornerPinPlugin"
-#define kPluginMaskedIdentifier "net.sf.openfx.MzCornerPinMaskedPlugin"
+#define kPluginMaskedIdentifier "net.sf.openfx.MzCornerPinPlugin"
 #define kPluginVersionMajor 1 // Incrementing this number means that you have broken backwards compatibility of the plug-in.
 #define kPluginVersionMinor 0 // Increment this when you have fixed a bug or made it faster.
 
@@ -1296,6 +1296,7 @@ CornerPinPluginDescribeInContext(ImageEffectDescriptor &desc,
         param->setLabel(kParamTransformInteractiveLabel);
         param->setHint(kParamTransformInteractiveHint);
         param->setEvaluateOnChange(false);
+        param->setIsSecretAndDisabled(true);
         if (page) {
             page->addChild(*param);
         }
@@ -1358,7 +1359,7 @@ ImageEffect*
 CornerPinPluginFactory::createInstance(OfxImageEffectHandle handle,
                                        ContextEnum /*context*/)
 {
-    return new CornerPinPlugin(handle, false);
+    return new CornerPinPlugin(handle, true);
 }
 
 mDeclarePluginFactory(CornerPinMaskedPluginFactory, {ofxsThreadSuiteCheck();}, {});
@@ -1401,12 +1402,12 @@ ImageEffect*
 CornerPinMaskedPluginFactory::createInstance(OfxImageEffectHandle handle,
                                              ContextEnum /*context*/)
 {
-    return new CornerPinPlugin(handle, true);
+    return new CornerPinPlugin(handle, false);
 }
 
-static CornerPinPluginFactory p1(kPluginIdentifier, kPluginVersionMajor, kPluginVersionMinor);
+//static CornerPinPluginFactory p1(kPluginIdentifier, kPluginVersionMajor, kPluginVersionMinor);
 static CornerPinMaskedPluginFactory p2(kPluginMaskedIdentifier, kPluginVersionMajor, kPluginVersionMinor);
-mRegisterPluginFactoryInstance(p1)
+//mRegisterPluginFactoryInstance(p1)
 mRegisterPluginFactoryInstance(p2)
 
 OFXS_NAMESPACE_ANONYMOUS_EXIT

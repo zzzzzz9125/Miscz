@@ -25,7 +25,7 @@ ENDIF(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 # Project setup
 ########################################################################
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
-PROJECT(OpenFXMisc CXX)
+PROJECT(OpenFXMiscz CXX)
 ENABLE_TESTING()
 
 # ========================== build platform ==========================
@@ -109,295 +109,73 @@ FILE(GLOB SUPPORT_SOURCES
 #TARGET_COMPILE_DEFINITIONS(Support PRIVATE OFX_SUPPORTS_OPENGLRENDER OFX_EXTENSIONS_TUTTLE OFX_EXTENSIONS_NUKE OFX_EXTENSIONS_NATRON OFX_EXTENSIONS_VEGAS NOMINMAX)
 
 FILE(GLOB MISC_SOURCES
-  "Add/*.cpp"
-  "AdjustRoD/*.cpp"
-  "Anaglyph/*.cpp"
-  "AppendClip/*.cpp"
   "Card3D/*.cpp"
-  "CheckerBoard/*.cpp"
-  "ChromaKeyer/*.cpp"
-  "Clamp/*.cpp"
-  "ClipTest/*.cpp"
-  "ColorBars/*.cpp"
-  "ColorCorrect/*.cpp"
-  "ColorLookup/*.cpp"
-  "ColorMatrix/*.cpp"
-  "ColorSuppress/*.cpp"
-  "ColorTransform/*.cpp"
-  "ColorWheel/*.cpp"
-  "Constant/*.cpp"
-  "ContactSheet/*.cpp"
-  "CopyRectangle/*.cpp"
   "CornerPin/*.cpp"
-  "Crop/*.cpp"
-  "Deinterlace/*.cpp"
-  "DenoiseSharpen/*.cpp"
-  "Despill/*.cpp"
-  "Difference/*.cpp"
-  "Dissolve/*.cpp"
-  "Distortion/*.cpp"
-  "FrameBlend/*.cpp"
-  "FrameHold/*.cpp"
-  "FrameRange/*.cpp"
-  "Gamma/*.cpp"
-  "Grade/*.cpp"
-  "HSVTool/*.cpp"
-  "HueCorrect/*.cpp"
-  "ImageStatistics/*.cpp"
-  "Invert/*.cpp"
-  "JoinViews/*.cpp"
-  "KeyMix/*.cpp"
-  "Keyer/*.cpp"
-  "LayerContactSheet/*.cpp"
-  "Log2Lin/*.cpp"
-  "MatteMonitor/*.cpp"
-  "Merge/*.cpp"
-  "Mirror/*.cpp"
-  "MixViews/*.cpp"
-  "Multiply/*.cpp"
-  "NoOp/*.cpp"
-  "OneView/*.cpp"
-  "PIK/*.cpp"
-  "PLogLin/*.cpp"
   "Position/*.cpp"
-  "Premult/*.cpp"
-  "Quantize/*.cpp"
-  "Radial/*.cpp"
-  "Ramp/*.cpp"
-  "Rand/*.cpp"
-  "ReConverge/*.cpp"
-  "Rectangle/*.cpp"
-  "Reformat/*.cpp"
-  "Retime/*.cpp"
-  "Roto/*.cpp"
-  "Saturation/*.cpp"
-  "Shadertoy/*.cpp"
-  "Shadertoy/*.h"
-  "Shuffle/*.cpp"
-  "SideBySide/*.cpp"
-  "SlitScan/*.cpp"
   "SpriteSheet/*.cpp"
-  "Switch/*.cpp"
-  "Threshold/*.cpp"
-  "TimeBuffer/*.cpp"
-  "TimeDissolve/*.cpp"
-  "TimeOffset/*.cpp"
-  "TrackerPM/*.cpp"
   "Transform/*.cpp"
-  "VectorToColor/*.cpp"
   "SupportExt/tinythread.cpp"
   "SupportExt/ofxsThreadSuite.cpp"
   "SupportExt/ofxsFileOpen.cpp"
   "SupportExt/ofxsGenerator.cpp"
-  "SupportExt/ofxsLut.cpp"
-  "SupportExt/ofxsMultiPlane.cpp"
   "SupportExt/ofxsOGLTextRenderer.cpp"
   "SupportExt/ofxsOGLFontData.cpp"
   "SupportExt/ofxsRamp.cpp"
   "SupportExt/ofxsShutter.cpp"
-  "SupportExt/ofxsTracking.cpp"
   "SupportExt/ofxsTransform3x3.cpp"
   "SupportExt/ofxsTransformInteract.cpp"
   "SupportExt/ofxsRectangleInteract.cpp"
   "SupportExt/*.h"
 )
 
-FILE(GLOB MISC_RESOURCES
-  "Add/net.sf.openfx.MzAddPlugin.png"
-  "AdjustRoD/net.sf.openfx.MzAdjustRoDPlugin.png"
-  "AdjustRoD/net.sf.openfx.MzAdjustRoDPlugin.svg"
-  "Anaglyph/net.sf.openfx.MzanaglyphPlugin.png"
-  "Anaglyph/net.sf.openfx.MzanaglyphPlugin.svg"
-  "CheckerBoard/net.sf.openfx.MzCheckerBoardPlugin.png"
-  "CheckerBoard/net.sf.openfx.MzCheckerBoardPlugin.svg"
-  "ChromaKeyer/net.sf.openfx.MzChromaKeyerPlugin.png"
-  "ChromaKeyer/net.sf.openfx.MzChromaKeyerPlugin.svg"
-  "Clamp/net.sf.openfx.MzClamp.png"
-  "Clamp/net.sf.openfx.MzClamp.svg"
-  "ClipTest/net.sf.openfx.MzClipTestPlugin.png"
-  "ClipTest/net.sf.openfx.MzClipTestPlugin.svg"
-  "ColorBars/net.sf.openfx.MzColorBars.png"
-  "ColorBars/net.sf.openfx.MzColorBars.svg"
-  "ColorCorrect/net.sf.openfx.MzColorCorrectPlugin.png"
-  "ColorCorrect/net.sf.openfx.MzColorCorrectPlugin.svg"
-  "ColorLookup/net.sf.openfx.MzColorLookupPlugin.png"
-  "ColorLookup/net.sf.openfx.MzColorLookupPlugin.svg"
-  "ColorMatrix/net.sf.openfx.MzColorMatrixPlugin.png"
-  "ColorMatrix/net.sf.openfx.MzColorMatrixPlugin.svg"
-  "ColorWheel/net.sf.openfx.MzColorWheel.png"
-  "ColorWheel/net.sf.openfx.MzColorWheel.svg"
-  "ColorTransform/net.sf.openfx.MzHSVToRGB.png"
-  "ColorTransform/net.sf.openfx.MzHSVToRGB.svg"
-  "ColorTransform/net.sf.openfx.MzLabToRGB709.png"
-  "ColorTransform/net.sf.openfx.MzRGBToHSV.png"
-  "ColorTransform/net.sf.openfx.MzRGBToHSV.svg"
-  "ColorTransform/net.sf.openfx.MzRGB709ToLab.png"
-  "ColorTransform/net.sf.openfx.MzRGB709ToXYZ.png"
-  "ColorTransform/net.sf.openfx.MzXYZToRGB709.png"
-  "Constant/net.sf.openfx.MzConstantPlugin.png"
-  "Constant/net.sf.openfx.MzConstantPlugin.svg"
-  "CornerPin/net.sf.openfx.MzCornerPinMaskedPlugin.png"
-  "CornerPin/net.sf.openfx.MzCornerPinMaskedPlugin.svg"
-  "CornerPin/net.sf.openfx.MzCornerPinPlugin.png"
-  "CornerPin/net.sf.openfx.MzCornerPinPlugin.svg"
-  "Crop/net.sf.openfx.MzCropPlugin.png"
-  "Crop/net.sf.openfx.MzCropPlugin.svg"
-  "Deinterlace/net.sf.openfx.MzDeinterlace.png"
-  "Deinterlace/net.sf.openfx.MzDeinterlace.svg"
-  "Despill/net.sf.openfx.MzDespill.png"
-  "Despill/net.sf.openfx.MzDespill.svg"
-  "Difference/net.sf.openfx.MzDifferencePlugin.png"
-  "Difference/net.sf.openfx.MzDifferencePlugin.svg"
-  "Dissolve/net.sf.openfx.MzDissolvePlugin.png"
-  "Dissolve/net.sf.openfx.MzDissolvePlugin.svg"
-  "Distortion/net.sf.openfx.MzIDistort.png"
-  "Distortion/net.sf.openfx.MzIDistort.svg"
-  "Distortion/net.sf.openfx.MzSTMap.png"
-  "Distortion/net.sf.openfx.MzSTMap.svg"
-  "Distortion/net.sf.openfx.MzLensDistortion.png"
-  "Distortion/net.sf.openfx.MzLensDistortion.svg"
-  "FrameBlend/net.sf.openfx.MzFrameBlend.png"
-  "FrameBlend/net.sf.openfx.MzFrameBlend.svg"
-  "FrameHold/net.sf.openfx.MzFrameHold.png"
-  "FrameHold/net.sf.openfx.MzFrameHold.svg"
-  "FrameRange/net.sf.openfx.MzFrameRange.png"
-  "FrameRange/net.sf.openfx.MzFrameRange.svg"
-  "Gamma/net.sf.openfx.MzGammaPlugin.png"
-  "GodRays/net.sf.openfx.MzGodRays.png"
-  "GodRays/net.sf.openfx.MzGodRays.svg"
-  "Grade/net.sf.openfx.MzGradePlugin.png"
-  "Grade/net.sf.openfx.MzGradePlugin.svg"
-  "HueCorrect/net.sf.openfx.MzHueCorrect.png"
-  "HueCorrect/net.sf.openfx.MzHueCorrect.svg"
-  "HueCorrect/net.sf.openfx.MzHueKeyer.png"
-  "HueCorrect/net.sf.openfx.MzHueKeyer.svg"
-  "HSVTool/net.sf.openfx.MzHSVToolPlugin.png"
-  "HSVTool/net.sf.openfx.MzHSVToolPlugin.svg"
-  "ImageStatistics/net.sf.openfx.MzImageStatistics.png"
-  "ImageStatistics/net.sf.openfx.MzImageStatistics.svg"
-  "Invert/net.sf.openfx.MzInvert.png"
-  "Invert/net.sf.openfx.MzInvert.svg"
-  "JoinViews/net.sf.openfx.MzjoinViewsPlugin.png"
-  "JoinViews/net.sf.openfx.MzjoinViewsPlugin.svg"
-  "Keyer/net.sf.openfx.MzKeyerPlugin.png"
-  "Keyer/net.sf.openfx.MzKeyerPlugin.svg"
-  "Merge/net.sf.openfx.MzMergePlugin.png"
-  "Merge/net.sf.openfx.MzMergePlugin.svg"
-  "Merge/net.sf.openfx.MzMergeDifference.png"
-  "Merge/net.sf.openfx.MzMergeIn.png"
-  "Merge/net.sf.openfx.MzMergeMax.png"
-  "Merge/net.sf.openfx.MzMergeMin.png"
-  "Merge/net.sf.openfx.MzMergeMultiply.png"
-  "Merge/net.sf.openfx.MzMergeOut.png"
-  "Merge/net.sf.openfx.MzMergePlus.png"
-  "Merge/net.sf.openfx.MzMergeScreen.png"
-  "Mirror/net.sf.openfx.MzMirror.png"
-  "Mirror/net.sf.openfx.MzMirror.svg"
-  "MixViews/net.sf.openfx.MzmixViewsPlugin.png"
-  "MixViews/net.sf.openfx.MzmixViewsPlugin.svg"
-  "Multiply/net.sf.openfx.MzMultiplyPlugin.png"
-  "NoOp/net.sf.openfx.MzNoOpPlugin.png"
-  "NoOp/net.sf.openfx.MzNoOpPlugin.svg"
-  "Rand/net.sf.openfx.MzNoise.png"
-  "Rand/net.sf.openfx.MzNoise.svg"
-  "OneView/net.sf.openfx.MzoneViewPlugin.png"
-  "OneView/net.sf.openfx.MzoneViewPlugin.svg"
-  "PIK/net.sf.openfx.MzPIK.png"
-  "PIK/net.sf.openfx.MzPIK.svg"
-  "PIK/fr.inria.PIKColor.png"
-  "PIK/fr.inria.PIKColor.svg"
-  "PIK/PIKColor.gizmo"
-  "PIK/PIKColor.py"
-  "Position/net.sf.openfx.MzPosition.png"
-  "Position/net.sf.openfx.MzPosition.svg"
-  "Premult/net.sf.openfx.MzPremult.png"
-  "Premult/net.sf.openfx.MzPremult.svg"
-  "Premult/net.sf.openfx.MzUnpremult.png"
-  "Premult/net.sf.openfx.MzUnpremult.svg"
-  "Radial/net.sf.openfx.MzRadial.png"
-  "Radial/net.sf.openfx.MzRadial.svg"
-  "Ramp/net.sf.openfx.MzRamp.png"
-  "Ramp/net.sf.openfx.MzRamp.svg"
-  "Rectangle/net.sf.openfx.MzRectangle.png"
-  "Rectangle/net.sf.openfx.MzRectangle.svg"
-  "Reformat/net.sf.openfx.MzReformat.png"
-  "Reformat/net.sf.openfx.MzReformat.svg"
-  "Retime/net.sf.openfx.MzRetime.png"
-  "Retime/net.sf.openfx.MzRetime.svg"
-  "Roto/net.sf.openfx.MzRotoPlugin.png"
-  "Roto/net.sf.openfx.MzRotoPlugin.svg"
-  "Saturation/net.sf.openfx.MzSaturationPlugin.png"
-  "Saturation/net.sf.openfx.MzSaturationPlugin.svg"
-  "Shuffle/net.sf.openfx.MzShufflePlugin.png"
-  "Shuffle/net.sf.openfx.MzShufflePlugin.svg"
-  "SideBySide/net.sf.openfx.MzsideBySidePlugin.png"
-  "SideBySide/net.sf.openfx.MzsideBySidePlugin.svg"
-  "SlitScan/net.sf.openfx.MzSlitScan.png"
-  "SlitScan/net.sf.openfx.MzSlitScan.svg"
-  "Switch/net.sf.openfx.MzswitchPlugin.png"
-  "Switch/net.sf.openfx.MzswitchPlugin.svg"
-  "TimeOffset/net.sf.openfx.MztimeOffset.png"
-  "TimeOffset/net.sf.openfx.MztimeOffset.svg"
-  "TrackerPM/net.sf.openfx.MzTrackerPM.png"
-  "TrackerPM/net.sf.openfx.MzTrackerPM.svg"
-  "Transform/net.sf.openfx.MzDirBlur.png"
-  "Transform/net.sf.openfx.MzDirBlur.svg"
-  "Transform/net.sf.openfx.MzTransformMaskedPlugin.png"
-  "Transform/net.sf.openfx.MzTransformMaskedPlugin.svg"
-  "Transform/net.sf.openfx.MzTransformPlugin.png"
-  "Transform/net.sf.openfx.MzTransformPlugin.svg"
-  "VectorToColor/net.sf.openfx.MzVectorToColorPlugin.png"
-  "VectorToColor/net.sf.openfx.MzVectorToColorPlugin.svg"
-)
-
-ADD_LIBRARY(Misc SHARED ${MISC_SOURCES} ${SUPPORT_SOURCES})
-SET_TARGET_PROPERTIES(Misc PROPERTIES PREFIX "")
-SET_TARGET_PROPERTIES(Misc PROPERTIES SUFFIX ".ofx")
+ADD_LIBRARY(Miscz SHARED ${MISC_SOURCES} ${SUPPORT_SOURCES})
+SET_TARGET_PROPERTIES(Miscz PROPERTIES PREFIX "")
+SET_TARGET_PROPERTIES(Miscz PROPERTIES SUFFIX ".ofx")
 
 # Add extra flags to the link step of the plugin
 if(APPLE)
-    set_target_properties(Misc PROPERTIES LINK_FLAGS "-fvisibility=hidden -exported_symbols_list,${OFX_SUPPORT_HEADER_DIR}/osxSymbols")
-    set_target_properties(Misc PROPERTIES INSTALL_RPATH "@loader_path/../Frameworks;@loader_path/../Libraries")
+    set_target_properties(Miscz PROPERTIES LINK_FLAGS "-fvisibility=hidden -exported_symbols_list,${OFX_SUPPORT_HEADER_DIR}/osxSymbols")
+    set_target_properties(Miscz PROPERTIES INSTALL_RPATH "@loader_path/../Frameworks;@loader_path/../Libraries")
 elseif(MINGW)
-    set_target_properties(Misc PROPERTIES LINK_FLAGS "-shared -fvisibility=hidden -Xlinker --version-script=${OFX_SUPPORT_HEADER_DIR}/linuxSymbols")
+    set_target_properties(Miscz PROPERTIES LINK_FLAGS "-shared -fvisibility=hidden -Xlinker --version-script=${OFX_SUPPORT_HEADER_DIR}/linuxSymbols")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 # Linux & FreeBSD
-    set_target_properties(Misc PROPERTIES LINK_FLAGS "-Wl,-fvisibility=hidden,--version-script=${OFX_SUPPORT_HEADER_DIR}/linuxSymbols")
-    set_target_properties(Misc PROPERTIES INSTALL_RPATH "$ORIGIN/../../Libraries")
+    set_target_properties(Miscz PROPERTIES LINK_FLAGS "-Wl,-fvisibility=hidden,--version-script=${OFX_SUPPORT_HEADER_DIR}/linuxSymbols")
+    set_target_properties(Miscz PROPERTIES INSTALL_RPATH "$ORIGIN/../../Libraries")
 endif()
 
-TARGET_COMPILE_DEFINITIONS(Misc PRIVATE OFX_EXTENSIONS_VEGAS OFX_EXTENSIONS_NUKE OFX_EXTENSIONS_NATRON OFX_EXTENSIONS_TUTTLE OFX_SUPPORTS_OPENGLRENDER NOMINMAX)
-#TARGET_LINK_LIBRARIES(Misc Support ${OPENGL_gl_LIBRARY})
-TARGET_LINK_LIBRARIES(Misc ${OPENGL_gl_LIBRARY})
+TARGET_COMPILE_DEFINITIONS(Miscz PRIVATE OFX_EXTENSIONS_VEGAS OFX_EXTENSIONS_NUKE OFX_EXTENSIONS_NATRON OFX_EXTENSIONS_TUTTLE OFX_SUPPORTS_OPENGLRENDER NOMINMAX)
+#TARGET_LINK_LIBRARIES(Miscz Support ${OPENGL_gl_LIBRARY})
+TARGET_LINK_LIBRARIES(Miscz ${OPENGL_gl_LIBRARY})
 
 FILE(GLOB CIMG_SOURCES
-  "CImg/CImg.h"
-  "CImg/CImgFilter.cpp"
-  "CImg/CImgFilter.h"
-  "CImg/CImgOperator.cpp"
-  "CImg/CImgOperator.h"
-  "CImg/Bilateral/CImgBilateral.cpp"
-  "CImg/Blur/CImgBlur.cpp"
-  "CImg/Blur/blurmaple.map"
-  "CImg/Denoise/CImgDenoise.cpp"
-  "CImg/Distance/CImgDistance.cpp"
-  "CImg/Equalize/CImgEqualize.cpp"
-  "CImg/Erode/CImgDilate.cpp"
-  "CImg/Erode/CImgErode.cpp"
-  "CImg/ErodeSmooth/CImgErodeSmooth.cpp"
-  "CImg/Expression/CImgExpression.cpp"
-  "CImg/Guided/CImgGuided.cpp"
-  "CImg/HistEQ/CImgHistEQ.cpp"
-  "CImg/Inpaint/CImgInpaint-gpl.cpp"
-  "CImg/Inpaint/inpaint.h"
-  "CImg/Matrix/CImgMatrix.cpp"
-  "CImg/Median/CImgMedian.cpp"
-  "CImg/Noise/CImgNoise.cpp"
-  "CImg/Plasma/CImgPlasma.cpp"
-  "CImg/RollingGuidance/CImgRollingGuidance.cpp"
-  "CImg/SharpenInvDiff/CImgSharpenInvDiff.cpp"
-  "CImg/SharpenShock/CImgSharpenShock.cpp"
-  "CImg/Smooth/CImgSmooth.cpp"
+#  "CImg/CImg.h"
+#  "CImg/CImgFilter.cpp"
+#  "CImg/CImgFilter.h"
+#  "CImg/CImgOperator.cpp"
+#  "CImg/CImgOperator.h"
+#  "CImg/Bilateral/CImgBilateral.cpp"
+#  "CImg/Blur/CImgBlur.cpp"
+#  "CImg/Blur/blurmaple.map"
+#  "CImg/Denoise/CImgDenoise.cpp"
+#  "CImg/Distance/CImgDistance.cpp"
+#  "CImg/Equalize/CImgEqualize.cpp"
+#  "CImg/Erode/CImgDilate.cpp"
+#  "CImg/Erode/CImgErode.cpp"
+#  "CImg/ErodeSmooth/CImgErodeSmooth.cpp"
+#  "CImg/Expression/CImgExpression.cpp"
+#  "CImg/Guided/CImgGuided.cpp"
+#  "CImg/HistEQ/CImgHistEQ.cpp"
+#  "CImg/Inpaint/CImgInpaint-gpl.cpp"
+#  "CImg/Inpaint/inpaint.h"
+#  "CImg/Matrix/CImgMatrix.cpp"
+#  "CImg/Median/CImgMedian.cpp"
+#  "CImg/Noise/CImgNoise.cpp"
+#  "CImg/Plasma/CImgPlasma.cpp"
+#  "CImg/RollingGuidance/CImgRollingGuidance.cpp"
+#  "CImg/SharpenInvDiff/CImgSharpenInvDiff.cpp"
+#  "CImg/SharpenShock/CImgSharpenShock.cpp"
+#  "CImg/Smooth/CImgSmooth.cpp"
   "SupportExt/tinythread.cpp"
   "SupportExt/ofxsThreadSuite.cpp"
 #  "SupportExt/ofxsFileOpen.cpp"
@@ -415,55 +193,55 @@ FILE(GLOB CIMG_SOURCES
   "SupportExt/*.h"
 )
 
-FILE(GLOB CIMG_RESOURCES
-  "CImg/Bilateral/net.sf.cimg.CImgBilateral.png"
-  "CImg/Bilateral/net.sf.cimg.CImgBilateral.svg"
-  "CImg/Blur/net.sf.cimg.CImgBlur.png"
-  "CImg/Blur/net.sf.cimg.CImgBlur.svg"
-  "CImg/Blur/net.sf.cimg.CImgChromaBlur.png"
-  "CImg/Blur/net.sf.cimg.CImgChromaBlur.svg"
-  "CImg/Blur/net.sf.cimg.CImgBloom.png"
-  "CImg/Blur/net.sf.cimg.CImgBloom.svg"
-  "CImg/Blur/eu.cimg.EdgeDetect.png"
-  "CImg/Blur/eu.cimg.EdgeDetect.svg"
-  "CImg/Blur/eu.cimg.EdgeExtend.png"
-  "CImg/Blur/eu.cimg.EdgeExtend.svg"
-  "CImg/Blur/fr.inria.EdgeBlur.png"
-  "CImg/Blur/fr.inria.EdgeBlur.svg"
-  "CImg/Blur/net.sf.cimg.CImgLaplacian.png"
-  "CImg/Blur/net.sf.cimg.CImgLaplacian.svg"
-  "CImg/Blur/net.sf.cimg.CImgSharpen.png"
-  "CImg/Blur/net.sf.cimg.CImgSharpen.svg"
-  "CImg/Denoise/net.sf.cimg.CImgDenoise.png"
-  "CImg/Denoise/net.sf.cimg.CImgDenoise.svg"
-  "CImg/Equalize/net.sf.cimg.CImgEqualize.png"
-  "CImg/Equalize/net.sf.cimg.CImgEqualize.svg"
-  "CImg/Erode/net.sf.cimg.CImgDilate.png"
-  "CImg/Erode/net.sf.cimg.CImgDilate.svg"
-  "CImg/Erode/net.sf.cimg.CImgErode.png"
-  "CImg/Erode/net.sf.cimg.CImgErode.svg"
-  "CImg/ErodeSmooth/net.sf.cimg.CImgErodeSmooth.png"
-  "CImg/ErodeSmooth/net.sf.cimg.CImgErodeSmooth.svg"
-  "CImg/Expression/net.sf.cimg.CImgExpression.png"
-  "CImg/Expression/net.sf.cimg.CImgExpression.svg"
-  "CImg/Guided/net.sf.cimg.CImgGuided.png"
-  "CImg/Guided/net.sf.cimg.CImgGuided.svg"
-  "CImg/HistEQ/net.sf.cimg.CImgHistEQ.png"
-  "CImg/HistEQ/net.sf.cimg.CImgHistEQ.svg"
-  "CImg/Inpaint/eu.cimg.Inpaint.png"
-  "CImg/Inpaint/eu.cimg.Inpaint.svg"
-  "CImg/Noise/net.sf.cimg.CImgNoise.png"
-  "CImg/Noise/net.sf.cimg.CImgNoise.svg"
-  "CImg/Plasma/net.sf.cimg.CImgPlasma.png"
-  "CImg/Plasma/net.sf.cimg.CImgPlasma.svg"
-  "CImg/RollingGuidance/net.sf.cimg.CImgRollingGuidance.png"
-  "CImg/RollingGuidance/net.sf.cimg.CImgRollingGuidance.svg"
-  "CImg/SharpenInvDiff/net.sf.cimg.CImgSharpenInvDiff.png"
-  "CImg/SharpenInvDiff/net.sf.cimg.CImgSharpenInvDiff.svg"
-  "CImg/SharpenShock/net.sf.cimg.CImgSharpenShock.png"
-  "CImg/Smooth/net.sf.cimg.CImgSmooth.png"
-  "CImg/Smooth/net.sf.cimg.CImgSmooth.svg"
-)
+# FILE(GLOB CIMG_RESOURCES
+#  "CImg/Bilateral/net.sf.cimg.CImgBilateral.png"
+#  "CImg/Bilateral/net.sf.cimg.CImgBilateral.svg"
+#  "CImg/Blur/net.sf.cimg.CImgBlur.png"
+#  "CImg/Blur/net.sf.cimg.CImgBlur.svg"
+#  "CImg/Blur/net.sf.cimg.CImgChromaBlur.png"
+#  "CImg/Blur/net.sf.cimg.CImgChromaBlur.svg"
+#  "CImg/Blur/net.sf.cimg.CImgBloom.png"
+#  "CImg/Blur/net.sf.cimg.CImgBloom.svg"
+#  "CImg/Blur/eu.cimg.EdgeDetect.png"
+#  "CImg/Blur/eu.cimg.EdgeDetect.svg"
+#  "CImg/Blur/eu.cimg.EdgeExtend.png"
+#  "CImg/Blur/eu.cimg.EdgeExtend.svg"
+#  "CImg/Blur/fr.inria.EdgeBlur.png"
+#  "CImg/Blur/fr.inria.EdgeBlur.svg"
+#  "CImg/Blur/net.sf.cimg.CImgLaplacian.png"
+#  "CImg/Blur/net.sf.cimg.CImgLaplacian.svg"
+#  "CImg/Blur/net.sf.cimg.CImgSharpen.png"
+#  "CImg/Blur/net.sf.cimg.CImgSharpen.svg"
+#  "CImg/Denoise/net.sf.cimg.CImgDenoise.png"
+#  "CImg/Denoise/net.sf.cimg.CImgDenoise.svg"
+#  "CImg/Equalize/net.sf.cimg.CImgEqualize.png"
+#  "CImg/Equalize/net.sf.cimg.CImgEqualize.svg"
+#  "CImg/Erode/net.sf.cimg.CImgDilate.png"
+#  "CImg/Erode/net.sf.cimg.CImgDilate.svg"
+#  "CImg/Erode/net.sf.cimg.CImgErode.png"
+#  "CImg/Erode/net.sf.cimg.CImgErode.svg"
+#  "CImg/ErodeSmooth/net.sf.cimg.CImgErodeSmooth.png"
+#  "CImg/ErodeSmooth/net.sf.cimg.CImgErodeSmooth.svg"
+#  "CImg/Expression/net.sf.cimg.CImgExpression.png"
+#  "CImg/Expression/net.sf.cimg.CImgExpression.svg"
+#  "CImg/Guided/net.sf.cimg.CImgGuided.png"
+#  "CImg/Guided/net.sf.cimg.CImgGuided.svg"
+#  "CImg/HistEQ/net.sf.cimg.CImgHistEQ.png"
+#  "CImg/HistEQ/net.sf.cimg.CImgHistEQ.svg"
+#  "CImg/Inpaint/eu.cimg.Inpaint.png"
+#  "CImg/Inpaint/eu.cimg.Inpaint.svg"
+#  "CImg/Noise/net.sf.cimg.CImgNoise.png"
+#  "CImg/Noise/net.sf.cimg.CImgNoise.svg"
+#  "CImg/Plasma/net.sf.cimg.CImgPlasma.png"
+#  "CImg/Plasma/net.sf.cimg.CImgPlasma.svg"
+#  "CImg/RollingGuidance/net.sf.cimg.CImgRollingGuidance.png"
+#  "CImg/RollingGuidance/net.sf.cimg.CImgRollingGuidance.svg"
+#  "CImg/SharpenInvDiff/net.sf.cimg.CImgSharpenInvDiff.png"
+#  "CImg/SharpenInvDiff/net.sf.cimg.CImgSharpenInvDiff.svg"
+#  "CImg/SharpenShock/net.sf.cimg.CImgSharpenShock.png"
+#  "CImg/Smooth/net.sf.cimg.CImgSmooth.png"
+#  "CImg/Smooth/net.sf.cimg.CImgSmooth.svg"
+# )
 
 
 ADD_LIBRARY(CImg SHARED ${CIMG_SOURCES} ${SUPPORT_SOURCES})
@@ -506,7 +284,7 @@ endif(OPENMP_FOUND AND NOT MSVC)
 
 IF (MSVC)
   # Some files require this option. This breaks compatibility with older linkers.
-  SET_TARGET_PROPERTIES(Misc PROPERTIES COMPILE_FLAGS "/bigobj")
+  SET_TARGET_PROPERTIES(Miscz PROPERTIES COMPILE_FLAGS "/bigobj")
   # If the build system is at least Windows Vista (6.0),
   # compile for Windows Vista, to get interruptible CImg plugins (see CImgFilter.h)
   IF (NOT ${CMAKE_SYSTEM_VERSION} VERSION_LESS 6.0) # Windows Vista
@@ -567,32 +345,32 @@ SET(OFX_ARCH_NAME ${OFX_ARCH} CACHE STRING "OpenFX target OS and architecture")
 IF("${OFX_ARCH_NAME}" EQUAL "UNKNOWN")
   MESSAGE(SEND_ERROR "OFX_ARCH_NAME was not detected. Install targets will be unavailable. See http://openeffects.org/documentation/reference/ch02s02.html to pick an arch name.")
 ELSE()
-  INSTALL(TARGETS Misc
+  INSTALL(TARGETS Miscz
     RUNTIME DESTINATION Miscz.ofx.bundle/Contents/${OFX_ARCH_NAME}
     LIBRARY DESTINATION Miscz.ofx.bundle/Contents/${OFX_ARCH_NAME}
   )
 
-  INSTALL(DIRECTORY "Shadertoy/presets"
-    DESTINATION Miscz.ofx.bundle/Contents/Resources
-  )
+#  INSTALL(DIRECTORY "Shadertoy/presets"
+#    DESTINATION Miscz.ofx.bundle/Contents/Resources
+#  )
 
-  INSTALL(FILES ${MISC_RESOURCES}
-    DESTINATION Miscz.ofx.bundle/Contents/Resources
-  )
+#  INSTALL(FILES ${MISC_RESOURCES}
+#    DESTINATION Miscz.ofx.bundle/Contents/Resources
+#  )
 
   INSTALL(FILES Info.plist
     DESTINATION Miscz.ofx.bundle/Contents
   )
-  INSTALL(TARGETS CImg
-    RUNTIME DESTINATION CImg.ofx.bundle/Contents/${OFX_ARCH_NAME}
-    LIBRARY DESTINATION CImg.ofx.bundle/Contents/${OFX_ARCH_NAME}
-  )
+#  INSTALL(TARGETS CImg
+#    RUNTIME DESTINATION CImg.ofx.bundle/Contents/${OFX_ARCH_NAME}
+#    LIBRARY DESTINATION CImg.ofx.bundle/Contents/${OFX_ARCH_NAME}
+#  )
 
-  INSTALL(FILES ${CIMG_RESOURCES}
-    DESTINATION CImg.ofx.bundle/Contents/Resources
-  )
+#  INSTALL(FILES ${CIMG_RESOURCES}
+#    DESTINATION CImg.ofx.bundle/Contents/Resources
+#  )
 
-  INSTALL(FILES CImg/Info.plist
-    DESTINATION CImg.ofx.bundle/Contents
-  )
+#  INSTALL(FILES CImg/Info.plist
+#    DESTINATION CImg.ofx.bundle/Contents
+#  )
 ENDIF()

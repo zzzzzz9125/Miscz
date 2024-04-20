@@ -30,7 +30,8 @@ namespace OFX {
 void
 shutterDescribeInContext(ImageEffectDescriptor &desc,
                          ContextEnum /*context*/,
-                         PageParamDescriptor* page)
+                         PageParamDescriptor* page,
+                         GroupParamDescriptor* group)
 {
     // shutter
     {
@@ -41,6 +42,9 @@ shutterDescribeInContext(ImageEffectDescriptor &desc,
         param->setIncrement(0.01);
         param->setRange(0., 2.);
         param->setDisplayRange(0., 2.);
+        if (group) {
+            param->setParent(*group);
+        }
         if (page) {
             page->addChild(*param);
         }
@@ -61,6 +65,9 @@ shutterDescribeInContext(ImageEffectDescriptor &desc,
         param->appendOption(kParamShutterOffsetOptionCustom);
         param->setAnimates(true);
         param->setDefault(eShutterOffsetStart);
+        if (group) {
+            param->setParent(*group);
+        }
         if (page) {
             page->addChild(*param);
         }
@@ -75,6 +82,9 @@ shutterDescribeInContext(ImageEffectDescriptor &desc,
         param->setIncrement(0.1);
         param->setRange(-1., 1.);
         param->setDisplayRange(-1., 1.);
+        if (group) {
+            param->setParent(*group);
+        }
         if (page) {
             page->addChild(*param);
         }

@@ -141,9 +141,9 @@ Transform3x3Plugin::Transform3x3Plugin(OfxImageEffectHandle handle,
             assert(_directionalBlur && _shutter && _shutteroffset && _shuttercustomoffset);
         }
         if (masked) {
-            _mix = fetchDoubleParam(kParamMix);
-            _maskInvert = fetchBooleanParam(kParamMaskInvert);
-            assert(_mix && _maskInvert);
+        _mix = fetchDoubleParam(kParamMix);
+        _maskInvert = fetchBooleanParam(kParamMaskInvert);
+        assert(_mix && _maskInvert);
         }
 
         if (paramsType == eTransform3x3ParamsTypeMotionBlur) {
@@ -1406,69 +1406,97 @@ Transform3x3DescribeInContextEnd(ImageEffectDescriptor &desc,
 
     // motionBlur
     {
-        DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransform3x3MotionBlur);
-        param->setLabel(kParamTransform3x3MotionBlurLabel);
-        param->setHint(kParamTransform3x3MotionBlurHint);
-        param->setDefault(paramsType == Transform3x3Plugin::eTransform3x3ParamsTypeDirBlur ? 1. : 0.);
-        param->setIncrement(0.01);
-        param->setRange(0., 100.);
-        param->setDisplayRange(0., 4.);
-        if (page) {
-            page->addChild(*param);
-        }
-    }
-
-    if (paramsType == Transform3x3Plugin::eTransform3x3ParamsTypeDirBlur) {
-        {
-            DoubleParamDescriptor *param = desc.defineDoubleParam(kParamTransform3x3DirBlurAmount);
-            param->setLabel(kParamTransform3x3DirBlurAmountLabel);
-            param->setHint(kParamTransform3x3DirBlurAmountHint);
-            param->setRange(-DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
-            param->setDisplayRange(-1, 2.);
-            param->setDefault(1);
-            param->setAnimates(true); // can animate
+        GroupParamDescriptor* group = desc.defineGroupParam(kGroupMotionBlur);
+        if (group) {
+            group->setLabel(kGroupMotionBlurLabel);
+            group->setAsTab();
             if (page) {
-                page->addChild(*param);
+                page->addChild(*group);
             }
         }
 
         {
-            BooleanParamDescriptor *param = desc.defineBooleanParam(kParamTransform3x3DirBlurCentered);
-            param->setLabel(kParamTransform3x3DirBlurCenteredLabel);
-            param->setHint(kParamTransform3x3DirBlurCenteredHint);
-            param->setAnimates(true); // can animate
-            if (page) {
-                page->addChild(*param);
-            }
-        }
-
-        {
-            DoubleParamDescriptor *param = desc.defineDoubleParam(kParamTransform3x3DirBlurFading);
-            param->setLabel(kParamTransform3x3DirBlurFadingLabel);
-            param->setHint(kParamTransform3x3DirBlurFadingHint);
-            param->setRange(0., 4.);
+            DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransform3x3MotionBlur);
+            param->setLabel(kParamTransform3x3MotionBlurLabel);
+            param->setHint(kParamTransform3x3MotionBlurHint);
+            param->setDefault(paramsType == Transform3x3Plugin::eTransform3x3ParamsTypeDirBlur ? 1. : 0.);
+            param->setIncrement(0.01);
+            param->setRange(0., 100.);
             param->setDisplayRange(0., 4.);
-            param->setDefault(0.);
-            param->setAnimates(true); // can animate
-            if (page) {
-                page->addChild(*param);
+            if (group) {
+                param->setParent(*group);
             }
-        }
-    } else if (paramsType == Transform3x3Plugin::eTransform3x3ParamsTypeMotionBlur) {
-        // directionalBlur
-        {
-            BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransform3x3DirectionalBlur);
-            param->setLabel(kParamTransform3x3DirectionalBlurLabel);
-            param->setHint(kParamTransform3x3DirectionalBlurHint);
-            param->setDefault(false);
-            param->setAnimates(true);
             if (page) {
                 page->addChild(*param);
             }
         }
 
-        shutterDescribeInContext(desc, context, page);
+        if (paramsType == Transform3x3Plugin::eTransform3x3ParamsTypeDirBlur) {
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransform3x3DirBlurAmount);
+                param->setLabel(kParamTransform3x3DirBlurAmountLabel);
+                param->setHint(kParamTransform3x3DirBlurAmountHint);
+                param->setRange(-DBL_MAX, DBL_MAX); // Resolve requires range and display range or values are clamped to (-1,1)
+                param->setDisplayRange(-1, 2.);
+                param->setDefault(1);
+                param->setAnimates(true); // can animate
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            {
+                BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransform3x3DirBlurCentered);
+                param->setLabel(kParamTransform3x3DirBlurCenteredLabel);
+                param->setHint(kParamTransform3x3DirBlurCenteredHint);
+                param->setAnimates(true); // can animate
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransform3x3DirBlurFading);
+                param->setLabel(kParamTransform3x3DirBlurFadingLabel);
+                param->setHint(kParamTransform3x3DirBlurFadingHint);
+                param->setRange(0., 4.);
+                param->setDisplayRange(0., 4.);
+                param->setDefault(0.);
+                param->setAnimates(true); // can animate
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+        }
+        else if (paramsType == Transform3x3Plugin::eTransform3x3ParamsTypeMotionBlur) {
+            // directionalBlur
+            {
+                BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransform3x3DirectionalBlur);
+                param->setLabel(kParamTransform3x3DirectionalBlurLabel);
+                param->setHint(kParamTransform3x3DirectionalBlurHint);
+                param->setDefault(false);
+                param->setAnimates(true);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            shutterDescribeInContext(desc, context, page, group);
+        }
     }
+ 
 
     if (masked) {
         // GENERIC (MASKED)

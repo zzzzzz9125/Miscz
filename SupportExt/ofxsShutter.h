@@ -43,7 +43,7 @@
 #define kParamShutterOffsetOptionEnd "End", "Close the shutter at the frame (from t-shutter to t)", "end"
 #define kParamShutterOffsetOptionCustom "Custom", "Open the shutter at t+shuttercustomoffset (from t+shuttercustomoffset to t+shuttercustomoffset+shutter)", "custom"
 
-#define kGroupMotionBlur "motionBlur"
+#define kGroupMotionBlur "motionBlurGroup"
 #define kGroupMotionBlurLabel "Motion Blur"
 enum ShutterOffsetEnum
 {
@@ -59,7 +59,7 @@ enum ShutterOffsetEnum
 #define kParamShutterCustomOffsetHint "When custom is selected, the shutter is open at current time plus this offset (in frames). Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0)."
 
 namespace OFX {
-void shutterDescribeInContext(OFX::ImageEffectDescriptor &desc, OFX::ContextEnum context, OFX::PageParamDescriptor* page);
+void shutterDescribeInContext(OFX::ImageEffectDescriptor &desc, OFX::ContextEnum context, OFX::PageParamDescriptor* page, OFX::GroupParamDescriptor* group);
 void shutterRange(double time, double shutter, ShutterOffsetEnum shutteroffset, double shuttercustomoffset, OfxRangeD* range);
 }
 #endif /* defined(openfx_supportext_ofxsShutter_h) */

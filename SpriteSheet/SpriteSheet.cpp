@@ -38,7 +38,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kPluginGrouping "Transform"
 #define kPluginDescription "Read individual frames from a sprite sheet. A sprite sheet is a series of images (usually animation frames) combined into a larger image (or images). For example, an animation consisting of eight 100x100 images could be combined into a single 400x200 sprite sheet (4 frames across by 2 high). The sprite with index 0 is at the top-left of the source image, and sprites are ordered left-to-right and top-to-bottom. The output is an animated sprite that repeats the sprites given in the sprite range. The ContactSheet effect can be used to make a spritesheet from a series of images or a video."
 #define kPluginIdentifier "net.sf.openfx.MzSpriteSheet"
-#define kPluginVersionMajor 1 // Incrementing this number means that you have broken backwards compatibility of the plug-in.
+#define kPluginVersionMajor 2 // Incrementing this number means that you have broken backwards compatibility of the plug-in.
 #define kPluginVersionMinor 0 // Increment this when you have fixed a bug or made it faster.
 
 #define kSupportsTiles 1
@@ -55,7 +55,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kParamSpriteRangeLabel "Sprite Range", "Index of the first and last sprite in the animation. The sprite index starts at zero."
 
 #define kParamFrameOffset "frameOffset"
-#define kParamFrameOffsetLabel "Frame Offset", "Output frame number for the first sprite."
+#define kParamFrameOffsetLabel "Frame Offset", "Output frame number for the first sprite as a whole."
 
 #define kParamFrameSeparation "frameSeparation"
 #define kParamFrameSeparationLabel "Frame Separation", "The separation of the frames, based on the frame rate of the project."
@@ -78,6 +78,9 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kParamPlaybackModeOptionNormal "Normal", "Play the sprites in Normal mode.", "normal"
 #define kParamPlaybackModeOptionNormalReverse "Normal & Reverse", "Play the sprites in Normal & Reverse mode.", "normalReverse"
 #define kParamPlaybackModeOptionNormalReverseMerge "Normal & Reverse (Merge)", "Play the sprites in Normal & Reverse mode, with repeated first/last frames being merged into one frame.", "normalReverseMerge"
+
+#define kParamLoopOffset "loopOffset"
+#define kParamLoopOffsetLabel "Loop Offset", "Output frame number for the first sprite in a single loop."
 
 #define kParamRepeatRange "repeatRange"
 #define kParamRepeatRangeLabel "Repeat Range", "Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed."
@@ -204,6 +207,7 @@ public:
         , _frameSeparation(NULL)
         , _readingDirection(NULL)
         , _playbackMode(NULL)
+        , _loopOffset(NULL)
         , _repeatRange(NULL)
         , _repeatCount(NULL)
         , _spritesCut(NULL)
@@ -225,6 +229,7 @@ public:
         _frameSeparation = fetchIntParam(kParamFrameSeparation);
         _readingDirection = fetchChoiceParam(kParamReadingDirection);
         _playbackMode = fetchChoiceParam(kParamPlaybackMode);
+        _loopOffset = fetchIntParam(kParamLoopOffset);
         _repeatRange = fetchInt2DParam(kParamRepeatRange);
         _repeatCount = fetchIntParam(kParamRepeatCount);
         _spritesCut = fetchInt2DParam(kParamSpritesCut);
@@ -256,6 +261,7 @@ private:
                           int frameSeparation,
                           ReadingDirectionEnum readingDirection,
                           PlaybackModeEnum playbackMode,
+                          int loopOffset,
                           const OfxPointI& repeatRange,
                           int repeatCount,
                           const OfxPointI& spritesCut,
@@ -272,10 +278,11 @@ private:
         }
         // sprite index
         int i = mod((int)std::floor(time) / frameSeparation + frameOffset, n + m * repeatCount);
-        if ((playbackMode == ePlaybackModeNormalReverse || playbackMode == ePlaybackModeNormalReverseMerge) && mod(((int)std::floor(time) + frameOffset) / (n + m * repeatCount), 2) == 1) {
+        if ((playbackMode == ePlaybackModeNormalReverse || playbackMode == ePlaybackModeNormalReverseMerge) && mod(((int)std::floor(time) / frameSeparation + frameOffset) / (n + m * repeatCount), 2) == 1) {
             i = n + m * repeatCount - (playbackMode != ePlaybackModeNormalReverseMerge ? 1 : 0) - i;
         }
-        int j = (i - repeatRange.x) / m;
+        i = mod(i + loopOffset, n + (playbackMode == ePlaybackModeNormalReverseMerge ? 1 : 0) + m * repeatCount);
+        int j = (i - std::min(repeatRange.x, spriteRange.y)) / m;
         if (j < 0) {
             j = 0;
         }
@@ -291,18 +298,27 @@ private:
             cols = 1;
         }
         int sum = (rodPixel.y2 - rodPixel.y1) / spriteSize.y / spritesCut.y * (rodPixel.x2 - rodPixel.x1) / spriteSize.x / spritesCut.x;
-        int r = i / cols % (sum / cols);
+        if (sum <= 0) {
+            sum = 1;
+        }
+        int r = i / cols % std::max(1, sum / cols);
         int c = i % cols;
         if (backwardRead) {
             c = cols - 1 - c;
         }
         if (sshapedRead) {
-            c = (r + spriteRange.x / cols % (sum / cols)) % 2 == 0 ? c : (cols - 1 - c);
+            c = (r + spriteRange.x / cols % std::max(1, sum / cols)) % 2 == 0 ? c : (cols - 1 - c);
         }
         int ii = i / sum;
         int colsCrop = verticalRead ? spritesCut.y : spritesCut.x;
+        if (colsCrop <= 0) {
+            colsCrop = 1;
+        }
         int rr = ii / colsCrop;
         int cc = ii % colsCrop;
+        if (backwardRead) {
+            cc = colsCrop - 1 - cc;
+        }
         r += rr * sum / cols;
         c += cc * cols;
         if (verticalRead) {
@@ -331,6 +347,7 @@ private:
     IntParam* _frameSeparation;
     ChoiceParam* _readingDirection;
     ChoiceParam* _playbackMode;
+    IntParam* _loopOffset;
     Int2DParam* _repeatRange;
     IntParam* _repeatCount;
     Int2DParam* _spritesCut;
@@ -409,6 +426,7 @@ SpriteSheetPlugin::setupAndProcess(SpriteSheetProcessorBase &processor,
     int frameSeparation = _frameSeparation->getValueAtTime(time);
     ReadingDirectionEnum readingDirection = (ReadingDirectionEnum)_readingDirection->getValueAtTime(time);
     PlaybackModeEnum playbackMode = (PlaybackModeEnum)_playbackMode->getValueAtTime(time);
+    int loopOffset = _loopOffset->getValueAtTime(time);
     OfxPointI repeatRange;
     _repeatRange->getValueAtTime(time, repeatRange.x, repeatRange.y);
     int repeatCount = _repeatCount->getValueAtTime(time);
@@ -417,7 +435,7 @@ SpriteSheetPlugin::setupAndProcess(SpriteSheetProcessorBase &processor,
     _spritesCut->getValueAtTime(time, spritesCut.x, spritesCut.y);
 
     OfxRectI cropRectPixel;
-    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, frameSeparation, readingDirection, playbackMode, repeatRange, repeatCount, spritesCut, &cropRectPixel);
+    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, frameSeparation, readingDirection, playbackMode, loopOffset, repeatRange, repeatCount, spritesCut, &cropRectPixel);
     processor.setValues(cropRectPixel);
 
     // Call the base class process member, this will call the derived templated process code
@@ -451,6 +469,7 @@ SpriteSheetPlugin::getRegionsOfInterest(const RegionsOfInterestArguments &args,
     int frameSeparation = _frameSeparation->getValueAtTime(time);
     ReadingDirectionEnum readingDirection = (ReadingDirectionEnum)_readingDirection->getValueAtTime(time);
     PlaybackModeEnum playbackMode = (PlaybackModeEnum)_playbackMode->getValueAtTime(time);
+    int loopOffset = _loopOffset->getValueAtTime(time);
     OfxPointI repeatRange;
     _repeatRange->getValueAtTime(time, repeatRange.x, repeatRange.y);
     int repeatCount = _repeatCount->getValueAtTime(time);
@@ -459,7 +478,7 @@ SpriteSheetPlugin::getRegionsOfInterest(const RegionsOfInterestArguments &args,
     _spritesCut->getValueAtTime(time, spritesCut.x, spritesCut.y);
 
     OfxRectI cropRectPixel;
-    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, frameSeparation, readingDirection, playbackMode, repeatRange, repeatCount, spritesCut, &cropRectPixel);
+    getCropRectangle(time, args.renderScale, srcRoDPixel, spriteSize, spriteRange, frameOffset, frameSeparation, readingDirection, playbackMode, loopOffset, repeatRange, repeatCount, spritesCut, &cropRectPixel);
 
     OfxRectD cropRect;
     Coords::toCanonical(cropRectPixel, args.renderScale, par, &cropRect);
@@ -716,6 +735,15 @@ SpriteSheetPluginFactory::describeInContext(ImageEffectDescriptor &desc,
         param->appendOption(kParamPlaybackModeOptionNormalReverseMerge);
         param->setAnimates(true);
         param->setDefault(ePlaybackModeNormal);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        IntParamDescriptor* param = desc.defineIntParam(kParamLoopOffset);
+        param->setLabelAndHint(kParamLoopOffsetLabel);
+        param->setRange(INT_MIN, INT_MAX);
+        param->setDefault(0);
         if (page) {
             page->addChild(*param);
         }
