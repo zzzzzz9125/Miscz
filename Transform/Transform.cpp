@@ -158,6 +158,72 @@ getCurveValue(const CurveTypeEnum curveType,
     }
 }
 
+enum FrequencyUnitEnum
+{
+    eFrequencyUnitHz,
+    eFrequencyUnitBPM
+};
+
+enum BeatTypeEnum
+{
+    eBPMTypeQuadrupleWholes,
+    eBPMTypeBreve,
+    eBPMTypeWhole,
+    eBPMTypeHalf,
+    eBPMTypeQuarter,
+    eBPMTypeEighth,
+    eBPMTypeSixteenth,
+    eBPMTypeThirtySecond,
+    eBPMTypeHalfTriplet,
+    eBPMTypeQuarterTriplet,
+    eBPMTypeEighthTriplet,
+    eBPMTypeSixteenthTriplet,
+    eBPMTypeThirtySecondTriplet
+};
+
+inline static void
+convertFrequency(FrequencyUnitEnum unitInput, FrequencyUnitEnum unitOutput, const BeatTypeEnum beatType, double* f)
+{
+    if (unitInput == unitOutput) {
+        return;
+    }
+
+    double n = 1. / 60;
+    switch (beatType) {
+    case eBPMTypeQuadrupleWholes:
+        n *= 1. / 16; break;
+    case eBPMTypeBreve:
+        n *= 1. / 8; break;
+    case eBPMTypeWhole:
+        n *= 1. / 4; break;
+    case eBPMTypeHalf:
+        n *= 1. / 2; break;
+    case eBPMTypeQuarter:
+        n *= 1. / 1; break;
+    case eBPMTypeEighth:
+        n *= 2. / 1; break;
+    case eBPMTypeSixteenth:
+        n *= 4. / 1; break;
+    case eBPMTypeThirtySecond:
+        n *= 8. / 1; break;
+    case eBPMTypeHalfTriplet:
+        n *= 1. / 6; break;
+    case eBPMTypeQuarterTriplet:
+        n *= 1. / 3; break;
+    case eBPMTypeEighthTriplet:
+        n *= 2. / 3; break;
+    case eBPMTypeSixteenthTriplet:
+        n *= 4. / 3; break;
+    case eBPMTypeThirtySecondTriplet:
+        n *= 8. / 3; break;
+    default:
+        break;
+    }
+
+    if (unitInput == eFrequencyUnitBPM && unitOutput == eFrequencyUnitHz) { *f *= n; } else
+    if (unitInput == eFrequencyUnitHz && unitOutput == eFrequencyUnitBPM) { *f /= n; }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /** @brief The plugin that does our work */
 class TransformPlugin
@@ -181,6 +247,8 @@ public:
         , _periodicBezierP2(NULL)
         , _periodicSymmetry(NULL)
         , _periodicFrequency(NULL)
+        , _periodicFrequencyUnit(NULL)
+        , _periodicFrequencyBeat(NULL)
         , _periodicAutorotate(NULL)
         , _periodicScale(NULL)
         , _periodicScaleStep(NULL)
@@ -219,6 +287,8 @@ public:
         _periodicBezierP2 = fetchDouble2DParam(kParamTransformPeriodicBezierP2);
         _periodicSymmetry = fetchBooleanParam(kParamTransformPeriodicSymmetry);
         _periodicFrequency = fetchDoubleParam(kParamTransformPeriodicFrequency);
+        _periodicFrequencyUnit = fetchChoiceParam(kParamTransformPeriodicFrequencyUnit);
+        _periodicFrequencyBeat = fetchChoiceParam(kParamTransformPeriodicFrequencyBeat);
         _periodicAutorotate = fetchDoubleParam(kParamTransformPeriodicAutorotate);
         _periodicScale = fetchDoubleParam(kParamTransformPeriodicScale);
         _periodicScaleStep = fetchDoubleParam(kParamTransformPeriodicScaleStep);
@@ -239,7 +309,7 @@ public:
         _center = fetchDouble2DParam(kParamTransformCenterOld);
         _centerChanged = fetchBooleanParam(kParamTransformCenterChanged);
         _interactive = fetchBooleanParam(kParamTransformInteractiveOld);
-        assert(_translate && _periodicRadius && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval &&  _periodicCurve && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _rotate && _faceToCenter && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
+        assert(_translate && _periodicRadius && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval &&  _periodicCurve && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicFrequencyUnit && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _rotate && _faceToCenter && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
         _srcClipChanged = fetchBooleanParam(kParamSrcClipChanged);
         assert(_srcClipChanged);
         // On Natron, hide the uniform parameter if it is false and not animated,
@@ -278,6 +348,8 @@ private:
     Double2DParam* _periodicBezierP2;
     BooleanParam* _periodicSymmetry;
     DoubleParam* _periodicFrequency;
+    ChoiceParam* _periodicFrequencyUnit;
+    ChoiceParam* _periodicFrequencyBeat;
     DoubleParam* _periodicAutorotate;
     DoubleParam* _periodicScale;
     DoubleParam* _periodicScaleStep;
@@ -507,6 +579,14 @@ TransformPlugin::getInverseTransformCanonical(double time,
     if (_periodicCurve) {
         periodicCurve = (CurveTypeEnum)_periodicCurve->getValueAtTime(time);
     }
+    FrequencyUnitEnum periodicFrequencyUnit = eFrequencyUnitHz;
+    if (_periodicFrequencyUnit) {
+        periodicFrequencyUnit = (FrequencyUnitEnum)_periodicFrequencyUnit->getValueAtTime(time);
+    }
+    BeatTypeEnum periodicFrequencyBeat = eBPMTypeQuarter;
+    if (_periodicFrequencyBeat) {
+        periodicFrequencyBeat = (BeatTypeEnum)_periodicFrequencyBeat->getValueAtTime(time);
+    }
     OfxPointD periodicBezierP1 = { 0., 0. };
     if (_periodicBezierP1) {
         _periodicBezierP1->getValueAtTime(time, periodicBezierP1.x, periodicBezierP1.y);
@@ -620,17 +700,18 @@ TransformPlugin::getInverseTransformCanonical(double time,
     center = { center.x * size.x + offset.x, center.y * size.y + offset.y };
     periodicRadius *= std::max(size.x, size.y) / 2;
 
-
     periodicRotate = ofxsToRadians(periodicRotate);
     if (periodicFrequency == 0. || (periodicInterval % periodicN == 0 && periodicN != 1 && periodicAutorotate == 0. && periodicScale == 1)) {
         translate.x += periodicRadius * std::sin(periodicRotate) * periodicDeform;
         translate.y += periodicRadius * std::cos(periodicRotate);
     } else {
+        convertFrequency(periodicFrequencyUnit, eFrequencyUnitHz, periodicFrequencyBeat, &periodicFrequency);
         periodicOffset *= periodicN == 1 ? periodicInterval : periodicN;
         periodicOffset += periodicFrequency * time / getFrameRate();
         if (periodicSkip != 0.) {
             periodicOffset += std::floor(periodicOffset / periodicSkip) * periodicSkip;
         }
+
         double b = periodicOffset - std::floor(periodicOffset);
         if (periodicCurve != eCurveTypeCustom) {
             getCurveValue(periodicCurve, &periodicBezierP1.x, &periodicBezierP1.y, &periodicBezierP2.x, &periodicBezierP2.y);
@@ -869,8 +950,7 @@ TransformPlugin::changedParam(const InstanceChangedArgs &args,
         if (_centerChanged->getValue()) {
             _centerChanged->setValue(false);
         }
-    }
-    else if (paramName == kParamTransformPeriodicCurve) {
+    } else if (paramName == kParamTransformPeriodicCurve) {
         CurveTypeEnum periodicCurve = (CurveTypeEnum)_periodicCurve->getValue();
         if (periodicCurve == eCurveTypeCustom) {
             _periodicBezierP1->setIsSecret(false);
@@ -884,6 +964,20 @@ TransformPlugin::changedParam(const InstanceChangedArgs &args,
             _periodicBezierP2->setValue(x2, y2);
             changedTransform(args);
         }
+    } else if (paramName == kParamTransformPeriodicFrequencyUnit) {
+        FrequencyUnitEnum periodicFrequencyUnit = (FrequencyUnitEnum)_periodicFrequencyUnit->getValue();
+        if (periodicFrequencyUnit == eFrequencyUnitBPM) {
+            _periodicFrequency->setDisplayRange(-240, 240);
+            _periodicFrequency->setIncrement(5.);
+            _periodicFrequencyBeat->setIsSecret(false);
+        }else if (periodicFrequencyUnit == eFrequencyUnitHz) {
+            _periodicFrequency->setDisplayRange(-5, 5);
+            _periodicFrequency->setIncrement(0.1);
+            _periodicFrequencyBeat->setIsSecret(true);
+        }
+        double f = _periodicFrequency->getValue();
+        convertFrequency(std::abs(_periodicFrequency->getValue()) < 40 ? eFrequencyUnitHz : eFrequencyUnitBPM, periodicFrequencyUnit, (BeatTypeEnum)_periodicFrequencyBeat->getValue(), &f);
+        _periodicFrequency->setValue(f);
     } else if ( (paramName == kParamTransformTranslateOld) ||
                 ( paramName == kParamTransformRotateOld) ||
                 ( paramName == kParamTransformScaleOld) ||

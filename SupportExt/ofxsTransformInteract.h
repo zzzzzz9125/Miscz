@@ -45,6 +45,14 @@
 #define kParamTransformPeriodicFrequencyLabel "Frequency"
 #define kParamTransformPeriodicFrequencyHint "Frequency of periodic motion."
 
+#define kParamTransformPeriodicFrequencyUnit "periodicFrequencyUnit"
+#define kParamTransformPeriodicFrequencyUnitLabel "Unit"
+#define kParamTransformPeriodicFrequencyUnitHint "Unit of Frequency."
+
+#define kParamTransformPeriodicFrequencyBeat "periodicFrequencyBeat"
+#define kParamTransformPeriodicFrequencyBeatLabel "Beat Type"
+#define kParamTransformPeriodicFrequencyBeatHint "Beat Type."
+
 #define kParamTransformPeriodicAutorotate "periodicAutorotate"
 #define kParamTransformPeriodicAutorotateLabel "Autorotate"
 #define kParamTransformPeriodicAutorotateHint "Autorotation speed of periodic motion."

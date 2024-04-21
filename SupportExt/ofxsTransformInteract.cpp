@@ -122,6 +122,52 @@ namespace OFX {
                 }
             }
 
+            // periodicFrequencyUnit
+            {
+                ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamTransformPeriodicFrequencyUnit);
+                param->setLabel(kParamTransformPeriodicFrequencyUnitLabel);
+                param->setHint(kParamTransformPeriodicFrequencyUnitHint);
+                param->setDefault(0);
+                param->appendOption("Hz");
+                param->appendOption("BPM");
+                param->setAnimates(false);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
+            // periodicFrequencyBeat
+            {
+                ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamTransformPeriodicFrequencyBeat);
+                param->setLabel(kParamTransformPeriodicFrequencyBeatLabel);
+                param->setHint(kParamTransformPeriodicFrequencyBeatHint);
+                param->setDefault(4);
+                param->appendOption("Quadruple Wholes");
+                param->appendOption("Breve");
+                param->appendOption("Whole");
+                param->appendOption("Half");
+                param->appendOption("Quarter");
+                param->appendOption("Eighth");
+                param->appendOption("Sixteenth");
+                param->appendOption("Thirty-Second");
+                param->appendOption("Half Triplet");
+                param->appendOption("Quarter Triplet");
+                param->appendOption("Eighth Triplet");
+                param->appendOption("Sixteenth Triplet");
+                param->appendOption("Thirty-Second Triplet");
+                param->setAnimates(true);
+                param->setIsSecret(true);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
             // periodicAutorotate
             {
                 DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicAutorotate);
@@ -239,6 +285,23 @@ namespace OFX {
                 }
             }
 
+            // periodicBend
+            {
+                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicBend);
+                param->setLabel(kParamTransformPeriodicBendLabel);
+                param->setHint(kParamTransformPeriodicBendHint);
+                param->setDefault(0);
+                param->setRange(-DBL_MAX, DBL_MAX);
+                param->setDisplayRange(-1, 1);
+                param->setIncrement(.1);
+                if (group) {
+                    param->setParent(*group);
+                }
+                if (page) {
+                    page->addChild(*param);
+                }
+            }
+
             // periodicRotate
             {
                 DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicRotate);
@@ -249,23 +312,6 @@ namespace OFX {
                 param->setRange(-DBL_MAX, DBL_MAX);
                 param->setDisplayRange(-1800, 1800);
                 param->setIncrement(30);
-                if (group) {
-                    param->setParent(*group);
-                }
-                if (page) {
-                    page->addChild(*param);
-                }
-            }
-
-            // periodicBend
-            {
-                DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformPeriodicBend);
-                param->setLabel(kParamTransformPeriodicBendLabel);
-                param->setHint(kParamTransformPeriodicBendHint);
-                param->setDefault(0);
-                param->setRange(-DBL_MAX, DBL_MAX);
-                param->setDisplayRange(-1, 1);
-                param->setIncrement(.1);
                 if (group) {
                     param->setParent(*group);
                 }

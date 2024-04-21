@@ -19,6 +19,31 @@
                     <OfxParamPropHint>周期运动的频率。</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
+                <OfxParamTypeChoice name="periodicFrequencyUnit">
+                    <OfxPropLabel>频率单位</OfxPropLabel>
+                    <OfxParamPropHint>频率的单位。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Hz</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>BPM</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeChoice name="periodicFrequencyBeat">
+                    <OfxPropLabel>节奏类型</OfxPropLabel>
+                    <OfxParamPropHint>BPM的节奏类型。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>四全音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>二全音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>全音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>二分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>八分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>十六分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>三十二分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>二分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>八分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>十六分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>三十二分音符三连音</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
                 <OfxParamTypeDouble name="periodicAutorotate">
                     <OfxPropLabel>自转</OfxPropLabel>
                     <OfxParamPropHint>周期运动的自转速度。</OfxParamPropHint>
@@ -54,14 +79,14 @@
                     <OfxParamPropHint>周期运动轨迹的点间隔。</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
-                <OfxParamTypeDouble name="periodicRotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
                 <OfxParamTypeDouble name="periodicBend">
                     <OfxPropLabel>弯曲</OfxPropLabel>
                     <OfxParamPropHint>周期运动轨迹的弯曲。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicRotate">
+                    <OfxPropLabel>旋转</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicDeform">
@@ -304,6 +329,31 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxParamPropHint>周期运动的频率。</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
+                <OfxParamTypeChoice name="periodicFrequencyUnit">
+                    <OfxPropLabel>频率单位</OfxPropLabel>
+                    <OfxParamPropHint>频率的单位。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Hz</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>BPM</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeChoice name="periodicFrequencyBeat">
+                    <OfxPropLabel>节奏类型</OfxPropLabel>
+                    <OfxParamPropHint>BPM的节奏类型。</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>四全音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>二全音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>全音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>二分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>八分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>十六分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>三十二分音符</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>二分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>四分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>八分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>十六分音符三连音</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>三十二分音符三连音</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
                 <OfxParamTypeDouble name="periodicAutorotate">
                     <OfxPropLabel>自转</OfxPropLabel>
                     <OfxParamPropHint>周期运动的自转速度。</OfxParamPropHint>
@@ -339,14 +389,14 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
                     <OfxParamPropHint>周期运动轨迹的点间隔。</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
-                <OfxParamTypeDouble name="periodicRotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
                 <OfxParamTypeDouble name="periodicBend">
                     <OfxPropLabel>弯曲</OfxPropLabel>
                     <OfxParamPropHint>周期运动轨迹的弯曲。</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="periodicRotate">
+                    <OfxPropLabel>旋转</OfxPropLabel>
+                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicDeform">
