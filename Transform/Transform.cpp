@@ -933,6 +933,7 @@ TransformPlugin::getInverseTransformCanonical(double time,
             parser_t       parser;
             symbol_table_t glbl_const_symbol_table;
             glbl_const_symbol_table.add_constants();
+            symbol_table.add_constant("e", exprtk::details::numeric::constant::e);
             expression.register_symbol_table(glbl_const_symbol_table);
             symbol_table.add_variable("x", functionOffset);
             expression.register_symbol_table(symbol_table);
