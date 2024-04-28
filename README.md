@@ -11,7 +11,7 @@
 
 [PixelScalingTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PixelScalingTool.cs) 提供对原素材的一键像素放大功能，[SpriteSheetTool 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/SpriteSheetTool.cs) 提供对 Sprite 表的切割、播放、重渲染等功能，[PsdLayerSplitter 脚本](https://github.com/zzzzzz9125/Miscz/blob/main/Scripts/PsdLayerSplitter.cs) 提供 .psd 文件的分图层功能。
 
-使用教程详见：[https://www.bilibili.com/read/cv33279086](https://www.bilibili.com/read/cv33279086)。
+使用教程详见：[cv33279086](https://www.bilibili.com/read/cv33279086)、[cv33944312](https://www.bilibili.com/read/cv33944312)。
 
 <br>
 
@@ -53,7 +53,7 @@ Sony Vegas Pro: `C:\ProgramData\Sony\Vegas Pro\Script Menu\`
 <br>
 
 ### MisczOFX 安装
-自动安装：下载 `MisczOFX_v.1.3.x_Chinese.exe` 并运行，解压到默认路径即可。
+自动安装：下载 `MisczOFX_v.1.3.x.exe` 并运行，解压到默认路径即可。
 
 手动安装：下载 `MisczTools_v.1.3.x.zip` 并解压，将 `Miscz.ofx.bundle` 放置到以下路径： `C:\Program Files\Common Files\OFX\Plugins\`
 
@@ -118,8 +118,8 @@ If no folder exists, create one, then put the files in.
 <br>
 
 ### MisczOFX Install
-Auto Install: Download and run `MisczOFX_v.1.3.x_English.exe`, decompress it to the default path.
+Auto Install: Download and run `MisczOFX_v.1.3.x.exe`, decompress it to the default path.
 
-Manual Install: Download `MisczTools_v.1.3.x.zip`, decompress it. For English users, delete `Miscz.ofx.bundle\Contents\Resources\Miscz.xml` first. Then put the `Miscz.ofx.bundle` into the following path: `C:\Program Files\Common Files\OFX\Plugins\`
+Manual Install: Download `MisczTools_v.1.3.x.zip`, decompress it. Then put the `Miscz.ofx.bundle` into the following path: `C:\Program Files\Common Files\OFX\Plugins\`
 
 If no folder exists, create one, then put the files in.
