@@ -32,7 +32,7 @@
 
 #define kParamTransformTranslate "transformTranslate"
 #define kParamTransformTranslateLabel "Translate"
-#define kParamTransformTranslateHint "Translation along the x and y axes in pixels. Can also be adjusted by clicking and dragging the center handle in the Viewer."
+#define kParamTransformTranslateHint "Translation along the x and y axes. Can also be adjusted by clicking and dragging the center handle in the Viewer."
 
 #define kGroupTransformPeriodic "periodic"
 #define kGroupTransformPeriodicLabel "Periodic Motion"
@@ -42,12 +42,12 @@
 #define kParamTransformPeriodicRadiusHint "Radius of the trajectory of periodic motion."
 
 #define kParamTransformPeriodicFrequency "periodicFrequency"
-#define kParamTransformPeriodicFrequencyLabel "Frequency"
-#define kParamTransformPeriodicFrequencyHint "Frequency of periodic motion."
+#define kParamTransformPeriodicFrequencyLabel "Speed"
+#define kParamTransformPeriodicFrequencyHint "Speed of periodic motion."
 
 #define kParamTransformPeriodicFrequencyUnit "periodicFrequencyUnit"
-#define kParamTransformPeriodicFrequencyUnitLabel "Unit"
-#define kParamTransformPeriodicFrequencyUnitHint "Unit of Frequency."
+#define kParamTransformPeriodicFrequencyUnitLabel "Speed Unit"
+#define kParamTransformPeriodicFrequencyUnitHint "Unit of Speed."
 
 #define kParamTransformPeriodicFrequencyBeat "periodicFrequencyBeat"
 #define kParamTransformPeriodicFrequencyBeatLabel "Beat Type"
@@ -101,11 +101,52 @@
 #define kParamTransformPeriodicBezierP1Label "Bezier P1"
 #define kParamTransformPeriodicBezierP2 "periodicBezierP2"
 #define kParamTransformPeriodicBezierP2Label "Bezier P2"
-#define kParamTransformPeriodicBezierPHint "Bezier Curve P1 & P2"
+#define kParamTransformPeriodicBezierPHint "Bezier Curve P1 & P2."
 
 #define kParamTransformPeriodicSymmetry "periodicSymmetry"
 #define kParamTransformPeriodicSymmetryLabel "Curve Symmetry"
 #define kParamTransformPeriodicSymmetryHint "It allows the two adjacent motion curves to be symmetric."
+
+#define kGroupTransformFunction "functionGroup"
+#define kGroupTransformFunctionLabel "Function"
+
+#define kParamTransformFunctionFrequency "functionFrequency"
+#define kParamTransformFunctionFrequencyLabel "Speed"
+#define kParamTransformFunctionFrequencyHint "Speed of Function."
+
+#define kParamTransformFunctionExpression "functionExpression"
+#define kParamTransformFunctionExpressionLabel "Expression"
+#define kParamTransformFunctionExpressionHint "Expression of Function."
+
+#define kParamTransformFunctionDomain "functionDomain"
+#define kParamTransformFunctionDomainLabel "Domain"
+#define kParamTransformFunctionDomainHint "Domain of Function."
+
+#define kParamTransformFunctionUnit "functionUnit"
+#define kParamTransformFunctionUnitLabel "Unit"
+#define kParamTransformFunctionUnitHint "Unit of Function."
+
+#define kParamTransformFunctionRoundTrip "functionRoundTrip"
+#define kParamTransformFunctionRoundTripLabel "Round-Trip"
+#define kParamTransformFunctionRoundTripHint "Enable Round-Trip or not."
+
+#define kParamTransformFunctionRotate "functionRotate"
+#define kParamTransformFunctionRotateLabel "Rotate"
+#define kParamTransformFunctionRotateHint "Rotation of Function, in degrees."
+
+#define kParamTransformFunctionCurve "functionCurve"
+#define kParamTransformFunctionCurveLabel "Curve Type"
+#define kParamTransformFunctionCurveHint "Motion Curve Type."
+
+#define kParamTransformFunctionBezierP1 "functionBezierP1"
+#define kParamTransformFunctionBezierP1Label "Bezier P1"
+#define kParamTransformFunctionBezierP2 "functionBezierP2"
+#define kParamTransformFunctionBezierP2Label "Bezier P2"
+#define kParamTransformFunctionBezierPHint "Bezier Curve P1 & P2."
+
+#define kParamTransformFunctionSymmetry "functionSymmetry"
+#define kParamTransformFunctionSymmetryLabel "Curve Symmetry"
+#define kParamTransformFunctionSymmetryHint "It allows the two adjacent motion curves to be symmetric."
 
 #define kParamTransformRotate "transformRotate"
 #define kParamTransformRotateLabel "Rotate"
@@ -117,11 +158,11 @@
 
 #define kParamTransformScale "transformScale"
 #define kParamTransformScaleLabel "Scale"
-#define kParamTransformScaleHint "Scale factor along the x and y axes. Can also be adjusted by clicking and dragging the outer circle or the diameter handles in the Viewer."
+#define kParamTransformScaleHint "Scale factor along the x and y axes."
 
 #define kParamTransformFlop "flop"
 #define kParamTransformFlopLabel "Horizontal (flop)"
-#define kParamTransformFlopHint "Mirror image (swap left and right)"
+#define kParamTransformFlopHint "Mirror image (swap left and right)."
 
 #define kParamTransformFlip "flip"
 #define kParamTransformFlipLabel "Vertical (flip)"
@@ -129,10 +170,10 @@
 
 #define kParamTransformScaleUniform "transformScaleUniform"
 #define kParamTransformScaleUniformLabel "Uniform"
-#define kParamTransformScaleUniformHint "Use the X scale for both directions"
+#define kParamTransformScaleUniformHint "Use the X scale for both directions."
 #define kParamTransformSkewX "transformSkewX"
 #define kParamTransformSkewXLabel "Skew X"
-#define kParamTransformSkewXHint "Skew along the x axis. Can also be adjusted by clicking and dragging the skew bar in the Viewer."
+#define kParamTransformSkewXHint "Skew along the x axis."
 #define kParamTransformSkewY "transformSkewY"
 #define kParamTransformSkewYLabel "Skew Y"
 #define kParamTransformSkewYHint "Skew along the y axis."
@@ -187,6 +228,15 @@ namespace OFX {
         double periodicScaleStep;
         double periodicOffset;
         double periodicSkip;
+        double functionFrequency;
+        std::string functionExpression;
+        OfxPointD functionDomain;
+        double functionUnit;
+        int functionRoundTrip;
+        double functionRotate;
+        OfxPointD functionBezierP1;
+        OfxPointD functionBezierP2;
+        bool functionSymmetry;
         OfxPointD scale;
         bool flop;
         bool flip;
@@ -214,6 +264,15 @@ namespace OFX {
             periodicScaleStep = 0;
             periodicOffset = 0;
             periodicSkip = 0;
+            functionFrequency = 1;
+            functionExpression = "";
+            functionDomain = { -1., 1. };
+            functionUnit = 0.5;
+            functionRoundTrip = 0;
+            functionRotate = 0.;
+            functionBezierP1 = { 0., 0. };
+            functionBezierP2 = { 1., 1. };
+            functionSymmetry = false;
             scale = { 1., 1. };
             flop = false;
             flip = false;
@@ -348,6 +407,15 @@ namespace OFX {
         OFX::DoubleParam* _periodicScaleStep;
         OFX::DoubleParam* _periodicOffset;
         OFX::DoubleParam* _periodicSkip;
+        OFX::DoubleParam* _functionFrequency;
+        OFX::StringParam* _functionExpression;
+        OFX::Double2DParam* _functionDomain;
+        OFX::DoubleParam* _functionUnit;
+        OFX::ChoiceParam* _functionRoundTrip;
+        OFX::DoubleParam* _functionRotate;
+        OFX::Double2DParam* _functionBezierP1;
+        OFX::Double2DParam* _functionBezierP2;
+        OFX::BooleanParam* _functionSymmetry;
         OFX::Double2DParam* _scale;
         OFX::BooleanParam* _flop;
         OFX::BooleanParam* _flip;

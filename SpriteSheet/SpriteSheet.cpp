@@ -35,7 +35,7 @@ using namespace OFX;
 OFXS_NAMESPACE_ANONYMOUS_ENTER
 
 #define kPluginName "Mz_SpriteSheet"
-#define kPluginGrouping "Transform"
+#define kPluginGrouping "MisczOFX"
 #define kPluginDescription "Read individual frames from a sprite sheet. A sprite sheet is a series of images (usually animation frames) combined into a larger image (or images). For example, an animation consisting of eight 100x100 images could be combined into a single 400x200 sprite sheet (4 frames across by 2 high). The sprite with index 0 is at the top-left of the source image, and sprites are ordered left-to-right and top-to-bottom. The output is an animated sprite that repeats the sprites given in the sprite range. The ContactSheet effect can be used to make a spritesheet from a series of images or a video."
 #define kPluginIdentifier "net.sf.openfx.MzSpriteSheet"
 #define kPluginVersionMajor 2 // Incrementing this number means that you have broken backwards compatibility of the plug-in.
@@ -89,7 +89,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kParamRepeatCountLabel "Repeat Count", "Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed."
 
 #define kParamSpritesCut "spritesCut"
-#define kParamSpritesCutLabel "Sprites Cut", "Cut the spritesheet and read it separately."
+#define kParamSpritesCutLabel "Sprites Cut", "Cut the sprite sheet and read it separately."
 
 enum ReadingDirectionEnum
 {

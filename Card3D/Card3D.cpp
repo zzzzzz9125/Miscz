@@ -68,7 +68,7 @@ using std::string;
 OFXS_NAMESPACE_ANONYMOUS_ENTER
 
 #define kPluginName "Mz_Card3DOFX"
-#define kPluginGrouping "Transform"
+#define kPluginGrouping "MisczOFX"
 #define kPluginDescription "Card3D.\n" \
     "This effect applies a transform that corresponds to projection the source image onto a 3D card in space. The 3D card is positioned with relative to the Axis position, and the Camera position may also be given. The Axis may be used to apply the same global motion to several cards.\n" \
     "This plugin concatenates transforms.\n" \

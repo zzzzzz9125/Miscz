@@ -429,6 +429,221 @@ namespace OFX {
                     page->addChild(*param);
                 }
             }
+
+            {
+                // function
+                GroupParamDescriptor* groupFunction = desc.defineGroupParam(kGroupTransformFunction);
+                if (groupFunction) {
+                    groupFunction->setLabel(kGroupTransformFunctionLabel);
+                    groupFunction->setAsTab();
+                    if (group) {
+                        groupFunction->setParent(*group);
+                    }
+                    if (page) {
+                        page->addChild(*groupFunction);
+                    }
+                }
+
+                // functionExpression
+                {
+                    StringParamDescriptor* param = desc.defineStringParam(kParamTransformFunctionExpression);
+                    param->setLabel(kParamTransformFunctionExpressionLabel);
+                    param->setHint(kParamTransformFunctionExpressionHint);
+                    param->setStringType(eStringTypeSingleLine);
+                    param->setAnimates(true);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionDomain
+                {
+                    Double2DParamDescriptor* param = desc.defineDouble2DParam(kParamTransformFunctionDomain);
+                    param->setLabel(kParamTransformFunctionDomainLabel);
+                    param->setHint(kParamTransformFunctionDomainHint);
+                    param->setDoubleType(eDoubleTypePlain);
+                    param->setDefault(-1, 1);
+                    param->setRange(-DBL_MAX,-DBL_MAX, DBL_MAX, DBL_MAX);
+                    param->setDisplayRange(-10, -10, 10, 10);
+                    param->setUseHostNativeOverlayHandle(false);
+                    param->setIncrement(.5);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionUnit
+                {
+                    DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformFunctionUnit);
+                    param->setLabel(kParamTransformFunctionUnitLabel);
+                    param->setHint(kParamTransformFunctionUnitHint);
+                    param->setDefault(0.5);
+                    param->setRange(-DBL_MAX, DBL_MAX);
+                    param->setDisplayRange(0, 1);
+                    param->setIncrement(0.05);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionFrequency
+                {
+                    DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformFunctionFrequency);
+                    param->setLabel(kParamTransformFunctionFrequencyLabel);
+                    param->setHint(kParamTransformFunctionFrequencyHint);
+                    param->setDefault(1);
+                    param->setRange(-DBL_MAX, DBL_MAX);
+                    param->setDisplayRange(-10, 10);
+                    param->setIncrement(0.5);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionRoundTrip
+                {
+                    ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamTransformFunctionRoundTrip);
+                    param->setLabel(kParamTransformFunctionRoundTripLabel);
+                    param->setHint(kParamTransformFunctionRoundTripHint);
+                    param->setDefault(true);
+                    param->appendOption("None");
+                    param->appendOption("Round-Trip Only");
+                    param->appendOption("Round-Trip (Vertical Flip)");
+                    param->appendOption("Round-Trip (Horizontal Flip)");
+                    param->appendOption("Round-Trip (Both)");
+                    param->setAnimates(true);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionRotate
+                {
+                    DoubleParamDescriptor* param = desc.defineDoubleParam(kParamTransformFunctionRotate);
+                    param->setLabel(kParamTransformFunctionRotateLabel);
+                    param->setHint(kParamTransformFunctionRotateHint);
+                    param->setDoubleType(eDoubleTypeAngle);
+                    param->setDefault(0);
+                    param->setRange(-DBL_MAX, DBL_MAX);
+                    param->setDisplayRange(-1800, 1800);
+                    param->setIncrement(30);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionCurve
+                {
+                    ChoiceParamDescriptor* param = desc.defineChoiceParam(kParamTransformFunctionCurve);
+                    param->setLabel(kParamTransformFunctionCurveLabel);
+                    param->setHint(kParamTransformFunctionCurveHint);
+                    param->setDefault(26);
+                    param->appendOption("Custom");
+                    param->appendOption("Default");
+                    param->appendOption("Ease");
+                    param->appendOption("Ease In");
+                    param->appendOption("Ease Out");
+                    param->appendOption("Quad");
+                    param->appendOption("Quad In");
+                    param->appendOption("Quad Out");
+                    param->appendOption("Cubic");
+                    param->appendOption("Cubic In");
+                    param->appendOption("Cubic Out");
+                    param->appendOption("Quart");
+                    param->appendOption("Quart In");
+                    param->appendOption("Quart Out");
+                    param->appendOption("Quint");
+                    param->appendOption("Quint In");
+                    param->appendOption("Quint Out");
+                    param->appendOption("Expo");
+                    param->appendOption("Expo In");
+                    param->appendOption("Expo Out");
+                    param->appendOption("Circ");
+                    param->appendOption("Circ In");
+                    param->appendOption("Circ Out");
+                    param->appendOption("Back");
+                    param->appendOption("Back In");
+                    param->appendOption("Back Out");
+                    param->appendOption("Linear");
+                    param->appendOption("Same As Before");
+                    param->setAnimates(true);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionBezierP1
+                {
+                    Double2DParamDescriptor* param = desc.defineDouble2DParam(kParamTransformFunctionBezierP1);
+                    param->setLabel(kParamTransformFunctionBezierP1Label);
+                    param->setHint(kParamTransformFunctionBezierPHint);
+                    param->setDefault(0, 0);
+                    param->setRange(0, -DBL_MAX, 1, DBL_MAX);
+                    param->setDisplayRange(0, 0, 1, 1);
+                    param->setIncrement(.1);
+                    param->setIsSecret(true);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionBezierP2
+                {
+                    Double2DParamDescriptor* param = desc.defineDouble2DParam(kParamTransformFunctionBezierP2);
+                    param->setLabel(kParamTransformFunctionBezierP2Label);
+                    param->setHint(kParamTransformFunctionBezierPHint);
+                    param->setDefault(1, 1);
+                    param->setRange(0, -DBL_MAX, 1, DBL_MAX);
+                    param->setDisplayRange(0, 0, 1, 1);
+                    param->setIncrement(.1);
+                    param->setIsSecret(true);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+
+                // functionSymmetry
+                {
+                    BooleanParamDescriptor* param = desc.defineBooleanParam(kParamTransformFunctionSymmetry);
+                    param->setLabel(kParamTransformFunctionSymmetryLabel);
+                    param->setHint(kParamTransformFunctionSymmetryHint);
+                    param->setDefault(false);
+                    param->setAnimates(true);
+                    if (groupFunction) {
+                        param->setParent(*groupFunction);
+                    }
+                    if (page) {
+                        page->addChild(*param);
+                    }
+                }
+            }
         }
 
         // translate
@@ -490,6 +705,7 @@ namespace OFX {
             param->setHint(kParamTransformScaleHint);
             param->setDoubleType(eDoubleTypeScale);
             //param->setDimensionLabels("w","h");
+            param->setUseHostNativeOverlayHandle(false);
             param->setDefault(1, 1);
             param->setRange(-SCALE_MAX, -SCALE_MAX, SCALE_MAX, SCALE_MAX);
             param->setDisplayRange(0, 0, 10, 10);
@@ -738,6 +954,15 @@ namespace OFX {
         , _periodicScaleStep(NULL)
         , _periodicOffset(NULL)
         , _periodicSkip(NULL)
+        , _functionFrequency(NULL)
+        , _functionExpression(NULL)
+        , _functionDomain(NULL)
+        , _functionUnit(NULL)
+        , _functionRoundTrip(NULL)
+        , _functionRotate(NULL)
+        , _functionBezierP1(NULL)
+        , _functionBezierP2(NULL)
+        , _functionSymmetry(NULL)
         , _scale(NULL)
         , _flop(NULL)
         , _flip(NULL)
@@ -798,6 +1023,15 @@ namespace OFX {
         _periodicScaleStep = _effect->fetchDoubleParam(kParamTransformPeriodicScaleStep);
         _periodicOffset = _effect->fetchDoubleParam(kParamTransformPeriodicOffset);
         _periodicSkip = _effect->fetchDoubleParam(kParamTransformPeriodicSkip);
+        _functionFrequency = _effect->fetchDoubleParam(kParamTransformFunctionFrequency);
+        _functionExpression = _effect->fetchStringParam(kParamTransformFunctionExpression);
+        _functionDomain = _effect->fetchDouble2DParam(kParamTransformFunctionDomain);
+        _functionUnit = _effect->fetchDoubleParam(kParamTransformFunctionUnit);
+        _functionRoundTrip = _effect->fetchChoiceParam(kParamTransformFunctionRoundTrip);
+        _functionRotate = _effect->fetchDoubleParam(kParamTransformFunctionRotate);
+        _functionBezierP1 = _effect->fetchDouble2DParam(kParamTransformFunctionBezierP1);
+        _functionBezierP2 = _effect->fetchDouble2DParam(kParamTransformFunctionBezierP2);
+        _functionSymmetry = _effect->fetchBooleanParam(kParamTransformFunctionSymmetry);
         _faceToCenter = _effect->fetchBooleanParam(kParamTransformFaceToCenter);
         _flop = _effect->fetchBooleanParam(kParamTransformFlop);
         _flip = _effect->fetchBooleanParam(kParamTransformFlip);
@@ -808,7 +1042,7 @@ namespace OFX {
         if (effect->paramExists(kParamHiDPI)) {
             _hiDPI = effect->fetchBooleanParam(kParamHiDPI);
         }
-        assert(_rotate && _scaleUniform && _faceToCenter && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
+        assert(_rotate && _scaleUniform && _faceToCenter && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _functionFrequency && _functionExpression && _functionDomain && _functionUnit && _functionRoundTrip && _functionRotate && _functionBezierP1 && _functionBezierP2 && _functionSymmetry _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
         if (_translate) {
             _interact->addParamToSlaveTo(_translate);
         }
@@ -862,6 +1096,33 @@ namespace OFX {
         }
         if (_periodicSkip) {
             _interact->addParamToSlaveTo(_periodicSkip);
+        }
+        if (_functionFrequency) {
+            _interact->addParamToSlaveTo(_functionFrequency);
+        }
+        if (_functionExpression) {
+            _interact->addParamToSlaveTo(_functionExpression);
+        }
+        if (_functionDomain) {
+            _interact->addParamToSlaveTo(_functionDomain);
+        }
+        if (_functionUnit) {
+            _interact->addParamToSlaveTo(_functionUnit);
+        }
+        if (_functionRoundTrip) {
+            _interact->addParamToSlaveTo(_functionRoundTrip);
+        }
+        if (_functionRotate) {
+            _interact->addParamToSlaveTo(_functionRotate);
+        }
+        if (_functionBezierP1) {
+            _interact->addParamToSlaveTo(_functionBezierP1);
+        }
+        if (_functionBezierP2) {
+            _interact->addParamToSlaveTo(_functionBezierP2);
+        }
+        if (_functionSymmetry) {
+            _interact->addParamToSlaveTo(_functionSymmetry);
         }
         if (_scale) {
             _interact->addParamToSlaveTo(_scale);
@@ -946,6 +1207,36 @@ namespace OFX {
         }
         if (_periodicSkip) {
             _periodicSkip->getValueAtTime(time, tp.periodicSkip);
+        }
+        if (_functionFrequency) {
+            _functionFrequency->getValueAtTime(time, tp.functionFrequency);
+        }
+        if (_functionExpression) {
+            _functionExpression->getValueAtTime(time, tp.functionExpression);
+        }
+        if (_functionDomain) {
+            _functionDomain->getValueAtTime(time, tp.functionDomain.x, tp.functionDomain.y);
+        }
+        if (_functionUnit) {
+            _functionUnit->getValueAtTime(time, tp.functionUnit);
+        }
+        if (_functionRoundTrip) {
+            _functionRoundTrip->getValueAtTime(time, tp.functionRoundTrip);
+        }
+        if (_functionRotate) {
+            _functionRotate->getValueAtTime(time, tp.functionRotate);
+        }
+        if (_functionBezierP1) {
+            _functionBezierP1->getValueAtTime(time, tp.functionBezierP1.x, tp.functionBezierP1.y);
+        }
+        if (_functionBezierP2) {
+            _functionBezierP2->getValueAtTime(time, tp.functionBezierP2.x, tp.functionBezierP2.y);
+        }
+        if (_functionSymmetry) {
+            _functionSymmetry->getValueAtTime(time, tp.functionSymmetry);
+        }
+        if (_functionFrequency) {
+            _functionFrequency->getValueAtTime(time, tp.functionFrequency);
         }
         if (_scale) {
             _scale->getValueAtTime(time, tp.scale.x, tp.scale.y);

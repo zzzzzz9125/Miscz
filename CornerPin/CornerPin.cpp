@@ -69,7 +69,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 
 #define kPluginName "Mz_CornerPinOFX"
 #define kPluginMaskedName "Mz_CornerPinOFX"
-#define kPluginGrouping "Transform"
+#define kPluginGrouping "MisczOFX"
 #define kPluginDescription \
     "Allows an image to fit another in translation, rotation and scale.\n" \
     "The resulting transform is a translation if 1 point is enabled, a " \
@@ -158,7 +158,7 @@ static const char* const kParamFrom[4] = {
 
 #define kParamOverlayPoints "overlayPoints"
 #define kParamOverlayPointsLabel "Overlay Points"
-#define kParamOverlayPointsHint "Whether to display the \"from\" or the \"to\" points in the overlay"
+#define kParamOverlayPointsHint "Whether to display the \"from\" or the \"to\" points in the overlay."
 #define kParamOverlayPointsOptionTo "To", "Display the \"to\" points.", "to"
 #define kParamOverlayPointsOptionFrom "From", "Display the \"from\" points.", "from"
 

@@ -38,10 +38,10 @@ namespace OFX {
 #define kParamFilterTypeHint "Filtering algorithm - some filters may produce values outside of the initial range (*) or modify the values even if there is no movement (+)."
 #define kParamFilterClamp "clamp"
 #define kParamFilterClampLabel "Clamp"
-#define kParamFilterClampHint "Clamp filter output within the original range - useful to avoid negative values in mattes"
+#define kParamFilterClampHint "Clamp filter output within the original range - useful to avoid negative values in mattes."
 #define kParamFilterBlackOutside "black_outside"
 #define kParamFilterBlackOutsideLabel "Black outside"
-#define kParamFilterBlackOutsideHint "Fill the area outside the source image with black"
+#define kParamFilterBlackOutsideHint "Fill the area outside the source image with black."
 
 enum FilterEnum
 {

@@ -59,7 +59,7 @@
 
 #define kParamTransform3x3DirectionalBlur "directionalBlur"
 #define kParamTransform3x3DirectionalBlurLabel "Directional Blur Mode"
-#define kParamTransform3x3DirectionalBlurHint "Motion blur is computed from the original image to the transformed image, each parameter being interpolated linearly. The motionBlur parameter must be set to a nonzero value, and the blackOutside parameter may have an important effect on the result."
+#define kParamTransform3x3DirectionalBlurHint "Motion blur is computed from the original image to the transformed image, each parameter being interpolated linearly. The motionBlur parameter must be set to a nonzero value."
 
 namespace OFX {
 ////////////////////////////////////////////////////////////////////////////////

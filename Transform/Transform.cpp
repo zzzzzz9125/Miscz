@@ -23,11 +23,13 @@
 
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 #include "ofxsTransform3x3.h"
 #include "ofxsTransformInteract.h"
 #include "ofxsCoords.h"
 #include "ofxsThreadSuite.h"
+#include "exprtk.hpp"
 
 using namespace OFX;
 
@@ -35,7 +37,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 
 #define kPluginName "Mz_TransformOFX"
 #define kPluginMaskedName "Mz_TransformOFX"
-#define kPluginGrouping "Transform"
+#define kPluginGrouping "MisczOFX"
 #define kPluginDescription "Translate / Rotate / Scale a 2D image.\n" \
     "This plugin concatenates transforms.\n" \
     "See also https://web.archive.org/web/20220627030948/http://www.opticalenquiry.com/nuke/index.php?title=Transform"
@@ -50,7 +52,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 //    "This plugin concatenates transforms upstream."
 //#define kPluginDirBlurIdentifier "net.sf.openfx.MzDirBlur"
 #define kPluginVersionMajor 2 // Incrementing this number means that you have broken backwards compatibility of the plug-in.
-#define kPluginVersionMinor 1 // Increment this when you have fixed a bug or made it faster.
+#define kPluginVersionMinor 2 // Increment this when you have fixed a bug or made it faster.
 
 #define kParamSrcClipChanged "srcClipChanged"
 
@@ -90,7 +92,8 @@ enum CurveTypeEnum
     eCurveTypeBack,
     eCurveTypeBackIn,
     eCurveTypeBackOut,
-    eCurveTypeLinear
+    eCurveTypeLinear,
+    eCurveTypeUniform
 };
 
 inline static void
@@ -181,6 +184,15 @@ enum BeatTypeEnum
     eBPMTypeThirtySecondTriplet
 };
 
+enum RoundTripEnum
+{
+    eRoundTripNone,
+    eRoundTripOnly,
+    eRoundTripVertical,
+    eRoundTripHorizontal,
+    eRoundTripBoth
+};
+
 inline static void
 convertFrequency(FrequencyUnitEnum unitInput, FrequencyUnitEnum unitOutput, const BeatTypeEnum beatType, double* f)
 {
@@ -254,6 +266,16 @@ public:
         , _periodicScaleStep(NULL)
         , _periodicOffset(NULL)
         , _periodicSkip(NULL)
+        , _functionFrequency(NULL)
+        , _functionExpression(NULL)
+        , _functionDomain(NULL)
+        , _functionUnit(NULL)
+        , _functionRoundTrip(NULL)
+        , _functionRotate(NULL)
+        , _functionCurve(NULL)
+        , _functionBezierP1(NULL)
+        , _functionBezierP2(NULL)
+        , _functionSymmetry(NULL)
         , _rotate(NULL)
         , _faceToCenter(NULL)
         , _scale(NULL)
@@ -294,6 +316,16 @@ public:
         _periodicScaleStep = fetchDoubleParam(kParamTransformPeriodicScaleStep);
         _periodicOffset = fetchDoubleParam(kParamTransformPeriodicOffset);
         _periodicSkip = fetchDoubleParam(kParamTransformPeriodicSkip);
+        _functionFrequency = fetchDoubleParam(kParamTransformFunctionFrequency);
+        _functionExpression = fetchStringParam(kParamTransformFunctionExpression);
+        _functionDomain = fetchDouble2DParam(kParamTransformFunctionDomain);
+        _functionUnit = fetchDoubleParam(kParamTransformFunctionUnit);
+        _functionRoundTrip = fetchChoiceParam(kParamTransformFunctionRoundTrip);
+        _functionRotate = fetchDoubleParam(kParamTransformFunctionRotate);
+        _functionCurve = fetchChoiceParam(kParamTransformFunctionCurve);
+        _functionBezierP1 = fetchDouble2DParam(kParamTransformFunctionBezierP1);
+        _functionBezierP2 = fetchDouble2DParam(kParamTransformFunctionBezierP2);
+        _functionSymmetry = fetchBooleanParam(kParamTransformFunctionSymmetry);
         _rotate = fetchDoubleParam(kParamTransformRotateOld);
         _faceToCenter = fetchBooleanParam(kParamTransformFaceToCenter);
         _scale = fetchDouble2DParam(kParamTransformScaleOld);
@@ -309,7 +341,7 @@ public:
         _center = fetchDouble2DParam(kParamTransformCenterOld);
         _centerChanged = fetchBooleanParam(kParamTransformCenterChanged);
         _interactive = fetchBooleanParam(kParamTransformInteractiveOld);
-        assert(_translate && _periodicRadius && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval &&  _periodicCurve && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicFrequencyUnit && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _rotate && _faceToCenter && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
+        assert(_translate && _periodicRadius && _periodicRotate && _periodicDeform && _periodicBend && _periodicN && _periodicInterval &&  _periodicCurve && _periodicBezierP1 && _periodicBezierP2 && _periodicSymmetry && _periodicFrequency && _periodicFrequencyUnit && _periodicAutorotate && _periodicScale && _periodicScaleStep && _periodicOffset && _periodicSkip && _functionFrequency && _functionExpression && _functionDomain && _functionUnit && _functionRoundTrip && _functionRotate && _functionCurve && _functionBezierP1 && _functionBezierP2 && _functionSymmetry && _rotate && _faceToCenter && _scale && _scaleUniform && _flop && _flip && _skewX && _skewY && _skewOrder && _center && _interactive);
         _srcClipChanged = fetchBooleanParam(kParamSrcClipChanged);
         assert(_srcClipChanged);
         // On Natron, hide the uniform parameter if it is false and not animated,
@@ -355,6 +387,16 @@ private:
     DoubleParam* _periodicScaleStep;
     DoubleParam* _periodicOffset;
     DoubleParam* _periodicSkip;
+    DoubleParam* _functionFrequency;
+    StringParam* _functionExpression;
+    Double2DParam* _functionDomain;
+    DoubleParam* _functionUnit;
+    ChoiceParam* _functionRoundTrip;
+    DoubleParam* _functionRotate;
+    ChoiceParam* _functionCurve;
+    Double2DParam* _functionBezierP1;
+    Double2DParam* _functionBezierP2;
+    BooleanParam* _functionSymmetry;
     DoubleParam* _rotate;
     BooleanParam* _faceToCenter;
     Double2DParam* _scale;
@@ -466,6 +508,30 @@ TransformPlugin::isIdentity(double time)
     if (_periodicSkip) {
         periodicSkip = _periodicSkip->getValueAtTime(time);
     }
+    double functionFrequency = 1.;
+    if (_functionFrequency) {
+        if (_functionFrequency->getIsAnimating()) {
+            functionFrequency = 0;
+            for (int i = 0; i <= time; i++) { functionFrequency += _functionFrequency->getValueAtTime(i); }
+            functionFrequency /= std::floor(time) + 1;
+        } else { functionFrequency = _functionFrequency->getValueAtTime(time); }
+    }
+    std::string functionExpression = "";
+    if (_functionExpression) {
+        functionExpression = _functionExpression->getValueAtTime(time);
+    }
+    OfxPointD functionDomain = { -1., 1. };
+    if (_functionDomain) {
+        _functionDomain->getValueAtTime(time, functionDomain.x, functionDomain.y);
+    }
+    double functionUnit = 0.5;
+    if (_functionUnit) {
+        functionUnit = _functionUnit->getValueAtTime(time);
+    }
+    double functionRotate = 0.;
+    if (_functionRotate) {
+        functionRotate = _functionRotate->getValueAtTime(time);
+    }
     double rotate = 0.;
     if (_rotate) {
         _rotate->getValueAtTime(time, rotate);
@@ -483,7 +549,7 @@ TransformPlugin::isIdentity(double time)
         _skewY->getValueAtTime(time, skewY);
     }
 
-    if ( (scale.x == 1.) && (scale.y == 1.) && (translate.x == 0.) && (translate.y == 0.) && (periodicFrequency == 0. || periodicAutorotate == 0.) && (periodicScale == 1.) && (periodicRadius == 0.) && (rotate == 0.) && (skewX == 0.) && (skewY == 0.)) {
+    if ( (scale.x == 1.) && (scale.y == 1.) && (translate.x == 0.) && (translate.y == 0.) && (periodicFrequency == 0. || periodicAutorotate == 0.) && (periodicScale == 1.) && (periodicRadius == 0.) && (functionExpression == ""  || functionUnit == 0. || functionFrequency == 0.) && (rotate == 0.) && (skewX == 0.) && (skewY == 0.)) {
         return true;
     }
 
@@ -581,7 +647,7 @@ TransformPlugin::getInverseTransformCanonical(double time,
     }
     FrequencyUnitEnum periodicFrequencyUnit = eFrequencyUnitHz;
     if (_periodicFrequencyUnit) {
-        periodicFrequencyUnit = (FrequencyUnitEnum)_periodicFrequencyUnit->getValueAtTime(time);
+        periodicFrequencyUnit = (FrequencyUnitEnum)_periodicFrequencyUnit->getValue();
     }
     BeatTypeEnum periodicFrequencyBeat = eBPMTypeQuarter;
     if (_periodicFrequencyBeat) {
@@ -601,11 +667,22 @@ TransformPlugin::getInverseTransformCanonical(double time,
     }
     double periodicFrequency = 0.;
     if (_periodicFrequency) {
-        periodicFrequency = _periodicFrequency->getValueAtTime(time);
+        if (_periodicFrequency->getIsAnimating() || _periodicFrequencyBeat->getIsAnimating()) {
+            for (int i = 0; i <= time; i++) {
+                double f = _periodicFrequency->getValueAtTime(i);
+                convertFrequency(periodicFrequencyUnit, eFrequencyUnitHz, (BeatTypeEnum)_periodicFrequencyBeat->getValueAtTime(i), &f);
+                periodicFrequency += f;
+            }
+            periodicFrequency /= std::floor(time) + 1;
+            periodicFrequencyUnit = eFrequencyUnitHz;
+        } else { periodicFrequency = _periodicFrequency->getValueAtTime(time); }
     }
     double periodicAutorotate = 0.;
     if (_periodicAutorotate) {
-        periodicAutorotate = _periodicAutorotate->getValueAtTime(time);
+        if (_periodicAutorotate->getIsAnimating()) {
+            for (int i = 0; i <= time; i++) { periodicAutorotate += _periodicAutorotate->getValueAtTime(i); }
+            periodicAutorotate /= std::floor(time) + 1;
+        } else { periodicAutorotate = _periodicAutorotate->getValueAtTime(time); }
     }
     double periodicScale = 1.;
     if (_periodicScale) {
@@ -622,6 +699,46 @@ TransformPlugin::getInverseTransformCanonical(double time,
     double periodicSkip = 0.;
     if (_periodicSkip) {
         periodicSkip = _periodicSkip->getValueAtTime(time);
+    }
+    double functionFrequency = 1.;
+    if (_functionFrequency) {
+        functionFrequency = _functionFrequency->getValueAtTime(time);
+    }
+    std::string functionExpression = "";
+    if (_functionExpression) {
+        functionExpression = _functionExpression->getValueAtTime(time);
+    }
+    OfxPointD functionDomain = { -1., 1. };
+    if (_functionDomain) {
+        _functionDomain->getValueAtTime(time, functionDomain.x, functionDomain.y);
+    }
+    double functionUnit = 0.5;
+    if (_functionUnit) {
+        functionUnit = _functionUnit->getValueAtTime(time);
+    }
+    RoundTripEnum functionRoundTrip = eRoundTripNone;
+    if (_functionRoundTrip) {
+        functionRoundTrip = (RoundTripEnum)_functionRoundTrip->getValueAtTime(time);
+    }
+    double functionRotate = 0.;
+    if (_functionRotate) {
+        functionRotate = _functionRotate->getValueAtTime(time);
+    }
+    CurveTypeEnum functionCurve = eCurveTypeLinear;
+    if (_functionCurve) {
+        functionCurve = (CurveTypeEnum)_functionCurve->getValueAtTime(time);
+    }
+    OfxPointD functionBezierP1 = { 0., 0. };
+    if (_functionBezierP1) {
+        _functionBezierP1->getValueAtTime(time, functionBezierP1.x, functionBezierP1.y);
+    }
+    OfxPointD functionBezierP2 = { 1., 1. };
+    if (_functionBezierP2) {
+        _functionBezierP2->getValueAtTime(time, functionBezierP2.x, functionBezierP2.y);
+    }
+    bool functionSymmetry = false;
+    if (_functionSymmetry) {
+        functionSymmetry = _functionSymmetry->getValueAtTime(time);
     }
     OfxPointD scaleParam = { 1., 1. };
     if (_scale) {
@@ -700,14 +817,16 @@ TransformPlugin::getInverseTransformCanonical(double time,
     center = { center.x * size.x + offset.x, center.y * size.y + offset.y };
     periodicRadius *= std::max(size.x, size.y) / 2;
 
+    double functionOffset = periodicOffset;
     periodicRotate = ofxsToRadians(periodicRotate);
-    if (periodicFrequency == 0. || (periodicInterval % periodicN == 0 && periodicN != 1 && periodicAutorotate == 0. && periodicScale == 1)) {
+    if (periodicFrequency == 0. || (periodicInterval % periodicN == 0 && periodicN != 1 && periodicAutorotate == 0. && periodicScale == 1) && (functionExpression == "" || functionFrequency == 0. || functionUnit == 0.)) {
         translate.x += periodicRadius * std::sin(periodicRotate) * periodicDeform;
         translate.y += periodicRadius * std::cos(periodicRotate);
     } else {
         convertFrequency(periodicFrequencyUnit, eFrequencyUnitHz, periodicFrequencyBeat, &periodicFrequency);
         periodicOffset *= periodicN == 1 ? periodicInterval : periodicN;
         periodicOffset += periodicFrequency * time / getFrameRate();
+        functionOffset = periodicOffset;
         if (periodicSkip != 0.) {
             periodicOffset += std::floor(periodicOffset / periodicSkip) * periodicSkip;
         }
@@ -755,12 +874,82 @@ TransformPlugin::getInverseTransformCanonical(double time,
 
         if (periodicScaleStep != 0. && periodicFrequency != 0.) {
             double f = periodicOffset * 2 / periodicScaleStep;
+            if (_periodicScaleStep->getIsAnimating()) {
+                double ff = 0;
+                for (int i = 0; i <= time; i++) {
+                    double s = _periodicScaleStep->getValueAtTime(i);
+                    ff += s != 0 ? 1 / s : 0;
+                }
+                f = periodicOffset * 2 * ff / (std::floor(time) + 1);
+            }
             periodicScale = (periodicScale - 1) * std::abs(f - std::floor(f) + (int)f % 2 - 1) + 1;
+        }
+
+        if (functionExpression != "" && functionFrequency != 0. && functionUnit != 0.) {
+            functionUnit *= size.x;
+            double l = functionDomain.y - functionDomain.x;
+            double dis = 0;
+
+            if (l == 0) {
+                functionOffset = functionDomain.x;
+            } else {
+                functionOffset *= functionFrequency;
+
+                if (functionCurve == eCurveTypeUniform) {
+                    if (periodicCurve != eCurveTypeCustom) {
+                        getCurveValue(periodicCurve, &functionBezierP1.x, &functionBezierP1.y, &functionBezierP2.x, &functionBezierP2.y);
+                    } else {
+                        functionBezierP1 = periodicBezierP1;
+                        functionBezierP2 = periodicBezierP2;
+                    }
+                } else if (functionCurve != eCurveTypeCustom) {
+                    getCurveValue(functionCurve, &functionBezierP1.x, &functionBezierP1.y, &functionBezierP2.x, &functionBezierP2.y);
+                }
+                if (functionBezierP1.x != functionBezierP1.y || functionBezierP2.x != functionBezierP2.y) {
+                    b = functionOffset - std::floor(functionOffset);
+                    functionOffset -= b;
+                    bool isReversed = (functionCurve == eCurveTypeUniform ? periodicSymmetry : functionSymmetry) && (int)functionOffset % 2 != 0;
+                    if (isReversed) {
+                        b = 1 - b;
+                    }
+                    b = findBezierY(b, functionBezierP1, functionBezierP2);
+                    if (isReversed) {
+                        b = 1 - b;
+                    }
+                    functionOffset += b;
+                }
+
+                int sgn = functionFrequency < 0 ? -1 : 1;
+                dis = ((int)functionOffset / 2 * 2 + sgn - functionOffset) * l;
+                
+                functionOffset = functionRoundTrip == eRoundTripNone ? (functionOffset - std::floor(functionOffset)) * l + functionDomain.x
+                                                                     : (sgn < 0 ? std::min(functionDomain.x, functionDomain.y) + std::abs(dis) : std::max(functionDomain.x, functionDomain.y) - std::abs(dis));
+            }
+            typedef exprtk::symbol_table<double> symbol_table_t;
+            typedef exprtk::expression<double>   expression_t;
+            typedef exprtk::parser<double>       parser_t;
+            symbol_table_t symbol_table;
+            expression_t   expression;
+            parser_t       parser;
+            symbol_table_t glbl_const_symbol_table;
+            glbl_const_symbol_table.add_constants();
+            expression.register_symbol_table(glbl_const_symbol_table);
+            symbol_table.add_variable("x", functionOffset);
+            expression.register_symbol_table(symbol_table);
+            parser.compile(functionExpression, expression);
+            p = { functionOffset  *  ((functionRoundTrip == eRoundTripHorizontal || functionRoundTrip == eRoundTripBoth) && dis < 0 ? -1 : 1),
+                  expression.value() * ((functionRoundTrip == eRoundTripVertical || functionRoundTrip == eRoundTripBoth) && dis < 0 ? -1 : 1) };
+            functionRotate = ofxsToRadians(functionRotate);
+            p = { p.x * std::cos(functionRotate) + p.y * std::sin(functionRotate),
+                  p.y * std::cos(functionRotate) - p.x * std::sin(functionRotate) };
+            translate.x += functionUnit * p.x;
+            translate.y += functionUnit * p.y;
         }
     }
 
     scale.x *= periodicScale;
     scale.y *= periodicScale;
+
     double rot = ofxsToRadians(rotate) - 2 * M_PI * periodicOffset / periodicInterval / periodicN * periodicAutorotate - (faceToCenter ? std::atan2(translate.x, translate.y) : 0);
 
     if (!invert) {
@@ -811,6 +1000,10 @@ TransformPlugin::resetCenter(double time)
     double periodicScaleStep = 0.;
     double periodicOffset = 0.;
     double periodicSkip = 0.;
+    double functionFrequency = 1.;
+    std::string functionExpression = "";
+    double functionUnit = 0.5;
+    double functionRotate = 0.;
     int skewOrder = 0;
     if (_skewX) {
         _skewX->getValueAtTime(time, skewX);
@@ -843,9 +1036,12 @@ TransformPlugin::resetCenter(double time)
     if (_periodicBezierP1) {
         _periodicBezierP1->getValueAtTime(time, periodicBezierP1.x, periodicBezierP1.y);
     }
-    OfxPointD periodicBezierP2 = { 1., 1. }; 
-    if (_periodicBezierP2) {
-        _periodicBezierP2->getValueAtTime(time, periodicBezierP2.x, periodicBezierP2.y);
+    OfxPointD functionDomain = { -1., 1. };
+    if (_functionDomain) {
+        _functionDomain->getValueAtTime(time, functionDomain.x, functionDomain.y);
+    }
+    if (_functionUnit) {
+        _functionUnit->getValueAtTime(time, functionUnit);
     }
     bool periodicSymmetry = false;
     if (_periodicSymmetry) {
@@ -868,6 +1064,15 @@ TransformPlugin::resetCenter(double time)
     }
     if (_periodicSkip) {
         _periodicSkip->getValueAtTime(time, periodicSkip);
+    }
+    if (_functionFrequency) {
+        _functionFrequency->getValueAtTime(time, functionFrequency);
+    }
+    if (_functionExpression) {
+        _functionExpression->getValueAtTime(time, functionExpression);
+    }
+    if (_functionRotate) {
+        _functionRotate->getValueAtTime(time, functionRotate);
     }
     OfxPointD scaleParam = { 1., 1. };
     if (_scale) {
@@ -966,18 +1171,64 @@ TransformPlugin::changedParam(const InstanceChangedArgs &args,
         }
     } else if (paramName == kParamTransformPeriodicFrequencyUnit) {
         FrequencyUnitEnum periodicFrequencyUnit = (FrequencyUnitEnum)_periodicFrequencyUnit->getValue();
+        FrequencyUnitEnum periodicFrequencyUnitBefore = _periodicFrequencyBeat->getIsSecret() ? eFrequencyUnitHz : eFrequencyUnitBPM;
+        if (periodicFrequencyUnit == periodicFrequencyUnitBefore) {
+            return;
+        }
+
         if (periodicFrequencyUnit == eFrequencyUnitBPM) {
             _periodicFrequency->setDisplayRange(-240, 240);
             _periodicFrequency->setIncrement(5.);
             _periodicFrequencyBeat->setIsSecret(false);
-        }else if (periodicFrequencyUnit == eFrequencyUnitHz) {
+        } else if (periodicFrequencyUnit == eFrequencyUnitHz) {
             _periodicFrequency->setDisplayRange(-5, 5);
             _periodicFrequency->setIncrement(0.1);
             _periodicFrequencyBeat->setIsSecret(true);
         }
-        double f = _periodicFrequency->getValue();
-        convertFrequency(std::abs(_periodicFrequency->getValue()) < 40 ? eFrequencyUnitHz : eFrequencyUnitBPM, periodicFrequencyUnit, (BeatTypeEnum)_periodicFrequencyBeat->getValue(), &f);
-        _periodicFrequency->setValue(f);
+
+        int keysFCount = _periodicFrequency->getNumKeys();
+        int keysBCount = _periodicFrequencyBeat->getNumKeys();
+        if (keysFCount == 0 && keysBCount == 0) {
+            double f = _periodicFrequency->getValue();
+            convertFrequency(periodicFrequencyUnitBefore, periodicFrequencyUnit, (BeatTypeEnum)_periodicFrequencyBeat->getValue(), &f);
+            if (std::abs(f) <= 240) {
+                _periodicFrequency->setValue(f);
+            }
+        } else {
+            std::vector<double> keysTime;
+            for (int i = 0; i < keysFCount; i++) { keysTime.insert(keysTime.end(), _periodicFrequency->getKeyTime(i)); }
+            for (int i = 0; i < keysBCount; i++) { keysTime.insert(keysTime.end(), _periodicFrequencyBeat->getKeyTime(i)); }
+            sort(begin(keysTime), end(keysTime));
+            keysTime.erase(unique(keysTime.begin(), keysTime.end()), keysTime.end());
+            for (double t:keysTime) {
+                double f = _periodicFrequency->getValueAtTime(t);
+                BeatTypeEnum b = (BeatTypeEnum)_periodicFrequencyBeat->getValueAtTime(t);
+                convertFrequency(periodicFrequencyUnitBefore, periodicFrequencyUnit, b, &f);
+                if (std::abs(f) > 240) {
+                    return;
+                }
+                _periodicFrequency->setValueAtTime(t, f);
+            }
+            if (keysBCount != 0) { _periodicFrequencyBeat->resetToDefault(); }
+        }
+    } else if (paramName == kParamTransformFunctionCurve) {
+        CurveTypeEnum functionCurve = (CurveTypeEnum)_functionCurve->getValue();
+        if (functionCurve == eCurveTypeUniform) {
+            _functionSymmetry->setIsSecret(true);
+        } else if (functionCurve == eCurveTypeCustom) {
+            _functionBezierP1->setIsSecret(false);
+            _functionBezierP2->setIsSecret(false);
+            _functionSymmetry->setIsSecret(false);
+        } else {
+            _functionBezierP1->setIsSecret(true);
+            _functionBezierP2->setIsSecret(true);
+            _functionSymmetry->setIsSecret(false);
+            double x1 = 0, y1 = 0., x2 = 1., y2 = 1.;
+            getCurveValue(functionCurve, &x1, &y1, &x2, &y2);
+            _functionBezierP1->setValue(x1, y1);
+            _functionBezierP2->setValue(x2, y2);
+            changedTransform(args);
+        }
     } else if ( (paramName == kParamTransformTranslateOld) ||
                 ( paramName == kParamTransformRotateOld) ||
                 ( paramName == kParamTransformScaleOld) ||

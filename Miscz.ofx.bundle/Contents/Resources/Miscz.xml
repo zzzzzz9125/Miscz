@@ -3,618 +3,371 @@
     <OfxPlugin name="net.sf.openfx.MzTransformPlugin">
         <OfxResourceSet ofxHost="default">
             <OfxPropLabel>Mz_TransformOFX</OfxPropLabel>
-            <OfxPropPluginDescription>平移/旋转/缩放2D图像。</OfxPropPluginDescription>
+            <OfxImageEffectPluginPropGrouping>MisczOFX</OfxImageEffectPluginPropGrouping>
+            <OfxPropPluginDescription>Translate / Rotate / Scale a 2D image.</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
                 <OfxParamTypeGroup name="periodic">
-                    <OfxPropLabel>周期运动</OfxPropLabel>
+                    <OfxPropLabel>Periodic Motion</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble name="periodicRadius">
-                    <OfxPropLabel>半径</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的半径。</OfxParamPropHint>
+                    <OfxPropLabel>Radius</OfxPropLabel>
+                    <OfxParamPropHint>Radius of the trajectory of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicFrequency">
-                    <OfxPropLabel>频率</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的频率。</OfxParamPropHint>
+                    <OfxPropLabel>Speed</OfxPropLabel>
+                    <OfxParamPropHint>Speed of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="periodicFrequencyUnit">
-                    <OfxPropLabel>频率单位</OfxPropLabel>
-                    <OfxParamPropHint>频率的单位。</OfxParamPropHint>
+                    <OfxPropLabel>Speed Unit</OfxPropLabel>
+                    <OfxParamPropHint>Unit of Speed.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>Hz</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>BPM</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeChoice name="periodicFrequencyBeat">
-                    <OfxPropLabel>节奏类型</OfxPropLabel>
-                    <OfxParamPropHint>BPM的节奏类型。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>四全音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>二全音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>全音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>二分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>八分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>十六分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三十二分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>二分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>八分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>十六分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三十二分音符三连音</OfxParamPropChoiceOption>
+                    <OfxPropLabel>Beat Type</OfxPropLabel>
+                    <OfxParamPropHint>Beat Type.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Quadruple Wholes</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Breve</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Whole</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Half</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quarter</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Eighth</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Eighth</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Thirty-Second</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Half Triplet</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quarter Triplet</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Eighth Triplet</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Sixteenth Triplet</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Thirty-Second Triplet</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble name="periodicAutorotate">
-                    <OfxPropLabel>自转</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的自转速度。</OfxParamPropHint>
+                    <OfxPropLabel>Autorotate</OfxPropLabel>
+                    <OfxParamPropHint>Autorotation speed of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicScale">
-                    <OfxPropLabel>缩放</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的缩放。</OfxParamPropHint>
+                    <OfxPropLabel>Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale value of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicScaleStep">
-                    <OfxPropLabel>缩放步长</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的缩放步长。</OfxParamPropHint>
+                    <OfxPropLabel>Scale Step</OfxPropLabel>
+                    <OfxParamPropHint>Scale step of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicOffset">
-                    <OfxPropLabel>偏移</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的偏移。</OfxParamPropHint>
+                    <OfxPropLabel>Offset</OfxPropLabel>
+                    <OfxParamPropHint>Offset of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicSkip">
-                    <OfxPropLabel>瞬移</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的瞬移步数。</OfxParamPropHint>
+                    <OfxPropLabel>Skip</OfxPropLabel>
+                    <OfxParamPropHint>Number of steps of periodic motion you want to skip.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeINTEGER name="periodicN">
-                    <OfxPropLabel>N边形</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的点个数/边个数。1表示圆，2表示线段，3或以上表示多边形。</OfxParamPropHint>
+                    <OfxPropLabel>N-sided</OfxPropLabel>
+                    <OfxParamPropHint>Point/Side numbers of polygon of the trajectory of periodic motion. 1 is a circle, 2 is a two-point line, and 3 or more is a polygon.</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
                 <OfxParamTypeINTEGER name="periodicInterval">
-                    <OfxPropLabel>间隔</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的点间隔。</OfxParamPropHint>
+                    <OfxPropLabel>Interval</OfxPropLabel>
+                    <OfxParamPropHint>Point interval of the trajectory of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
                 <OfxParamTypeDouble name="periodicBend">
-                    <OfxPropLabel>弯曲</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的弯曲。</OfxParamPropHint>
+                    <OfxPropLabel>Bend</OfxPropLabel>
+                    <OfxParamPropHint>Bend of the trajectory of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicRotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
+                    <OfxPropLabel>Rotate</OfxPropLabel>
+                    <OfxParamPropHint>Rotation of the trajectory of periodic motion, in degrees.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="periodicDeform">
-                    <OfxPropLabel>形变</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的形变。</OfxParamPropHint>
+                    <OfxPropLabel>Deform</OfxPropLabel>
+                    <OfxParamPropHint>Deformation of the trajectory of periodic motion.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="periodicCurve">
-                    <OfxPropLabel>曲线类型</OfxPropLabel>
-                    <OfxParamPropHint>运动曲线类型。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>默认</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>缓动</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>平方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>平方缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>平方缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>立方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>立方缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>立方缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四次方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四次缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四次缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>五次方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>五次缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>五次缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>指数</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>指数缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>指数缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>圆形</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>圆形缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>圆形缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>回退</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>回退缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>回退缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性</OfxParamPropChoiceOption>
+                    <OfxPropLabel>Curve Type</OfxPropLabel>
+                    <OfxParamPropHint>Motion Curve Type.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Custom</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Default</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Ease</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Ease In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Ease Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quad</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quad In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quad Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quart</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quart In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quart Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quint</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quint In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quint Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Expo</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Expo In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Expo Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Circ</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Circ In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Circ Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Back</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Back In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Back Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Linear</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble2D name="periodicBezierP1">
-                    <OfxPropLabel>贝塞尔点1</OfxPropLabel>
-                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
+                    <OfxPropLabel>Bezier P1</OfxPropLabel>
+                    <OfxParamPropHint>Bezier Curve P1 &amp; P2.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble2D name="periodicBezierP2">
-                    <OfxPropLabel>贝塞尔点2</OfxPropLabel>
-                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
+                    <OfxPropLabel>Bezier P2</OfxPropLabel>
+                    <OfxParamPropHint>Bezier Curve P1 &amp; P2.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="periodicSymmetry">
-                    <OfxPropLabel>曲线对称</OfxPropLabel>
-                    <OfxParamPropHint>使相邻的两个运动曲线呈对称状态。</OfxParamPropHint>
+                    <OfxPropLabel>Curve Symmetry</OfxPropLabel>
+                    <OfxParamPropHint>It allows the two adjacent motion curves to be symmetric.</OfxParamPropHint>
+                </OfxParamTypeBoolean>
+
+                <OfxParamTypeGroup name="functionGroup">
+                    <OfxPropLabel>Function</OfxPropLabel>
+                </OfxParamTypeGroup>
+
+                <OfxParamTypeString name="functionExpression">
+                    <OfxPropLabel>Expression</OfxPropLabel>
+                    <OfxParamPropHint>Expression of Function.</OfxParamPropHint>
+                </OfxParamTypeString>
+
+                <OfxParamTypeDouble2D name="functionDomain">
+                    <OfxPropLabel>Domain</OfxPropLabel>
+                    <OfxParamPropHint>Domain of Function.</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeDouble name="functionUnit">
+                    <OfxPropLabel>Unit</OfxPropLabel>
+                    <OfxParamPropHint>Unit of Function.</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeDouble name="functionFrequency">
+                    <OfxPropLabel>Speed</OfxPropLabel>
+                    <OfxParamPropHint>Speed of Function.</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeChoice name="functionRoundTrip">
+                    <OfxPropLabel>Round-Trip</OfxPropLabel>
+                    <OfxParamPropHint>Enable Round-Trip or not.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>None</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Round-Trip Only</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Round-Trip (Vertical Flip)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Round-Trip (Horizontal Flip)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Round-Trip (Both)</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeDouble name="functionRotate">
+                    <OfxPropLabel>Rotate</OfxPropLabel>
+                    <OfxParamPropHint>Rotation of Function, in degrees.</OfxParamPropHint>
+                </OfxParamTypeDouble>
+
+                <OfxParamTypeChoice name="functionCurve">
+                    <OfxPropLabel>Curve Type</OfxPropLabel>
+                    <OfxParamPropHint>Motion Curve Type.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Custom</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Default</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Ease</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Ease In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Ease Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quad</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quad In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quad Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quart</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quart In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quart Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quint</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quint In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Quint Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Expo</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Expo In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Expo Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Circ</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Circ In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Circ Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Back</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Back In</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Back Out</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Linear</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Same As Before</OfxParamPropChoiceOption>
+                </OfxParamTypeChoice>
+
+                <OfxParamTypeDouble2D name="functionBezierP1">
+                    <OfxPropLabel>Bezier P1</OfxPropLabel>
+                    <OfxParamPropHint>Bezier Curve P1 &amp; P2.</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeDouble2D name="functionBezierP2">
+                    <OfxPropLabel>Bezier P2</OfxPropLabel>
+                    <OfxParamPropHint>Bezier Curve P1 &amp; P2.</OfxParamPropHint>
+                </OfxParamTypeDouble2D>
+
+                <OfxParamTypeBoolean name="functionSymmetry">
+                    <OfxPropLabel>Curve Symmetry</OfxPropLabel>
+                    <OfxParamPropHint>It allows the two adjacent motion curves to be symmetric.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="translate">
-                    <OfxPropLabel>平移</OfxPropLabel>
-                    <OfxParamPropHint>X和Y的平移值(以像素为单位)。也可以通过单击拖动预览窗口中的定位点来调整。</OfxParamPropHint>
+                    <OfxPropLabel>Translate</OfxPropLabel>
+                    <OfxParamPropHint>Translation along the x and y axes. Can also be adjusted by clicking and dragging the center handle in the Viewer.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble name="rotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>绕中心旋转的角度(以度为单位)。</OfxParamPropHint>
+                    <OfxPropLabel>Rotate</OfxPropLabel>
+                    <OfxParamPropHint>Rotation angle in degrees around the Center. Can also be adjusted by clicking and dragging the rotation bar in the Viewer.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeBoolean name="faceToCenter">
-                    <OfxPropLabel>面朝中心</OfxPropLabel>
-                    <OfxParamPropHint>使运动物体自动面朝中心。</OfxParamPropHint>
+                    <OfxPropLabel>Face To Center</OfxPropLabel>
+                    <OfxParamPropHint>It allows the moving object to automatically face to the center.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="scale">
-                    <OfxPropLabel>缩放</OfxPropLabel>
-                    <OfxParamPropHint>X和Y的缩放值。也可以通过单击拖动预览窗口中的定位点来调整。</OfxParamPropHint>
+                    <OfxPropLabel>Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor along the x and y axes.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="flop">
-                    <OfxPropLabel>水平翻转</OfxPropLabel>
-                    <OfxParamPropHint>水平翻转图像。</OfxParamPropHint>
+                    <OfxPropLabel>Horizontal (flop)</OfxPropLabel>
+                    <OfxParamPropHint>Mirror image (swap left and right).</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeBoolean name="flip">
-                    <OfxPropLabel>竖直翻转</OfxPropLabel>
-                    <OfxParamPropHint>竖直翻转图像。</OfxParamPropHint>
+                    <OfxPropLabel>Vertical (flip)</OfxPropLabel>
+                    <OfxParamPropHint>Upside-down (swap top and bottom).</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeBoolean name="uniform">
-                    <OfxPropLabel>等比例缩放</OfxPropLabel>
-                    <OfxParamPropHint>按照X缩放值进行1:1缩放。</OfxParamPropHint>
+                    <OfxPropLabel>Uniform</OfxPropLabel>
+                    <OfxParamPropHint>Use the X scale for both directions.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="skewX">
-                    <OfxPropLabel>X倾斜</OfxPropLabel>
-                    <OfxParamPropHint>沿X轴的倾斜数值。</OfxParamPropHint>
+                    <OfxPropLabel>Skew X</OfxPropLabel>
+                    <OfxParamPropHint>Skew along the x axis.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="skewY">
-                    <OfxPropLabel>Y倾斜</OfxPropLabel>
-                    <OfxParamPropHint>沿Y轴的倾斜数值。</OfxParamPropHint>
+                    <OfxPropLabel>Skew Y</OfxPropLabel>
+                    <OfxParamPropHint>Skew along the y axis.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="skewOrder">
-                    <OfxPropLabel>倾斜顺序</OfxPropLabel>
-                    <OfxParamPropHint>应用倾斜变换的顺序：先X后Y/先Y后X。</OfxParamPropHint>
+                    <OfxPropLabel>Skew Order</OfxPropLabel>
+                    <OfxParamPropHint>The order in which skew transforms are applied: X then Y, or Y then X.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>XY</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>YX</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble name="transformAmount">
-                    <OfxPropLabel>变换量</OfxPropLabel>
-                    <OfxParamPropHint>要应用的变换量。0表示不进行变换，1表示完整变换量。</OfxParamPropHint>
+                    <OfxPropLabel>Amount</OfxPropLabel>
+                    <OfxParamPropHint>Amount of transform to apply. 0 means the transform is identity, 1 means to apply the full transform.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble2D name="center">
-                    <OfxPropLabel>中心位置</OfxPropLabel>
-                    <OfxParamPropHint>旋转和缩放的中心位置。</OfxParamPropHint>
+                    <OfxPropLabel>Center</OfxPropLabel>
+                    <OfxParamPropHint>Center of rotation and scale.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
-                <OfxParamTypePushButton name="resetCenter">
-                    <OfxPropLabel>重置中心位置</OfxPropLabel>
-                    <OfxParamPropHint>将中心的位置重置为定义的输入区域的中心。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypeBoolean name="interactive">
-                    <OfxPropLabel>交互更新</OfxPropLabel>
-                    <OfxParamPropHint>启用后，将在与图像查看器交互期间更新参数值，否则会在释放笔时更新值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="hidpi">
-                    <OfxPropLabel>高DPI</OfxPropLabel>
-                    <OfxParamPropHint>当显示区域为高DPI时需启用。绘制两倍的OpenGL覆盖。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
                 <OfxParamTypeBoolean name="invert">
-                    <OfxPropLabel>反转</OfxPropLabel>
-                    <OfxParamPropHint>反转变换值。</OfxParamPropHint>
+                    <OfxPropLabel>Invert</OfxPropLabel>
+                    <OfxParamPropHint>Invert the transform.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeChoice name="filter">
-                    <OfxPropLabel>插值算法</OfxPropLabel>
-                    <OfxParamPropHint>插值算法——一些插值算法可能会产生超出初始范围的值，或者即使没有移动也会产生变化。
+                    <OfxPropLabel>Filter</OfxPropLabel>
+                    <OfxParamPropHint>Filtering algorithm - some filters may produce values outside of the initial range (*) or modify the values even if there is no movement (+).
 
-最近邻插值：使用原始值。
-线性插值：在反向变换像素的边界框上整合源图像。
-双线性插值：在原始值之间进行双线性插值。
-三次插值：平滑。
-三次样条插值：平滑，加上轻微的锐化。
-Simon插值：平滑，加上中等的锐化。
-Rifman插值：平滑，加上明显的锐化。
-Mitchell插值：平滑，加上模糊来隐藏像素。
-Parzen插值：(三次B样条插值)所有插值法中最平滑的。
-Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>最近邻插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>双线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次样条插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Simon插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Rifman插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Mitchell插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Parzen插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Notch插值</OfxParamPropChoiceOption>
+Impulse: (nearest neighbor / box) Use original values.
+Box: Integrate the source image over the bounding box of the back-transformed pixel.
+Bilinear: (tent / triangle) Bilinear interpolation between original values.
+Cubic: (cubic spline) Some smoothing.
+Keys: (Catmull-Rom / Hermite spline) Some smoothing, plus minor sharpening (*).
+Simon: Some smoothing, plus medium sharpening (*).
+Rifman: Some smoothing, plus significant sharpening (*).
+Mitchell: Some smoothing, plus blurring to hide pixelation (*)(+).
+Parzen: (cubic B-spline) Greatest smoothing of all filters (+).
+Notch: Flat smoothing (which tends to hide moire' patterns) (+).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Impulse</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Box</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Bilinear</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Keys</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Simon</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Rifman</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Mitchell</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Parzen</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Notch</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeBoolean name="clamp">
-                    <OfxPropLabel>限制</OfxPropLabel>
-                    <OfxParamPropHint>将过滤器输出限制在原始范围内，避免哑光出现负值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="black_outside">
-                    <OfxPropLabel>用黑色填充外部区域</OfxPropLabel>
-                    <OfxParamPropHint>用黑色填充源图像外面的区域。</OfxParamPropHint>
+                    <OfxPropLabel>Clamp</OfxPropLabel>
+                    <OfxParamPropHint>Clamp filter output within the original range - useful to avoid negative values in mattes.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeGroup name="motionBlurGroup">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                    <OfxPropLabel>Motion Blur</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble name="motionBlur">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                    <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
+                    <OfxPropLabel>Motion Blur</OfxPropLabel>
+                    <OfxParamPropHint>Quality of motion blur rendering. 0 disables motion blur, 1 is a good value. Increasing this slows down rendering.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeBoolean name="directionalBlur">
-                    <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
+                    <OfxPropLabel>Directional Blur Mode</OfxPropLabel>
+                    <OfxParamPropHint>Motion blur is computed from the original image to the transformed image, each parameter being interpolated linearly. The motionBlur parameter must be set to a nonzero value.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
-                    <OfxPropLabel>运动模糊快门</OfxPropLabel>
-                    <OfxParamPropHint>控制快门保持打开的时间(以帧为单位)。</OfxParamPropHint>
+                    <OfxPropLabel>Shutter</OfxPropLabel>
+                    <OfxParamPropHint>Controls how long (in frames) the shutter should remain open.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="shutterOffset">
-                    <OfxPropLabel>快门抵消</OfxPropLabel>
-                    <OfxParamPropHint>控制快门何时打开/关闭。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。
+                    <OfxPropLabel>Shutter Offset</OfxPropLabel>
+                    <OfxParamPropHint>Controls when the shutter should be open/closed. Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0).
 
-居中：快门围绕画面居中(从 当前时间-快门值/2 到 当前时间+快门值/2)
-开始：在帧处打开快门(从 当前时间 到 当前时间+快门值)
-结束：在该帧处关闭快门(从 当前时间-快门值 到 当前时间)
-自定义：在 当前时间+自定义抵消值 打开快门(从 当前时间+自定义抵消值 到 当前时间+自定义抵消值+快门)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>中心</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>开始</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>结束</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
+Centered: Centers the shutter around the frame (from t-shutter/2 to t+shutter/2).
+Start: Open the shutter at the frame (from t to t+shutter).
+End: Close the shutter at the frame (from t-shutter to t).
+Custom: Open the shutter at t+shuttercustomoffset (from t+shuttercustomoffset to t+shuttercustomoffset+shutter).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Centered</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Start</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>End</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Custom</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble name="shutterCustomOffset">
-                    <OfxPropLabel>自定义抵消值</OfxPropLabel>
-                    <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
+                    <OfxPropLabel>Custom Offset</OfxPropLabel>
+                    <OfxParamPropHint>When custom is selected, the shutter is open at current time plus this offset (in frames). Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0).</OfxParamPropHint>
                 </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="maskInvert">
-                    <OfxPropLabel>反转遮罩</OfxPropLabel>
-                    <OfxParamPropHint>启用后，反转遮罩效果。(注：Vegas的遮罩功能未接入OFX的API，因此该选项无效。)</OfxParamPropHint>
-                </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="mix">
-                    <OfxPropLabel>混合</OfxPropLabel>
-                    <OfxParamPropHint>变换后的图像与原始图像之间的混合值。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-            </OfxImageEffectContext>
-        </OfxResourceSet>
-    </OfxPlugin>
-
-    <OfxPlugin name="net.sf.openfx.MzTransformMaskedPlugin">
-        <OfxResourceSet ofxHost="default">
-            <OfxPropLabel>Mz_TransformMaskedOFX</OfxPropLabel>
-            <OfxPropPluginDescription>平移/旋转/缩放2D图像，并使用可选遮罩。</OfxPropPluginDescription>
-            <OfxImageEffectContext name="default">
-                <OfxParamTypeGroup name="periodic">
-                    <OfxPropLabel>周期运动</OfxPropLabel>
-                </OfxParamTypeGroup>
-
-                <OfxParamTypeDouble name="periodicRadius">
-                    <OfxPropLabel>半径</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的半径。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicFrequency">
-                    <OfxPropLabel>频率</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的频率。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeChoice name="periodicFrequencyUnit">
-                    <OfxPropLabel>频率单位</OfxPropLabel>
-                    <OfxParamPropHint>频率的单位。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>Hz</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>BPM</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeChoice name="periodicFrequencyBeat">
-                    <OfxPropLabel>节奏类型</OfxPropLabel>
-                    <OfxParamPropHint>BPM的节奏类型。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>四全音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>二全音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>全音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>二分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>八分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>十六分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三十二分音符</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>二分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>八分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>十六分音符三连音</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三十二分音符三连音</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeDouble name="periodicAutorotate">
-                    <OfxPropLabel>自转</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的自转速度。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicScale">
-                    <OfxPropLabel>缩放</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的缩放。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicScaleStep">
-                    <OfxPropLabel>缩放步长</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的缩放步长。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicOffset">
-                    <OfxPropLabel>偏移</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的偏移。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicSkip">
-                    <OfxPropLabel>瞬移</OfxPropLabel>
-                    <OfxParamPropHint>周期运动的瞬移步数。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeINTEGER name="periodicN">
-                    <OfxPropLabel>N边形</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的点个数/边个数。1表示圆，2表示线段，3或以上表示多边形。</OfxParamPropHint>
-                </OfxParamTypeINTEGER>
-
-                <OfxParamTypeINTEGER name="periodicInterval">
-                    <OfxPropLabel>间隔</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的点间隔。</OfxParamPropHint>
-                </OfxParamTypeINTEGER>
-
-                <OfxParamTypeDouble name="periodicBend">
-                    <OfxPropLabel>弯曲</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的弯曲。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicRotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的旋转，以度数为单位。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="periodicDeform">
-                    <OfxPropLabel>形变</OfxPropLabel>
-                    <OfxParamPropHint>周期运动轨迹的形变。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeChoice name="periodicCurve">
-                    <OfxPropLabel>曲线类型</OfxPropLabel>
-                    <OfxParamPropHint>运动曲线类型。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>默认</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>缓动</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>平方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>平方缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>平方缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>立方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>立方缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>立方缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四次方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四次缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>四次缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>五次方</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>五次缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>五次缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>指数</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>指数缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>指数缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>圆形</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>圆形缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>圆形缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>回退</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>回退缓入</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>回退缓出</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeDouble2D name="periodicBezierP1">
-                    <OfxPropLabel>贝塞尔点1</OfxPropLabel>
-                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeDouble2D name="periodicBezierP2">
-                    <OfxPropLabel>贝塞尔点2</OfxPropLabel>
-                    <OfxParamPropHint>贝塞尔点 1 和 2。</OfxParamPropHint>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeBoolean name="periodicSymmetry">
-                    <OfxPropLabel>曲线对称</OfxPropLabel>
-                    <OfxParamPropHint>使相邻的两个运动曲线呈对称状态。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble2D name="translate">
-                    <OfxPropLabel>平移</OfxPropLabel>
-                    <OfxParamPropHint>X和Y的平移值(以像素为单位)。也可以通过单击拖动预览窗口中的定位点来调整。</OfxParamPropHint>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeDouble name="rotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>绕中心旋转的角度(以度为单位)。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="faceToCenter">
-                    <OfxPropLabel>面朝中心</OfxPropLabel>
-                    <OfxParamPropHint>使运动物体自动面朝中心。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble2D name="scale">
-                    <OfxPropLabel>缩放</OfxPropLabel>
-                    <OfxParamPropHint>X和Y的缩放值。也可以通过单击拖动预览窗口中的定位点来调整。</OfxParamPropHint>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeBoolean name="flop">
-                    <OfxPropLabel>水平翻转</OfxPropLabel>
-                    <OfxParamPropHint>水平翻转图像。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="flip">
-                    <OfxPropLabel>竖直翻转</OfxPropLabel>
-                    <OfxParamPropHint>竖直翻转图像。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="uniform">
-                    <OfxPropLabel>等比例缩放</OfxPropLabel>
-                    <OfxParamPropHint>按照X缩放值进行1:1缩放。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble name="skewX">
-                    <OfxPropLabel>X倾斜</OfxPropLabel>
-                    <OfxParamPropHint>沿X轴的倾斜数值。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble name="skewY">
-                    <OfxPropLabel>Y倾斜</OfxPropLabel>
-                    <OfxParamPropHint>沿Y轴的倾斜数值。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeChoice name="skewOrder">
-                    <OfxPropLabel>倾斜顺序</OfxPropLabel>
-                    <OfxParamPropHint>应用倾斜变换的顺序：先X后Y/先Y后X。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>XY</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>YX</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeDouble name="transformAmount">
-                    <OfxPropLabel>变换量</OfxPropLabel>
-                    <OfxParamPropHint>要应用的变换量。0表示不进行变换，1表示完整变换量。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeDouble2D name="center">
-                    <OfxPropLabel>中心位置</OfxPropLabel>
-                    <OfxParamPropHint>旋转和缩放的中心位置。</OfxParamPropHint>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypePushButton name="resetCenter">
-                    <OfxPropLabel>重置中心位置</OfxPropLabel>
-                    <OfxParamPropHint>将中心的位置重置为定义的输入区域的中心。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypeBoolean name="interactive">
-                    <OfxPropLabel>交互更新</OfxPropLabel>
-                    <OfxParamPropHint>启用后，将在与图像查看器交互期间更新参数值，否则会在释放笔时更新值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="hidpi">
-                    <OfxPropLabel>高DPI</OfxPropLabel>
-                    <OfxParamPropHint>当显示区域为高DPI时需启用。绘制两倍的OpenGL覆盖。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="invert">
-                    <OfxPropLabel>反转</OfxPropLabel>
-                    <OfxParamPropHint>反转变换值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeChoice name="filter">
-                    <OfxPropLabel>插值算法</OfxPropLabel>
-                    <OfxParamPropHint>插值算法——一些插值算法可能会产生超出初始范围的值，或者即使没有移动也会产生变化。
-
-最近邻插值：使用原始值。
-线性插值：在反向变换像素的边界框上整合源图像。
-双线性插值：在原始值之间进行双线性插值。
-三次插值：平滑。
-三次样条插值：平滑，加上轻微的锐化。
-Simon插值：平滑，加上中等的锐化。
-Rifman插值：平滑，加上明显的锐化。
-Mitchell插值：平滑，加上模糊来隐藏像素。
-Parzen插值：(三次B样条插值)所有插值法中最平滑的。
-Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>最近邻插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>双线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次样条插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Simon插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Rifman插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Mitchell插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Parzen插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Notch插值</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeBoolean name="clamp">
-                    <OfxPropLabel>限制</OfxPropLabel>
-                    <OfxParamPropHint>将过滤器输出限制在原始范围内，避免哑光出现负值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="black_outside">
-                    <OfxPropLabel>用黑色填充外部区域</OfxPropLabel>
-                    <OfxParamPropHint>用黑色填充源图像外面的区域。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeGroup name="motionBlurGroup">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                </OfxParamTypeGroup>
-
-                <OfxParamTypeDouble name="motionBlur">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                    <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="directionalBlur">
-                    <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble name="shutter">
-                    <OfxPropLabel>运动模糊快门</OfxPropLabel>
-                    <OfxParamPropHint>控制快门保持打开的时间(以帧为单位)。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeChoice name="shutterOffset">
-                    <OfxPropLabel>快门抵消</OfxPropLabel>
-                    <OfxParamPropHint>控制快门何时打开/关闭。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。
-
-居中：快门围绕画面居中(从 当前时间-快门值/2 到 当前时间+快门值/2)
-开始：在帧处打开快门(从 当前时间 到 当前时间+快门值)
-结束：在该帧处关闭快门(从 当前时间-快门值 到 当前时间)
-自定义：在 当前时间+自定义抵消值 打开快门(从 当前时间+自定义抵消值 到 当前时间+自定义抵消值+快门)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>中心</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>开始</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>结束</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeDouble name="shutterCustomOffset">
-                    <OfxPropLabel>自定义抵消值</OfxPropLabel>
-                    <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="maskInvert">
-                    <OfxPropLabel>反转遮罩</OfxPropLabel>
-                    <OfxParamPropHint>启用后，反转遮罩效果。(注：Vegas的遮罩功能未接入OFX的API，因此该选项无效。)</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble name="mix">
-                    <OfxPropLabel>混合</OfxPropLabel>
-                    <OfxParamPropHint>变换后的图像与原始图像之间的混合值。</OfxParamPropHint>
+                    <OfxPropLabel>Mix</OfxPropLabel>
+                    <OfxParamPropHint>Mix factor between the original and the transformed image.</OfxParamPropHint>
                 </OfxParamTypeDouble>
             </OfxImageEffectContext>
         </OfxResourceSet>
@@ -623,422 +376,191 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
     <OfxPlugin name="net.sf.openfx.MzCornerPinPlugin">
         <OfxResourceSet ofxHost="default">
             <OfxPropLabel>Mz_CornerPinOFX</OfxPropLabel>
-            <OfxPropPluginDescription>边角定位图像。</OfxPropPluginDescription>
+            <OfxImageEffectPluginPropGrouping>MisczOFX</OfxImageEffectPluginPropGrouping>
+            <OfxPropPluginDescription>Allows an image to fit another in translation, rotation and scale.</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
                 <OfxParamTypeGroup name="to">
-                    <OfxPropLabel>To点</OfxPropLabel>
+                    <OfxPropLabel>To</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble2D name="to1">
-                    <OfxPropLabel>左下角</OfxPropLabel>
+                    <OfxPropLabel>to1</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="enable1">
-                    <OfxPropLabel>启用左下角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用左下角的To点。</OfxParamPropHint>
+                    <OfxPropLabel>enable1</OfxPropLabel>
+                    <OfxParamPropHint>Enables the point on the bottom left.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="to2">
-                    <OfxPropLabel>右下角</OfxPropLabel>
+                    <OfxPropLabel>to2</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="enable2">
-                    <OfxPropLabel>启用右下角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用右下角的To点。</OfxParamPropHint>
+                    <OfxPropLabel>enable2</OfxPropLabel>
+                    <OfxParamPropHint>Enables the point on the bottom right.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="to3">
-                    <OfxPropLabel>右上角</OfxPropLabel>
+                    <OfxPropLabel>to3</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="enable3">
-                    <OfxPropLabel>启用右上角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用右上角的To点。</OfxParamPropHint>
+                    <OfxPropLabel>enable3</OfxPropLabel>
+                    <OfxParamPropHint>Enables the point on the top left.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble2D name="to4">
-                    <OfxPropLabel>左上角</OfxPropLabel>
+                    <OfxPropLabel>to4</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="enable4">
-                    <OfxPropLabel>启用左上角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用左上角的To点。</OfxParamPropHint>
+                    <OfxPropLabel>enable4</OfxPropLabel>
+                    <OfxParamPropHint>Enables the point on the top right.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypePushButton name="copyFrom">
-                    <OfxPropLabel>从From点复制</OfxPropLabel>
-                    <OfxParamPropHint>将From点参数复制到To点(包括动画)。</OfxParamPropHint>
+                    <OfxPropLabel>Copy "From"</OfxPropLabel>
+                    <OfxParamPropHint>Copy the contents (including animation) of the "from" points to the "to" points.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyFromSingle">
-                    <OfxPropLabel>从From点复制(单帧)</OfxPropLabel>
-                    <OfxParamPropHint>将当前的From点参数复制到To点。</OfxParamPropHint>
+                    <OfxPropLabel>Copy "From" (Single)</OfxPropLabel>
+                    <OfxParamPropHint>Copy the current values of the "from" points to the "to" points.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeGroup name="from">
-                    <OfxPropLabel>From点</OfxPropLabel>
+                    <OfxPropLabel>From</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble2D name="from1">
-                    <OfxPropLabel>左下角</OfxPropLabel>
+                    <OfxPropLabel>from1</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble2D name="from2">
-                    <OfxPropLabel>右下角</OfxPropLabel>
+                    <OfxPropLabel>from2</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble2D name="from3">
-                    <OfxPropLabel>右上角</OfxPropLabel>
+                    <OfxPropLabel>from3</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble2D name="from4">
-                    <OfxPropLabel>左上角</OfxPropLabel>
+                    <OfxPropLabel>from4</OfxPropLabel>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypePushButton name="setToInputRod">
-                    <OfxPropLabel>设置为输入RoD</OfxPropLabel>
-                    <OfxParamPropHint>将源定义区域(Region of Definition)的值复制到From点。</OfxParamPropHint>
+                    <OfxPropLabel>Set to input rod</OfxPropLabel>
+                    <OfxParamPropHint>Copy the values from the source region of definition into the "from" points.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyTo">
-                    <OfxPropLabel>从To点复制</OfxPropLabel>
-                    <OfxParamPropHint>将To点参数复制到From点(包括动画)。</OfxParamPropHint>
+                    <OfxPropLabel>Copy "To"</OfxPropLabel>
+                    <OfxParamPropHint>Copy the contents (including animation) of the "to" points to the "from" points.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypePushButton name="copyToSingle">
-                    <OfxPropLabel>从To点复制(单帧)</OfxPropLabel>
-                    <OfxParamPropHint>将当前的To点参数复制到From点。</OfxParamPropHint>
+                    <OfxPropLabel>Copy "To" (Single)</OfxPropLabel>
+                    <OfxParamPropHint>Copy the current values of the "to" points to the "from" points.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeDouble name="transformAmount">
-                    <OfxPropLabel>变换量</OfxPropLabel>
-                    <OfxParamPropHint>要应用的变换量(不包含额外矩阵，其永远被应用)。0表示不进行变换，1表示完整变换量。中间变换通过From点和To点之间线性插值计算。</OfxParamPropHint>
+                    <OfxPropLabel>Amount</OfxPropLabel>
+                    <OfxParamPropHint>Amount of transform to apply (excluding the extra matrix, which is always applied). 0 means the transform is identity, 1 means to apply the full transform. Intermediate transforms are computed by linear interpolation between the 'from' and the 'to' points.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeGroup name="transformMatrix">
-                    <OfxPropLabel>额外矩阵</OfxPropLabel>
-                    <OfxParamPropHint>这个矩阵被连接到由其他参数定义的变换。</OfxParamPropHint>
+                    <OfxPropLabel>Extra Matrix</OfxPropLabel>
+                    <OfxParamPropHint>This matrix gets concatenated to the transform defined by the other parameters.</OfxParamPropHint>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeChoice name="overlayPoints">
-                    <OfxPropLabel>叠加点</OfxPropLabel>
-                    <OfxParamPropHint>选择在叠加中显示From点还是To点。
+                    <OfxPropLabel>Overlay Points</OfxPropLabel>
+                    <OfxParamPropHint>Whether to display the "from" or the "to" points in the overlay.
 
-To点：显示To点。
-From点：显示From点。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>To点</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>From点</OfxParamPropChoiceOption>
+To: Display the "to" points.
+From: Display the "from" points.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>To</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>From</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
-                <OfxParamTypeBoolean name="interactive">
-                    <OfxPropLabel>交互更新</OfxPropLabel>
-                    <OfxParamPropHint>启用后，将在与图像查看器交互期间更新参数值，否则会在释放笔时更新值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="hidpi">
-                    <OfxPropLabel>高DPI</OfxPropLabel>
-                    <OfxParamPropHint>当显示区域为高DPI时需启用。绘制两倍的OpenGL覆盖。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
                 <OfxParamTypeBoolean name="invert">
-                    <OfxPropLabel>反转</OfxPropLabel>
-                    <OfxParamPropHint>反转变换值。</OfxParamPropHint>
+                    <OfxPropLabel>Invert</OfxPropLabel>
+                    <OfxParamPropHint>Invert the transform.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeChoice name="filter">
-                    <OfxPropLabel>插值算法</OfxPropLabel>
-                    <OfxParamPropHint>插值算法——一些插值算法可能会产生超出初始范围的值，或者即使没有移动也会产生变化。
+                    <OfxPropLabel>Filter</OfxPropLabel>
+                    <OfxParamPropHint>Filtering algorithm - some filters may produce values outside of the initial range (*) or modify the values even if there is no movement (+).
 
-最近邻插值：使用原始值。
-线性插值：在反向变换像素的边界框上整合源图像。
-双线性插值：在原始值之间进行双线性插值。
-三次插值：平滑。
-三次样条插值：平滑，加上轻微的锐化。
-Simon插值：平滑，加上中等的锐化。
-Rifman插值：平滑，加上明显的锐化。
-Mitchell插值：平滑，加上模糊来隐藏像素。
-Parzen插值：(三次B样条插值)所有插值法中最平滑的。
-Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>最近邻插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>双线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次样条插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Simon插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Rifman插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Mitchell插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Parzen插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Notch插值</OfxParamPropChoiceOption>
+Impulse: (nearest neighbor / box) Use original values.
+Box: Integrate the source image over the bounding box of the back-transformed pixel.
+Bilinear: (tent / triangle) Bilinear interpolation between original values.
+Cubic: (cubic spline) Some smoothing.
+Keys: (Catmull-Rom / Hermite spline) Some smoothing, plus minor sharpening (*).
+Simon: Some smoothing, plus medium sharpening (*).
+Rifman: Some smoothing, plus significant sharpening (*).
+Mitchell: Some smoothing, plus blurring to hide pixelation (*)(+).
+Parzen: (cubic B-spline) Greatest smoothing of all filters (+).
+Notch: Flat smoothing (which tends to hide moire' patterns) (+).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Impulse</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Box</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Bilinear</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Keys</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Simon</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Rifman</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Mitchell</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Parzen</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Notch</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeBoolean name="clamp">
-                    <OfxPropLabel>限制</OfxPropLabel>
-                    <OfxParamPropHint>将过滤器输出限制在原始范围内，避免哑光出现负值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="black_outside">
-                    <OfxPropLabel>用黑色填充外部区域</OfxPropLabel>
-                    <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
+                    <OfxPropLabel>Clamp</OfxPropLabel>
+                    <OfxParamPropHint>Clamp filter output within the original range - useful to avoid negative values in mattes.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeGroup name="motionBlurGroup">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                    <OfxPropLabel>Motion Blur</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble name="motionBlur">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                    <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
+                    <OfxPropLabel>Motion Blur</OfxPropLabel>
+                    <OfxParamPropHint>Quality of motion blur rendering. 0 disables motion blur, 1 is a good value. Increasing this slows down rendering.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeBoolean name="directionalBlur">
-                    <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
+                    <OfxPropLabel>Directional Blur Mode</OfxPropLabel>
+                    <OfxParamPropHint>Motion blur is computed from the original image to the transformed image, each parameter being interpolated linearly. The motionBlur parameter must be set to a nonzero value.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
-                    <OfxPropLabel>运动模糊快门</OfxPropLabel>
-                    <OfxParamPropHint>控制快门保持打开的时间(以帧为单位)。</OfxParamPropHint>
+                    <OfxPropLabel>Shutter</OfxPropLabel>
+                    <OfxParamPropHint>Controls how long (in frames) the shutter should remain open.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="shutterOffset">
-                    <OfxPropLabel>快门抵消</OfxPropLabel>
-                    <OfxParamPropHint>控制快门何时打开/关闭。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。
+                    <OfxPropLabel>Shutter Offset</OfxPropLabel>
+                    <OfxParamPropHint>Controls when the shutter should be open/closed. Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0).
 
-居中：快门围绕画面居中(从 当前时间-快门值/2 到 当前时间+快门值/2)
-开始：在帧处打开快门(从 当前时间 到 当前时间+快门值)
-结束：在该帧处关闭快门(从 当前时间-快门值 到 当前时间)
-自定义：在 当前时间+自定义抵消值 打开快门(从 当前时间+自定义抵消值 到 当前时间+自定义抵消值+快门)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>中心</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>开始</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>结束</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
+Centered: Centers the shutter around the frame (from t-shutter/2 to t+shutter/2).
+Start: Open the shutter at the frame (from t to t+shutter).
+End: Close the shutter at the frame (from t-shutter to t).
+Custom: Open the shutter at t+shuttercustomoffset (from t+shuttercustomoffset to t+shuttercustomoffset+shutter).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Centered</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Start</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>End</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Custom</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble name="shutterCustomOffset">
-                    <OfxPropLabel>自定义抵消值</OfxPropLabel>
-                    <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
+                    <OfxPropLabel>Custom Offset</OfxPropLabel>
+                    <OfxParamPropHint>When custom is selected, the shutter is open at current time plus this offset (in frames). Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0).</OfxParamPropHint>
                 </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="maskInvert">
-                    <OfxPropLabel>反转遮罩</OfxPropLabel>
-                    <OfxParamPropHint>启用后，反转遮罩效果。(注：Vegas的遮罩功能未接入OFX的API，因此该选项无效。)</OfxParamPropHint>
-                </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="mix">
-                    <OfxPropLabel>混合</OfxPropLabel>
-                    <OfxParamPropHint>变换后的图像与原始图像之间的混合值。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-            </OfxImageEffectContext>
-        </OfxResourceSet>
-    </OfxPlugin>
-
-    <OfxPlugin name="net.sf.openfx.MzCornerPinMaskedPlugin">
-        <OfxResourceSet ofxHost="default">
-            <OfxPropLabel>Mz_CornerPinMaskedOFX</OfxPropLabel>
-            <OfxPropPluginDescription>边角定位图像。</OfxPropPluginDescription>
-            <OfxImageEffectContext name="default">
-                <OfxParamTypeGroup name="to">
-                    <OfxPropLabel>To点</OfxPropLabel>
-                </OfxParamTypeGroup>
-
-                <OfxParamTypeDouble2D name="to1">
-                    <OfxPropLabel>左下角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeBoolean name="enable1">
-                    <OfxPropLabel>启用左下角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用左下角的To点。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble2D name="to2">
-                    <OfxPropLabel>右下角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeBoolean name="enable2">
-                    <OfxPropLabel>启用右下角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用右下角的To点。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble2D name="to3">
-                    <OfxPropLabel>右上角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeBoolean name="enable3">
-                    <OfxPropLabel>启用右上角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用右上角的To点。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble2D name="to4">
-                    <OfxPropLabel>左上角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeBoolean name="enable4">
-                    <OfxPropLabel>启用左上角To点</OfxPropLabel>
-                    <OfxParamPropHint>启用左上角的To点。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypePushButton name="copyFrom">
-                    <OfxPropLabel>从From点复制</OfxPropLabel>
-                    <OfxParamPropHint>将From点参数复制到To点(包括动画)。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypePushButton name="copyFromSingle">
-                    <OfxPropLabel>从From点复制(单帧)</OfxPropLabel>
-                    <OfxParamPropHint>将当前的From点参数复制到To点。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypeGroup name="from">
-                    <OfxPropLabel>From点</OfxPropLabel>
-                </OfxParamTypeGroup>
-
-                <OfxParamTypeDouble2D name="from1">
-                    <OfxPropLabel>左下角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeDouble2D name="from2">
-                    <OfxPropLabel>右下角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeDouble2D name="from3">
-                    <OfxPropLabel>右上角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypeDouble2D name="from4">
-                    <OfxPropLabel>左上角</OfxPropLabel>
-                </OfxParamTypeDouble2D>
-
-                <OfxParamTypePushButton name="setToInputRod">
-                    <OfxPropLabel>设置为输入RoD</OfxPropLabel>
-                    <OfxParamPropHint>将源定义区域(Region of Definition)的值复制到From点。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypePushButton name="copyTo">
-                    <OfxPropLabel>从To点复制</OfxPropLabel>
-                    <OfxParamPropHint>将To点参数复制到From点(包括动画)。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypePushButton name="copyFromSingle">
-                    <OfxPropLabel>从To点复制(单帧)</OfxPropLabel>
-                    <OfxParamPropHint>将当前的To点参数复制到From点。</OfxParamPropHint>
-                </OfxParamTypePushButton>
-
-                <OfxParamTypeDouble name="transformAmount">
-                    <OfxPropLabel>变换量</OfxPropLabel>
-                    <OfxParamPropHint>要应用的变换量(不包含额外矩阵，其永远被应用)。0表示不进行变换，1表示完整变换量。中间变换通过From点和To点之间线性插值计算。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeGroup name="transformMatrix">
-                    <OfxPropLabel>额外矩阵</OfxPropLabel>
-                    <OfxParamPropHint>这个矩阵被连接到由其他参数定义的变换。</OfxParamPropHint>
-                </OfxParamTypeGroup>
-
-                <OfxParamTypeChoice name="overlayPoints">
-                    <OfxPropLabel>叠加点</OfxPropLabel>
-                    <OfxParamPropHint>选择在叠加中显示From点还是To点。
-
-To点：显示To点。
-From点：显示From点。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>To点</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>From点</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeBoolean name="interactive">
-                    <OfxPropLabel>交互更新</OfxPropLabel>
-                    <OfxParamPropHint>启用后，将在与图像查看器交互期间更新参数值，否则会在释放笔时更新值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="hidpi">
-                    <OfxPropLabel>高DPI</OfxPropLabel>
-                    <OfxParamPropHint>当显示区域为高DPI时需启用。绘制两倍的OpenGL覆盖。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="invert">
-                    <OfxPropLabel>反转</OfxPropLabel>
-                    <OfxParamPropHint>反转变换值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeChoice name="filter">
-                    <OfxPropLabel>插值算法</OfxPropLabel>
-                    <OfxParamPropHint>插值算法——一些插值算法可能会产生超出初始范围的值，或者即使没有移动也会产生变化。
-
-最近邻插值：使用原始值。
-线性插值：在反向变换像素的边界框上整合源图像。
-双线性插值：在原始值之间进行双线性插值。
-三次插值：平滑。
-三次样条插值：平滑，加上轻微的锐化。
-Simon插值：平滑，加上中等的锐化。
-Rifman插值：平滑，加上明显的锐化。
-Mitchell插值：平滑，加上模糊来隐藏像素。
-Parzen插值：(三次B样条插值)所有插值法中最平滑的。
-Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>最近邻插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>双线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次样条插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Simon插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Rifman插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Mitchell插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Parzen插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Notch插值</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeBoolean name="clamp">
-                    <OfxPropLabel>限制</OfxPropLabel>
-                    <OfxParamPropHint>将过滤器输出限制在原始范围内，避免哑光出现负值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="black_outside">
-                    <OfxPropLabel>用黑色填充外部区域</OfxPropLabel>
-                    <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeGroup name="motionBlurGroup">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                </OfxParamTypeGroup>
-
-                <OfxParamTypeDouble name="motionBlur">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                    <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="directionalBlur">
-                    <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble name="shutter">
-                    <OfxPropLabel>运动模糊快门</OfxPropLabel>
-                    <OfxParamPropHint>控制快门保持打开的时间(以帧为单位)。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeChoice name="shutterOffset">
-                    <OfxPropLabel>快门抵消</OfxPropLabel>
-                    <OfxParamPropHint>控制快门何时打开/关闭。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。
-
-居中：快门围绕画面居中(从 当前时间-快门值/2 到 当前时间+快门值/2)
-开始：在帧处打开快门(从 当前时间 到 当前时间+快门值)
-结束：在该帧处关闭快门(从 当前时间-快门值 到 当前时间)
-自定义：在 当前时间+自定义抵消值 打开快门(从 当前时间+自定义抵消值 到 当前时间+自定义抵消值+快门)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>中心</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>开始</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>结束</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
-                </OfxParamTypeChoice>
-
-                <OfxParamTypeDouble name="shutterCustomOffset">
-                    <OfxPropLabel>自定义抵消值</OfxPropLabel>
-                    <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
-                </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="maskInvert">
-                    <OfxPropLabel>反转遮罩</OfxPropLabel>
-                    <OfxParamPropHint>启用后，反转遮罩效果。(注：Vegas的遮罩功能未接入OFX的API，因此该选项无效。)</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeDouble name="mix">
-                    <OfxPropLabel>混合</OfxPropLabel>
-                    <OfxParamPropHint>变换后的图像与原始图像之间的混合值。</OfxParamPropHint>
+                    <OfxPropLabel>Mix</OfxPropLabel>
+                    <OfxParamPropHint>Mix factor between the original and the transformed image.</OfxParamPropHint>
                 </OfxParamTypeDouble>
             </OfxImageEffectContext>
         </OfxResourceSet>
@@ -1047,11 +569,12 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
     <OfxPlugin name="net.sf.openfx.MzPosition">
         <OfxResourceSet ofxHost="default">
             <OfxPropLabel>Mz_PositionOFX</OfxPropLabel>
-            <OfxPropPluginDescription>以整数帧单位平移图像。</OfxPropPluginDescription>
+            <OfxImageEffectPluginPropGrouping>MisczOFX</OfxImageEffectPluginPropGrouping>
+            <OfxPropPluginDescription>Translate an image by an integer number of pixels.</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
                 <OfxParamTypeDouble2D name="translate">
-                    <OfxPropLabel>平移</OfxPropLabel>
-                    <OfxParamPropHint>X和Y的平移值(以像素为单位)。也可以通过单击拖动预览窗口中的定位点来调整。自动吸附到最近的像素位置。</OfxParamPropHint>
+                    <OfxPropLabel>Translate</OfxPropLabel>
+                    <OfxParamPropHint>New position of the bottom-left pixel. Rounded to the closest pixel.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
             </OfxImageEffectContext>
         </OfxResourceSet>
@@ -1060,80 +583,81 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
     <OfxPlugin name="net.sf.openfx.MzSpriteSheet">
         <OfxResourceSet ofxHost="default">
             <OfxPropLabel>Mz_SpriteSheet</OfxPropLabel>
-            <OfxPropPluginDescription>通过平移的方式从Sprite表中读取单个帧。Sprite表是一系列图像(通常是动画帧)组合成一个或多个更大的图像。如一个由8个100×100的Sprite图像组成的动画可以以4×2的形式组合成一个400×200的Sprite表。编号为0的Sprite图像位于Sprite表的左上方，编号顺序是从左到右，从上到下。输出Sprite动画，重复“Sprite编号范围”参数内所给定的Sprite图像。</OfxPropPluginDescription>
+            <OfxImageEffectPluginPropGrouping>MisczOFX</OfxImageEffectPluginPropGrouping>
+            <OfxPropPluginDescription>Read individual frames from a sprite sheet.</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
                 <OfxParamTypeINTEGER2D name="spriteSize">
-                    <OfxPropLabel>Sprite图像大小</OfxPropLabel>
-                    <OfxParamPropHint>单个Sprite图像的大小。以像素为单位。</OfxParamPropHint>
+                    <OfxPropLabel>Sprite Size</OfxPropLabel>
+                    <OfxParamPropHint>Size in pixels of an individual sprite.</OfxParamPropHint>
                 </OfxParamTypeINTEGER2D>
 
                 <OfxParamTypeINTEGER2D name="spriteRange">
-                    <OfxPropLabel>Sprite图像编号范围</OfxPropLabel>
-                    <OfxParamPropHint>动画中第一帧以及最后一帧Sprite图像的编号。编号从0开始。</OfxParamPropHint>
+                    <OfxPropLabel>Sprite Range</OfxPropLabel>
+                    <OfxParamPropHint>Index of the first and last sprite in the animation. The sprite index starts at zero.</OfxParamPropHint>
                 </OfxParamTypeINTEGER2D>
 
                 <OfxParamTypeINTEGER name="frameOffset">
-                    <OfxPropLabel>帧偏移</OfxPropLabel>
-                    <OfxParamPropHint>在整体上，调整输出的第一帧Sprite图像的编号。</OfxParamPropHint>
+                    <OfxPropLabel>Frame Offset</OfxPropLabel>
+                    <OfxParamPropHint>Output frame number for the first sprite as a whole.</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
                 <OfxParamTypeINTEGER name="frameSeparation">
-                    <OfxPropLabel>帧间隔</OfxPropLabel>
-                    <OfxParamPropHint>每帧之间的间隔，基于项目帧率。</OfxParamPropHint>
+                    <OfxPropLabel>Frame Separation</OfxPropLabel>
+                    <OfxParamPropHint>The separation of the frames, based on the frame rate of the project.</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
                 <OfxParamTypeChoice name="readingDirection">
-                    <OfxPropLabel>读取方向</OfxPropLabel>
-                    <OfxParamPropHint>Sprite图像的读取方向。
+                    <OfxPropLabel>Reading Direction</OfxPropLabel>
+                    <OfxParamPropHint>The reading direction of the sprites.
 
-水平正向: 以水平正向的方向读取Sprite图像。
-水平反向: 以水平反向的方向读取Sprite图像。
-竖直正向: 以竖直正向的方向读取Sprite图像。
-竖直反向: 以竖直反向的方向读取Sprite图像。
-水平正向(S型): 以水平正向的S折线型方向读取Sprite图像。
-水平反向(S型): 以水平反向的S折线型方向读取Sprite图像。
-竖直正向(S型): 以竖直正向的S折线型方向读取Sprite图像。
-竖直反向(S型): 以竖直反向的S折线型方向读取Sprite图像。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>水平正向</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>水平反向</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>竖直正向</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>竖直反向</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>水平正向(S型)</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>水平反向(S型)</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>竖直正向(S型)</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>竖直反向(S型)</OfxParamPropChoiceOption>
+Horizontal Forward: Read the sprites in a horizontal forward direction.
+Horizontal Backward: Read the sprites in a horizontal backward direction.
+Vertical Forward: Read the sprites in a vertical forward direction.
+Vertical Backward: Read the sprites in a vertical backward direction.
+Horizontal Forward(S-shaped): Read the sprites in a horizontal forward S-shape direction.
+Horizontal Backward(S-shaped): Read the sprites in a horizontal backward S-shape direction.
+Vertical Forward(S-shaped): Read the sprites in a vertical forward S-shape direction.
+Vertical Backward(S-shaped): Read the sprites in a vertical backward S-shape direction.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Horizontal Forward</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Horizontal Backward</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Vertical Forward</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Vertical Backward</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Horizontal Forward (S-shaped)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Horizontal Backward (S-shaped)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Vertical Forward (S-shaped)</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Vertical Backward (S-shaped)</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeChoice name="playbackMode">
-                    <OfxPropLabel>播放模式</OfxPropLabel>
-                    <OfxParamPropHint>Sprite图像的播放模式。
+                    <OfxPropLabel>Playback Mode</OfxPropLabel>
+                    <OfxParamPropHint>The playback mode when playing the sprites.
 
-正常: 以正常模式播放Sprite图像。
-正常+倒放: 以正常+倒放模式播放Sprite图像。
-正常+倒放(合并): 以正常+倒放模式播放Sprite图像，并且将重复的首/末帧合并成单个帧。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>正常</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>正常+倒放</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>正常+倒放(合并)</OfxParamPropChoiceOption>
+Normal: Play the sprites in Normal mode.
+Normal &amp; Reverse: Play the sprites in Normal &amp; Reverse mode.
+Normal &amp; Reverse (Merge): Play the sprites in Normal &amp; Reverse mode, with repeated first/last frames being merged into one frame.</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Normal</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Normal &amp; Reverse</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Normal &amp; Reverse (Merge)</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeINTEGER name="loopOffset">
-                    <OfxPropLabel>循环帧偏移</OfxPropLabel>
-                    <OfxParamPropHint>在单个循环内，调整输出的第一帧Sprite图像的编号。</OfxParamPropHint>
+                    <OfxPropLabel>Loop Offset</OfxPropLabel>
+                    <OfxParamPropHint>Output frame number for the first sprite in a single loop.</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
                 <OfxParamTypeINTEGER2D name="repeatRange">
-                    <OfxPropLabel>重复范围</OfxPropLabel>
-                    <OfxParamPropHint>划定一段范围，在该范围内的Sprite图像可以重复数次。当“重复次数”为0时，不进行重复。</OfxParamPropHint>
+                    <OfxPropLabel>Repeat Range</OfxPropLabel>
+                    <OfxParamPropHint>Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed.</OfxParamPropHint>
                 </OfxParamTypeINTEGER2D>
 
                 <OfxParamTypeINTEGER name="repeatCount">
-                    <OfxPropLabel>重复次数</OfxPropLabel>
-                    <OfxParamPropHint>划定一段范围，在该范围内的Sprite图像可以重复数次。当“重复次数”为0时，不进行重复。</OfxParamPropHint>
+                    <OfxPropLabel>Repeat Count</OfxPropLabel>
+                    <OfxParamPropHint>Delimit a range within which the sprites will be repeated several times. When the Repeat Count is 0, no repeat is performed.</OfxParamPropHint>
                 </OfxParamTypeINTEGER>
 
                 <OfxParamTypeINTEGER2D name="spritesCut">
-                    <OfxPropLabel>Sprite表切割</OfxPropLabel>
-                    <OfxParamPropHint>切割Sprite表，逐个读取。</OfxParamPropHint>
+                    <OfxPropLabel>spritesCut</OfxPropLabel>
+                    <OfxParamPropHint>Cut the sprite sheet and read it separately.</OfxParamPropHint>
                 </OfxParamTypeINTEGER2D>
             </OfxImageEffectContext>
         </OfxResourceSet>
@@ -1142,55 +666,57 @@ Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
     <OfxPlugin name="net.sf.openfx.MzCard3D">
         <OfxResourceSet ofxHost="default">
             <OfxPropLabel>Mz_Card3DOFX</OfxPropLabel>
-            <OfxPropPluginDescription>以整数帧单位平移图像。</OfxPropPluginDescription>
+            <OfxImageEffectPluginPropGrouping>MisczOFX</OfxImageEffectPluginPropGrouping>
+            <OfxPropPluginDescription>This effect applies a transform that corresponds to projection the source image onto a 3D card in space.</OfxPropPluginDescription>
             <OfxImageEffectContext name="default">
                 <OfxParamTypeGroup name="axis">
-                    <OfxPropLabel>轴</OfxPropLabel>
+                    <OfxPropLabel>Axis</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeGroup name="axisFile">
-                    <OfxPropLabel>文件</OfxPropLabel>
+                    <OfxPropLabel>File</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeChoice name="axisImportFormat">
-                    <OfxPropLabel>导入格式</OfxPropLabel>
-                    <OfxParamPropHint>将要导入的文件的格式。
-chan：chan格式，每行是FRAME TX TY TZ RX RY RZ VFOV。可以使用Natron、Nuke、3D-Equalizer、Maya等3D跟踪软件创建。注意，在导出和导入.chan文件时，旋转顺序必须完全相同。
-Boujou：Boujou文本导出。摄像机每行是R(0,0) R(0,1) R(0,2) R(1,0) R(1,1) R(1,2) R(2,0) R(2,1) R(2,2) Tx Ty Tz F(mm)。</OfxParamPropHint>
+                    <OfxPropLabel>Import Format</OfxPropLabel>
+                    <OfxParamPropHint>The format of the file to import.
+
+chan: Chan format, each line is FRAME TX TY TZ RX RY RZ VFOV. Can be created using Natron, Nuke, 3D-Equalizer, Maya and other 3D tracking software. Be careful that the rotation order must be exactly the same when exporting and importing the chan file.
+Boujou: Boujou text export. In Boujou, after finishing the track and solving. Each camera line is R(0,0) R(0,1) R(0,2) R(1,0) R(1,1) R(1,2) R(2,0) R(2,1) R(2,2) Tx Ty Tz F(mm).</OfxParamPropHint>
                     <OfxParamPropChoiceOption>chan</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>Boujou</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeString name="axisImportFile">
-                    <OfxPropLabel>导入</OfxPropLabel>
-                    <OfxParamPropHint>导入使用3D跟踪软件创建的.chan文件，或使用Boujou创建的.txt文件。</OfxParamPropHint>
+                    <OfxPropLabel>Import</OfxPropLabel>
+                    <OfxParamPropHint>Import a chan file created using 3D tracking software, or a txt file created using Boujou.</OfxParamPropHint>
                 </OfxParamTypeString>
 
                 <OfxParamTypePushButton name="axisImportFileReload">
-                    <OfxPropLabel>重新读取</OfxPropLabel>
-                    <OfxParamPropHint>重新读取文件。</OfxParamPropHint>
+                    <OfxPropLabel>Reload</OfxPropLabel>
+                    <OfxParamPropHint>Reload the file.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeString name="axisExportChan">
-                    <OfxPropLabel>导出</OfxPropLabel>
-                    <OfxParamPropHint>导出一个.chan文件，可以在3D跟踪软件中使用。注意，在导出和导入.chan文件时，旋转顺序必须完全相同。</OfxParamPropHint>
+                    <OfxPropLabel>Export</OfxPropLabel>
+                    <OfxParamPropHint>Export a .chan file which can be used in Natron, Nuke or 3D tracking software, such as 3D-Equalizer, Maya, or Boujou. Be careful that the rotation order must be exactly the same when exporting and importing the chan file.</OfxParamPropHint>
                 </OfxParamTypeString>
 
                 <OfxParamTypePushButton name="axisExportChanRewrite">
-                    <OfxPropLabel>重新写入</OfxPropLabel>
-                    <OfxParamPropHint>重新写入.chan文件。</OfxParamPropHint>
+                    <OfxPropLabel>Rewrite</OfxPropLabel>
+                    <OfxParamPropHint>Rewrite the .chan file.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeChoice name="axisXformOrder">
-                    <OfxPropLabel>变换顺序</OfxPropLabel>
-                    <OfxParamPropHint>变换时的缩放(S)、旋转(R)、平移(T)顺序。
+                    <OfxPropLabel>Transform Order</OfxPropLabel>
+                    <OfxParamPropHint>Order in which scale (S), rotation (R) and translation (T) are applied.
 
-SRT：缩放→旋转→平移。
-STR：缩放→平移→旋转。
-RST：旋转→缩放→平移。
-RTS：旋转→平移→缩放。
-TSR：平移→缩放→旋转。
-TRS：平移→旋转→缩放。</OfxParamPropHint>
+SRT: Scale, Rotation, Translation.
+STR: Scale, Translation, Rotation.
+RST: Rotation, Scale, Translation.
+RTS: Rotation, Translation, Scale.
+TSR: Translation, Scale, Rotation.
+TRS: Translation, Rotation, Scale.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>SRT</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>STR</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>RST</OfxParamPropChoiceOption>
@@ -1200,15 +726,15 @@ TRS：平移→旋转→缩放。</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeChoice name="axisRotOrder">
-                    <OfxPropLabel>旋转顺序</OfxPropLabel>
-                    <OfxParamPropHint>欧拉角的旋转顺序。
+                    <OfxPropLabel>Rotation Order</OfxPropLabel>
+                    <OfxParamPropHint>Order in which Euler angles are applied in the rotation.
                     
-XYZ：X→Y→Z。
-XZY：X→Z→Y。
-YXZ：Y→X→Z。
-YZX：Y→Z→X。
-ZXY：Z→X→Y。
-ZYX：Z→Y→X。</OfxParamPropHint>
+XYZ: Rotation over X axis, then Y and Z.
+XZY: Rotation over X axis, then Z and Y.
+YXZ: Rotation over Y axis, then X and Z.
+YZX: Rotation over Y axis, then Z and X.
+ZXY: Rotation over Z axis, then X and Y.
+ZYX: Rotation over Z axis, then Y and X.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>XYZ</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>XZY</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>YXZ</OfxParamPropChoiceOption>
@@ -1218,160 +744,161 @@ ZYX：Z→Y→X。</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble3D name="axisTranslate">
-                    <OfxPropLabel>平移</OfxPropLabel>
-                    <OfxParamPropHint>平移。</OfxParamPropHint>
+                    <OfxPropLabel>Translate</OfxPropLabel>
+                    <OfxParamPropHint>Translation component.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="axisRotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>欧拉角的旋转度数。</OfxParamPropHint>
+                    <OfxPropLabel>Rotate</OfxPropLabel>
+                    <OfxParamPropHint>Euler angles (in degrees).</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="axisScaling">
-                    <OfxPropLabel>缩放</OfxPropLabel>
-                    <OfxParamPropHint>每个轴的缩放值。</OfxParamPropHint>
+                    <OfxPropLabel>Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor over each axis.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble name="axisUniformScale">
-                    <OfxPropLabel>统一缩放</OfxPropLabel>
-                    <OfxParamPropHint>所有轴的统一缩放值。与每个轴的缩放值相乘。</OfxParamPropHint>
+                    <OfxPropLabel>Uniform Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor over all axis. It is multiplied by the scale factor over each axis.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble3D name="axisSkew">
-                    <OfxPropLabel>倾斜</OfxPropLabel>
-                    <OfxParamPropHint>每个轴的倾斜度数。</OfxParamPropHint>
+                    <OfxPropLabel>Skew</OfxPropLabel>
+                    <OfxParamPropHint>Skew over each axis, in degrees.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="axisPivot">
-                    <OfxPropLabel>原点</OfxPropLabel>
-                    <OfxParamPropHint>坐标轴原点的位置，用于定位、缩放、倾斜和旋转。</OfxParamPropHint>
+                    <OfxPropLabel>Pivot</OfxPropLabel>
+                    <OfxParamPropHint>The position of the origin for position, scaling, skewing, and rotation.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeGroup name="axisLocalMatrix">
-                    <OfxPropLabel>本地矩阵</OfxPropLabel>
+                    <OfxPropLabel>Local Matrix</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeBoolean name="axisUseMatrix">
-                    <OfxPropLabel>手动指定矩阵</OfxPropLabel>
-                    <OfxParamPropHint>启用以手动指定位置矩阵的所有值。</OfxParamPropHint>
+                    <OfxPropLabel>Specify Matrix</OfxPropLabel>
+                    <OfxParamPropHint>Check to specify manually all the values for the position matrix.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="axisMatrix11">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix12">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix13">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix14">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix21">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix22">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix23">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix24">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix31">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix32">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix33">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix34">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix41">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix42">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix43">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="axisMatrix44">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeGroup name="cam">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
+                    <OfxPropLabel>Cam</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeBoolean name="camEnable">
-                    <OfxPropLabel>启用摄像机</OfxPropLabel>
-                    <OfxParamPropHint>启用摄像机投影参数。</OfxParamPropHint>
+                    <OfxPropLabel>Enable Camera</OfxPropLabel>
+                    <OfxParamPropHint>Enable the camera projection parameters.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeGroup name="camFile">
-                    <OfxPropLabel>文件</OfxPropLabel>
+                    <OfxPropLabel>File</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeChoice name="camImportFormat">
-                    <OfxPropLabel>摄像机导入格式</OfxPropLabel>
-                    <OfxParamPropHint>将要导入的文件的格式。
-chan：chan格式，每行是FRAME TX TY TZ RX RY RZ VFOV。可以使用Natron、Nuke、3D-Equalizer、Maya等3D跟踪软件创建。注意，在导出和导入.chan文件时，旋转顺序必须完全相同。
-Boujou：Boujou文本导出。摄像机每行是R(0,0) R(0,1) R(0,2) R(1,0) R(1,1) R(1,2) R(2,0) R(2,1) R(2,2) Tx Ty Tz F(mm)。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Import Format</OfxPropLabel>
+                    <OfxParamPropHint>The format of the file to import.
+
+chan: Chan format, each line is FRAME TX TY TZ RX RY RZ VFOV. Can be created using Natron, Nuke, 3D-Equalizer, Maya and other 3D tracking software. Be careful that the rotation order must be exactly the same when exporting and importing the chan file.
+Boujou: Boujou text export. In Boujou, after finishing the track and solving. Each camera line is R(0,0) R(0,1) R(0,2) R(1,0) R(1,1) R(1,2) R(2,0) R(2,1) R(2,2) Tx Ty Tz F(mm).</OfxParamPropHint>
                     <OfxParamPropChoiceOption>chan</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>Boujou</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeString name="camImportFile">
-                    <OfxPropLabel>摄像机导入</OfxPropLabel>
-                    <OfxParamPropHint>导入使用3D跟踪软件创建的.chan文件，或使用Boujou创建的.txt文件。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Import</OfxPropLabel>
+                    <OfxParamPropHint>Import a chan file created using 3D tracking software, or a txt file created using Boujou.</OfxParamPropHint>
                 </OfxParamTypeString>
 
                 <OfxParamTypePushButton name="camImportFileReload">
-                    <OfxPropLabel>摄像机重新读取</OfxPropLabel>
-                    <OfxParamPropHint>重新读取文件。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Reload</OfxPropLabel>
+                    <OfxParamPropHint>Reload the file.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeString name="camExportChan">
-                    <OfxPropLabel>摄像机导出</OfxPropLabel>
-                    <OfxParamPropHint>导出一个.chan文件，可以在3D跟踪软件中使用。注意，在导出和导入.chan文件时，旋转顺序必须完全相同。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Export</OfxPropLabel>
+                    <OfxParamPropHint>Export a .chan file which can be used in Natron, Nuke or 3D tracking software, such as 3D-Equalizer, Maya, or Boujou. Be careful that the rotation order must be exactly the same when exporting and importing the chan file.</OfxParamPropHint>
                 </OfxParamTypeString>
 
                 <OfxParamTypePushButton name="camExportChanRewrite">
-                    <OfxPropLabel>摄像机重新写入</OfxPropLabel>
-                    <OfxParamPropHint>重新写入.chan文件。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Rewrite</OfxPropLabel>
+                    <OfxParamPropHint>Rewrite the .chan file.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeChoice name="camXformOrder">
-                    <OfxPropLabel>摄像机变换顺序</OfxPropLabel>
-                    <OfxParamPropHint>变换时的缩放(S)、旋转(R)、平移(T)顺序。
+                    <OfxPropLabel>Cam Transform Order</OfxPropLabel>
+                    <OfxParamPropHint>Order in which scale (S), rotation (R) and translation (T) are applied.
 
-SRT：缩放→旋转→平移。
-STR：缩放→平移→旋转。
-RST：旋转→缩放→平移。
-RTS：旋转→平移→缩放。
-TSR：平移→缩放→旋转。
-TRS：平移→旋转→缩放。</OfxParamPropHint>
+SRT: Scale, Rotation, Translation.
+STR: Scale, Translation, Rotation.
+RST: Rotation, Scale, Translation.
+RTS: Rotation, Translation, Scale.
+TSR: Translation, Scale, Rotation.
+TRS: Translation, Rotation, Scale.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>SRT</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>STR</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>RST</OfxParamPropChoiceOption>
@@ -1381,15 +908,15 @@ TRS：平移→旋转→缩放。</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeChoice name="camRotOrder">
-                    <OfxPropLabel>摄像机旋转顺序</OfxPropLabel>
-                    <OfxParamPropHint>欧拉角的旋转顺序。
+                    <OfxPropLabel>Cam Rotation Order</OfxPropLabel>
+                    <OfxParamPropHint>Order in which Euler angles are applied in the rotation.
                     
-XYZ：X→Y→Z。
-XZY：X→Z→Y。
-YXZ：Y→X→Z。
-YZX：Y→Z→X。
-ZXY：Z→X→Y。
-ZYX：Z→Y→X。</OfxParamPropHint>
+XYZ: Rotation over X axis, then Y and Z.
+XZY: Rotation over X axis, then Z and Y.
+YXZ: Rotation over Y axis, then X and Z.
+YZX: Rotation over Y axis, then Z and X.
+ZXY: Rotation over Z axis, then X and Y.
+ZYX: Rotation over Z axis, then Y and X.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>XYZ</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>XZY</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>YXZ</OfxParamPropChoiceOption>
@@ -1399,208 +926,208 @@ ZYX：Z→Y→X。</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble3D name="camTranslate">
-                    <OfxPropLabel>摄像机平移</OfxPropLabel>
-                    <OfxParamPropHint>平移。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Translate</OfxPropLabel>
+                    <OfxParamPropHint>Translation component.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="camRotate">
-                    <OfxPropLabel>摄像机旋转</OfxPropLabel>
-                    <OfxParamPropHint>欧拉角的旋转度数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Rotate</OfxPropLabel>
+                    <OfxParamPropHint>Euler angles (in degrees).</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="camScaling">
-                    <OfxPropLabel>摄像机缩放</OfxPropLabel>
-                    <OfxParamPropHint>每个轴的缩放值。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor over each axis.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble name="camUniformScale">
-                    <OfxPropLabel>摄像机统一缩放</OfxPropLabel>
-                    <OfxParamPropHint>所有轴的统一缩放值。与每个轴的缩放值相乘。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Uniform Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor over all axis. It is multiplied by the scale factor over each axis.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble3D name="camSkew">
-                    <OfxPropLabel>摄像机倾斜</OfxPropLabel>
-                    <OfxParamPropHint>每个轴的倾斜度数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Skew</OfxPropLabel>
+                    <OfxParamPropHint>Skew over each axis, in degrees.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="camPivot">
-                    <OfxPropLabel>摄像机原点</OfxPropLabel>
-                    <OfxParamPropHint>坐标摄像机原点的位置，用于定位、缩放、倾斜和旋转。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Pivot</OfxPropLabel>
+                    <OfxParamPropHint>The position of the origin for position, scaling, skewing, and rotation.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeGroup name="camLocalMatrix">
-                    <OfxPropLabel>摄像机本地矩阵</OfxPropLabel>
+                    <OfxPropLabel>Cam Local Matrix</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeBoolean name="camUseMatrix">
-                    <OfxPropLabel>手动指定摄像机矩阵</OfxPropLabel>
-                    <OfxParamPropHint>启用以手动指定位置矩阵的所有值。</OfxParamPropHint>
+                    <OfxPropLabel>Cam Specify Matrix</OfxPropLabel>
+                    <OfxParamPropHint>Check to specify manually all the values for the position matrix.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="camMatrix11">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix12">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix13">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix14">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix21">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix22">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix23">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix24">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix31">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix32">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix33">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix34">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix41">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix42">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix43">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camMatrix44">
-                    <OfxPropLabel>摄像机</OfxPropLabel>
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxPropLabel>Cam</OfxPropLabel>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeGroup name="camProjection">
-                    <OfxPropLabel>摄像机投影</OfxPropLabel>
+                    <OfxPropLabel>Cam Projection</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeChoice name="camprojection_mode">
-                    <OfxPropLabel>投影类型</OfxPropLabel>
-                    <OfxParamPropHint>透视投影/正射投影。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>透视投影</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>正射投影</OfxParamPropChoiceOption>
+                    <OfxPropLabel>Projection</OfxPropLabel>
+                    <OfxParamPropChoiceOption>Perspective</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Orthographic</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble name="camfocal">
-                    <OfxPropLabel>焦距</OfxPropLabel>
-                    <OfxParamPropHint>摄像机焦距，单位任意(一般为mm或35mm等效焦距)。其余参数也需使用同样的单位。</OfxParamPropHint>
+                    <OfxPropLabel>Focal Length</OfxPropLabel>
+                    <OfxParamPropHint>The camera focal length, in arbitrary units (usually either millimeters or 35 mm equivalent focal length). haperture and vaperture must be expressed in the same units.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camhaperture">
-                    <OfxPropLabel>水平光圈</OfxPropLabel>
-                    <OfxParamPropHint>摄像机水平光圈(或Film back宽度)，单位与焦距相同。</OfxParamPropHint>
+                    <OfxPropLabel>Horiz. Aperture</OfxPropLabel>
+                    <OfxParamPropHint>The camera horizontal aperture (or film back width), in the same units as the focal length.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="camvaperture">
-                    <OfxPropLabel>垂直光圈</OfxPropLabel>
-                    <OfxParamPropHint>摄像机垂直光圈(或Film back高度)，单位与焦距相同。</OfxParamPropHint>
+                    <OfxPropLabel>Vert. Aperture</OfxPropLabel>
+                    <OfxParamPropHint>The camera vertical aperture (or film back height), in the same units as the focal length.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble2D name="camwin_translate">
-                    <OfxPropLabel>窗口平移</OfxPropLabel>
-                    <OfxParamPropHint>摄像机窗口(或Film back)被水平光圈平移的距离，不改变相机中心的位置。可用于模拟倾斜移位或透视控制镜头。</OfxParamPropHint>
+                    <OfxPropLabel>Window Translate</OfxPropLabel>
+                    <OfxParamPropHint>The camera window (or film back) is translated by this fraction of the horizontal aperture, without changing the position of the camera center. This can be used to model tilt-shift or perspective-control lens.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble2D name="camwin_scale">
-                    <OfxPropLabel>窗口缩放</OfxPropLabel>
-                    <OfxParamPropHint>缩放摄像机窗口(或Film back)。</OfxParamPropHint>
+                    <OfxPropLabel>Window Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale the camera window (or film back).</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble name="camwinroll">
-                    <OfxPropLabel>窗口滚动</OfxPropLabel>
-                    <OfxParamPropHint>摄像机窗口(或Film back)绕Z轴旋转的度数。</OfxParamPropHint>
+                    <OfxPropLabel>Window Roll</OfxPropLabel>
+                    <OfxParamPropHint>Rotation (in degrees) of the camera window (or film back) around the z axis.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeGroup name="cardFile">
-                    <OfxPropLabel>文件</OfxPropLabel>
+                    <OfxPropLabel>File</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeChoice name="cardImportFormat">
-                    <OfxPropLabel>导入格式</OfxPropLabel>
-                    <OfxParamPropHint>将要导入的文件的格式。
-chan：chan格式，每行是FRAME TX TY TZ RX RY RZ VFOV。可以使用Natron、Nuke、3D-Equalizer、Maya等3D跟踪软件创建。注意，在导出和导入.chan文件时，旋转顺序必须完全相同。
-Boujou：Boujou文本导出。摄像机每行是R(0,0) R(0,1) R(0,2) R(1,0) R(1,1) R(1,2) R(2,0) R(2,1) R(2,2) Tx Ty Tz F(mm)。</OfxParamPropHint>
+                    <OfxPropLabel>Import Format</OfxPropLabel>
+                    <OfxParamPropHint>The format of the file to import.
+
+chan: Chan format, each line is FRAME TX TY TZ RX RY RZ VFOV. Can be created using Natron, Nuke, 3D-Equalizer, Maya and other 3D tracking software. Be careful that the rotation order must be exactly the same when exporting and importing the chan file.
+Boujou: Boujou text export. In Boujou, after finishing the track and solving. Each camera line is R(0,0) R(0,1) R(0,2) R(1,0) R(1,1) R(1,2) R(2,0) R(2,1) R(2,2) Tx Ty Tz F(mm).</OfxParamPropHint>
                     <OfxParamPropChoiceOption>chan</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>Boujou</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeString name="cardImportFile">
-                    <OfxPropLabel>导入</OfxPropLabel>
-                    <OfxParamPropHint>导入使用3D跟踪软件创建的.chan文件，或使用Boujou创建的.txt文件。</OfxParamPropHint>
+                    <OfxPropLabel>Import</OfxPropLabel>
+                    <OfxParamPropHint>Import a chan file created using 3D tracking software, or a txt file created using Boujou.</OfxParamPropHint>
                 </OfxParamTypeString>
 
                 <OfxParamTypePushButton name="cardImportFileReload">
-                    <OfxPropLabel>重新读取</OfxPropLabel>
-                    <OfxParamPropHint>重新读取文件。</OfxParamPropHint>
+                    <OfxPropLabel>Reload</OfxPropLabel>
+                    <OfxParamPropHint>Reload the file.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeString name="cardExportChan">
-                    <OfxPropLabel>导出</OfxPropLabel>
-                    <OfxParamPropHint>导出一个.chan文件，可以在3D跟踪软件中使用。注意，在导出和导入.chan文件时，旋转顺序必须完全相同。</OfxParamPropHint>
+                    <OfxPropLabel>Export</OfxPropLabel>
+                    <OfxParamPropHint>Export a .chan file which can be used in Natron, Nuke or 3D tracking software, such as 3D-Equalizer, Maya, or Boujou. Be careful that the rotation order must be exactly the same when exporting and importing the chan file.</OfxParamPropHint>
                 </OfxParamTypeString>
 
                 <OfxParamTypePushButton name="cardExportChanRewrite">
-                    <OfxPropLabel>重新写入</OfxPropLabel>
-                    <OfxParamPropHint>重新写入.chan文件。</OfxParamPropHint>
+                    <OfxPropLabel>Rewrite</OfxPropLabel>
+                    <OfxParamPropHint>Rewrite the .chan file.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeChoice name="cardXformOrder">
-                    <OfxPropLabel>变换顺序</OfxPropLabel>
-                    <OfxParamPropHint>变换时的缩放(S)、旋转(R)、平移(T)顺序。
+                    <OfxPropLabel>Transform Order</OfxPropLabel>
+                    <OfxParamPropHint>Order in which scale (S), rotation (R) and translation (T) are applied.
 
-SRT：缩放→旋转→平移。
-STR：缩放→平移→旋转。
-RST：旋转→缩放→平移。
-RTS：旋转→平移→缩放。
-TSR：平移→缩放→旋转。
-TRS：平移→旋转→缩放。</OfxParamPropHint>
+SRT: Scale, Rotation, Translation.
+STR: Scale, Translation, Rotation.
+RST: Rotation, Scale, Translation.
+RTS: Rotation, Translation, Scale.
+TSR: Translation, Scale, Rotation.
+TRS: Translation, Rotation, Scale.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>SRT</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>STR</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>RST</OfxParamPropChoiceOption>
@@ -1610,15 +1137,15 @@ TRS：平移→旋转→缩放。</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeChoice name="cardRotOrder">
-                    <OfxPropLabel>旋转顺序</OfxPropLabel>
-                    <OfxParamPropHint>欧拉角的旋转顺序。
+                    <OfxPropLabel>Rotation Order</OfxPropLabel>
+                    <OfxParamPropHint>Order in which Euler angles are applied in the rotation.
                     
-XYZ：X→Y→Z。
-XZY：X→Z→Y。
-YXZ：Y→X→Z。
-YZX：Y→Z→X。
-ZXY：Z→X→Y。
-ZYX：Z→Y→X。</OfxParamPropHint>
+XYZ: Rotation over X axis, then Y and Z.
+XZY: Rotation over X axis, then Z and Y.
+YXZ: Rotation over Y axis, then X and Z.
+YZX: Rotation over Y axis, then Z and X.
+ZXY: Rotation over Z axis, then X and Y.
+ZYX: Rotation over Z axis, then Y and X.</OfxParamPropHint>
                     <OfxParamPropChoiceOption>XYZ</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>XZY</OfxParamPropChoiceOption>
                     <OfxParamPropChoiceOption>YXZ</OfxParamPropChoiceOption>
@@ -1628,243 +1155,233 @@ ZYX：Z→Y→X。</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble3D name="cardTranslate">
-                    <OfxPropLabel>平移</OfxPropLabel>
-                    <OfxParamPropHint>平移。</OfxParamPropHint>
+                    <OfxPropLabel>Translate</OfxPropLabel>
+                    <OfxParamPropHint>Translation component.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="cardRotate">
-                    <OfxPropLabel>旋转</OfxPropLabel>
-                    <OfxParamPropHint>欧拉角的旋转度数。</OfxParamPropHint>
+                    <OfxPropLabel>Rotate</OfxPropLabel>
+                    <OfxParamPropHint>Euler angles (in degrees).</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="cardScaling">
-                    <OfxPropLabel>缩放</OfxPropLabel>
-                    <OfxParamPropHint>每个轴的缩放值。</OfxParamPropHint>
+                    <OfxPropLabel>Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor over each axis.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble name="cardUniformScale">
-                    <OfxPropLabel>统一缩放</OfxPropLabel>
-                    <OfxParamPropHint>所有轴的统一缩放值。与每个轴的缩放值相乘。</OfxParamPropHint>
+                    <OfxPropLabel>Uniform Scale</OfxPropLabel>
+                    <OfxParamPropHint>Scale factor over all axis. It is multiplied by the scale factor over each axis.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble3D name="cardSkew">
-                    <OfxPropLabel>倾斜</OfxPropLabel>
-                    <OfxParamPropHint>每个轴的倾斜度数。</OfxParamPropHint>
+                    <OfxPropLabel>Skew</OfxPropLabel>
+                    <OfxParamPropHint>Skew over each axis, in degrees.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeDouble3D name="cardPivot">
-                    <OfxPropLabel>原点</OfxPropLabel>
-                    <OfxParamPropHint>坐标轴原点的位置，用于定位、缩放、倾斜和旋转。</OfxParamPropHint>
+                    <OfxPropLabel>Pivot</OfxPropLabel>
+                    <OfxParamPropHint>The position of the origin for position, scaling, skewing, and rotation.</OfxParamPropHint>
                 </OfxParamTypeDouble3D>
 
                 <OfxParamTypeGroup name="cardLocalMatrix">
-                    <OfxPropLabel>本地矩阵</OfxPropLabel>
+                    <OfxPropLabel>Local Matrix</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeBoolean name="cardUseMatrix">
-                    <OfxPropLabel>是否手动指定矩阵</OfxPropLabel>
-                    <OfxParamPropHint>启用以手动指定位置矩阵的所有值。</OfxParamPropHint>
+                    <OfxPropLabel>Specify Matrix</OfxPropLabel>
+                    <OfxParamPropHint>Check to specify manually all the values for the position matrix.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="cardMatrix11">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix12">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix13">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix14">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix21">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix22">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix23">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix24">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix31">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix32">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix33">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix34">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix41">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix42">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix43">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="cardMatrix44">
-                    <OfxParamPropHint>矩阵系数。</OfxParamPropHint>
+                    <OfxParamPropHint>Matrix coefficient.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="lensInFocal">
-                    <OfxPropLabel>镜头焦距</OfxPropLabel>
-                    <OfxParamPropHint>在卡片上拍摄时的摄像机焦距。缩放卡片，以使其在距离1处占据镜头焦距和镜头水平光圈所对应的视野。</OfxParamPropHint>
+                    <OfxPropLabel>Lens-In Focal</OfxPropLabel>
+                    <OfxParamPropHint>The focal length of the camera that took the picture on the card. The card is scaled so that at distance 1 (which is the default card Z) it occupies the field of view corresponding to lensInFocal and lensInHAperture.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble name="lensInHAperture">
-                    <OfxPropLabel>镜头水平光圈</OfxPropLabel>
-                    <OfxParamPropHint>在卡片上拍摄时的水平光圈(或传感器/Film back宽度)。缩放卡片，以使其在距离1处占据镜头焦距和镜头水平光圈所对应的视野。</OfxParamPropHint>
+                    <OfxPropLabel>Lens-In H.Aperture</OfxPropLabel>
+                    <OfxParamPropHint>The horizontal aperture (or sensor/film back width) of the camera that took the picture on the card. The card is scaled so that at distance 1 (which is the default card Z) it occupies the field of view corresponding to lensInFocal and lensInHAperture.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="format">
-                    <OfxPropLabel>输出格式</OfxPropLabel>
-                    <OfxParamPropHint>所需的输出序列格式。
+                    <OfxPropLabel>Output Format</OfxPropLabel>
+                    <OfxParamPropHint>Desired format for the output sequence.
 
-预设：使用预设的图像格式。
-自定义：使用自定义范围(大小和偏移量)。
-随项目：使用项目范围(大小和偏移量)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>预设</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>随项目</OfxParamPropChoiceOption>
+Format: Use a pre-defined image format.
+Size: Use a specific extent (size and offset).
+Project: Use the project extent (size and offset).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Format</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Size</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Project</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypePushButton name="recenter">
-                    <OfxPropLabel>置于中心</OfxPropLabel>
-                    <OfxParamPropHint>将定义区域居中到定义的输入区域。若未输入，则定义区域以项目窗口为中心。</OfxParamPropHint>
+                    <OfxPropLabel>Center</OfxPropLabel>
+                    <OfxParamPropHint>Centers the region of definition to the input region of definition. If there is no input, then the region of definition is centered to the project window.</OfxParamPropHint>
                 </OfxParamTypePushButton>
 
                 <OfxParamTypeChoice name="NatronParamFormatChoice">
-                    <OfxPropLabel>格式</OfxPropLabel>
-                    <OfxParamPropHint>输出格式。</OfxParamPropHint>
+                    <OfxPropLabel>Format</OfxPropLabel>
+                    <OfxParamPropHint>The output format</OfxParamPropHint>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeINTEGER2D name="NatronParamFormatSize">
-                    <OfxPropLabel>大小</OfxPropLabel>
-                    <OfxParamPropHint>以像素为单位的图像输出尺寸。</OfxParamPropHint>
+                    <OfxPropLabel>Size</OfxPropLabel>
+                    <OfxParamPropHint>The output dimensions of the image in pixels.</OfxParamPropHint>
                 </OfxParamTypeINTEGER2D>
 
                 <OfxParamTypeDouble name="NatronParamFormatPar">
-                    <OfxPropLabel>像素高宽比</OfxPropLabel>
-                    <OfxParamPropHint>输出的像素高宽比。</OfxParamPropHint>
+                    <OfxPropLabel>Pixel Aspect Ratio</OfxPropLabel>
+                    <OfxParamPropHint>Output pixel aspect ratio.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeDouble2D name="bottomLeft">
-                    <OfxPropLabel>左下角位置</OfxPropLabel>
-                    <OfxParamPropHint>矩形的左下角坐标。</OfxParamPropHint>
+                    <OfxPropLabel>Bottom Left</OfxPropLabel>
+                    <OfxParamPropHint>Coordinates of the bottom left corner of the rectangle.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeDouble2D name="size">
-                    <OfxPropLabel>大小</OfxPropLabel>
-                    <OfxParamPropHint>矩形的宽和高。</OfxParamPropHint>
+                    <OfxPropLabel>Size</OfxPropLabel>
+                    <OfxParamPropHint>Width and height of the rectangle.</OfxParamPropHint>
                 </OfxParamTypeDouble2D>
 
                 <OfxParamTypeBoolean name="invert">
-                    <OfxPropLabel>反转</OfxPropLabel>
-                    <OfxParamPropHint>反转变换值。</OfxParamPropHint>
+                    <OfxPropLabel>Invert</OfxPropLabel>
+                    <OfxParamPropHint>Invert the transform.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeChoice name="filter">
-                    <OfxPropLabel>插值算法</OfxPropLabel>
-                    <OfxParamPropHint>插值算法——一些插值算法可能会产生超出初始范围的值，或者即使没有移动也会产生变化。
+                    <OfxPropLabel>Filter</OfxPropLabel>
+                    <OfxParamPropHint>Filtering algorithm - some filters may produce values outside of the initial range (*) or modify the values even if there is no movement (+).
 
-最近邻插值：使用原始值。
-线性插值：在反向变换像素的边界框上整合源图像。
-双线性插值：在原始值之间进行双线性插值。
-三次插值：平滑。
-三次样条插值：平滑，加上轻微的锐化。
-Simon插值：平滑，加上中等的锐化。
-Rifman插值：平滑，加上明显的锐化。
-Mitchell插值：平滑，加上模糊来隐藏像素。
-Parzen插值：(三次B样条插值)所有插值法中最平滑的。
-Notch插值：平滑(可能可以隐藏摩尔纹图案)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>最近邻插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>双线性插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>三次样条插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Simon插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Rifman插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Mitchell插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Parzen插值</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>Notch插值</OfxParamPropChoiceOption>
+Impulse: (nearest neighbor / box) Use original values.
+Box: Integrate the source image over the bounding box of the back-transformed pixel.
+Bilinear: (tent / triangle) Bilinear interpolation between original values.
+Cubic: (cubic spline) Some smoothing.
+Keys: (Catmull-Rom / Hermite spline) Some smoothing, plus minor sharpening (*).
+Simon: Some smoothing, plus medium sharpening (*).
+Rifman: Some smoothing, plus significant sharpening (*).
+Mitchell: Some smoothing, plus blurring to hide pixelation (*)(+).
+Parzen: (cubic B-spline) Greatest smoothing of all filters (+).
+Notch: Flat smoothing (which tends to hide moire' patterns) (+).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Impulse</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Box</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Bilinear</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Cubic</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Keys</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Simon</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Rifman</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Mitchell</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Parzen</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Notch</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeBoolean name="clamp">
-                    <OfxPropLabel>限制</OfxPropLabel>
-                    <OfxParamPropHint>将过滤器输出限制在原始范围内，避免哑光出现负值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
-
-                <OfxParamTypeBoolean name="black_outside">
-                    <OfxPropLabel>用黑色填充外部区域</OfxPropLabel>
-                    <OfxParamPropHint>用黑色填充原始图像外面的区域。</OfxParamPropHint>
+                    <OfxPropLabel>Clamp</OfxPropLabel>
+                    <OfxParamPropHint>Clamp filter output within the original range - useful to avoid negative values in mattes.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeGroup name="motionBlurGroup">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
+                    <OfxPropLabel>Motion Blur</OfxPropLabel>
                 </OfxParamTypeGroup>
 
                 <OfxParamTypeDouble name="motionBlur">
-                    <OfxPropLabel>运动模糊</OfxPropLabel>
-                    <OfxParamPropHint>运动模糊渲染的质量。0为禁用运动模糊，1是一个比较好的运动模糊值。值越大，渲染速度越慢。</OfxParamPropHint>
+                    <OfxPropLabel>Motion Blur</OfxPropLabel>
+                    <OfxParamPropHint>Quality of motion blur rendering. 0 disables motion blur, 1 is a good value. Increasing this slows down rendering.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeBoolean name="directionalBlur">
-                    <OfxPropLabel>启用方向模糊模式</OfxPropLabel>
-                    <OfxParamPropHint>从原始图像到变换后的图像计算运动模糊，并线性插值每个参数。“运动模糊”参数必须不为0。</OfxParamPropHint>
+                    <OfxPropLabel>Directional Blur Mode</OfxPropLabel>
+                    <OfxParamPropHint>Motion blur is computed from the original image to the transformed image, each parameter being interpolated linearly. The motionBlur parameter must be set to a nonzero value.</OfxParamPropHint>
                 </OfxParamTypeBoolean>
 
                 <OfxParamTypeDouble name="shutter">
-                    <OfxPropLabel>运动模糊快门</OfxPropLabel>
-                    <OfxParamPropHint>控制快门保持打开的时间(以帧为单位)。</OfxParamPropHint>
+                    <OfxPropLabel>Shutter</OfxPropLabel>
+                    <OfxParamPropHint>Controls how long (in frames) the shutter should remain open.</OfxParamPropHint>
                 </OfxParamTypeDouble>
 
                 <OfxParamTypeChoice name="shutterOffset">
-                    <OfxPropLabel>快门抵消</OfxPropLabel>
-                    <OfxParamPropHint>控制快门何时打开/关闭。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。
+                    <OfxPropLabel>Shutter Offset</OfxPropLabel>
+                    <OfxParamPropHint>Controls when the shutter should be open/closed. Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0).
 
-居中：快门围绕画面居中(从 当前时间-快门值/2 到 当前时间+快门值/2)
-开始：在帧处打开快门(从 当前时间 到 当前时间+快门值)
-结束：在该帧处关闭快门(从 当前时间-快门值 到 当前时间)
-自定义：在 当前时间+自定义抵消值 打开快门(从 当前时间+自定义抵消值 到 当前时间+自定义抵消值+快门)。</OfxParamPropHint>
-                    <OfxParamPropChoiceOption>中心</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>开始</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>结束</OfxParamPropChoiceOption>
-                    <OfxParamPropChoiceOption>自定义</OfxParamPropChoiceOption>
+Centered: Centers the shutter around the frame (from t-shutter/2 to t+shutter/2).
+Start: Open the shutter at the frame (from t to t+shutter).
+End: Close the shutter at the frame (from t-shutter to t).
+Custom: Open the shutter at t+shuttercustomoffset (from t+shuttercustomoffset to t+shuttercustomoffset+shutter).</OfxParamPropHint>
+                    <OfxParamPropChoiceOption>Centered</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Start</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>End</OfxParamPropChoiceOption>
+                    <OfxParamPropChoiceOption>Custom</OfxParamPropChoiceOption>
                 </OfxParamTypeChoice>
 
                 <OfxParamTypeDouble name="shutterCustomOffset">
-                    <OfxPropLabel>自定义抵消值</OfxPropLabel>
-                    <OfxParamPropHint>当“快门抵消”选择自定义时，快门在当前时间加上此偏移量(以帧为单位)打开。如果未启用运动模糊(即快门=0或运动模糊=0)，则忽略。</OfxParamPropHint>
+                    <OfxPropLabel>Custom Offset</OfxPropLabel>
+                    <OfxParamPropHint>When custom is selected, the shutter is open at current time plus this offset (in frames). Ignored if there is no motion blur (i.e. shutter=0 or motionBlur=0).</OfxParamPropHint>
                 </OfxParamTypeDouble>
-
-                <OfxParamTypeBoolean name="interactive">
-                    <OfxPropLabel>交互更新</OfxPropLabel>
-                    <OfxParamPropHint>启用后，将在与图像查看器交互期间更新参数值，否则会在释放笔时更新值。</OfxParamPropHint>
-                </OfxParamTypeBoolean>
             </OfxImageEffectContext>
         </OfxResourceSet>
     </OfxPlugin>
