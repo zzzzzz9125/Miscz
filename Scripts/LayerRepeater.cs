@@ -207,6 +207,15 @@ namespace LayerRepeater
                 {
                     vTrack.SetParentCompositeMode(vTrack.CompositeMode, false);
                 }
+
+                string parentFXStr = IniMiscz.Read("TransferToParentFX", "LayerRepeater");
+                if (string.IsNullOrEmpty(parentFXStr) ? true : parentFXStr == "1")
+                {
+                    foreach (Effect ef in vTrack.Effects)
+                    {
+                        ef.ApplyAfterComposite = true;
+                    }
+                }
             }
         }
 
@@ -389,6 +398,18 @@ namespace LayerRepeater
                 languageBox.SelectedIndex = languageIndex;
             };
 
+            string parentFXStr = IniMiscz.Read("TransferToParentFX", "LayerRepeater");
+            bool parentFXCheck = string.IsNullOrEmpty(parentFXStr) ? true : parentFXStr == "1";
+            CheckBox parentFX = new CheckBox
+            {
+                Text = L.TransferToParentFX,
+                Margin = new Padding(0, 3, 0, 3),
+                AutoSize = true,
+                Checked = parentFXCheck
+            };
+            l.Controls.Add(parentFX);
+            l.SetColumnSpan(parentFX, 2);
+
             FlowLayoutPanel panel = new FlowLayoutPanel
             {
                 AutoSize = true,
@@ -414,6 +435,11 @@ namespace LayerRepeater
                     IniMiscz.Write("Language", L.CurrentLanguage, "MisczTools");
                     L.Localize();
                     MessageBox.Show(L.LanguageChange);
+                }
+
+                if (parentFX.Checked != parentFXCheck)
+                {
+                    IniMiscz.Write("TransferToParentFX", parentFX.Checked ? "1" : "0", "LayerRepeater");
                 }
             }
         }
@@ -450,7 +476,7 @@ namespace LayerRepeater
 
     public static class L
     {
-        public static string CurrentLanguage, Font, LayerRepeater, Count, ColorGradient, Settings, Language, Clear, Cancel, OK, TooFewKeyframes, LanguageChange;
+        public static string CurrentLanguage, Font, LayerRepeater, Count, ColorGradient, Settings, TransferToParentFX, Language, Clear, Cancel, OK, TooFewKeyframes, LanguageChange;
 
         // Some text localization.
         public static void Localize()
@@ -465,14 +491,14 @@ namespace LayerRepeater
             {
                 case "zh":
                     Font = "Microsoft Yahei UI";
-                    LayerRepeater = "图层重复器"; Count = "图层数"; ColorGradient = "颜色渐变"; Settings = "设置"; Language = "语言"; Clear = "清除"; Cancel = "取消"; OK = "确定";
+                    LayerRepeater = "图层重复器"; Count = "图层数"; ColorGradient = "颜色渐变"; Settings = "设置"; TransferToParentFX = "转移到父轨 FX"; Language = "语言"; Clear = "清除"; Cancel = "取消"; OK = "确定";
                     TooFewKeyframes = "无法生成图层！请选择「至少含有 2 个平移/裁切关键帧」的事件！";
                     LanguageChange = "界面语言更改在重启脚本后才会生效！";
                     break;
 
                 default:
                     Font = "Arial";
-                    LayerRepeater = "LayerRepeater"; Count = "Count"; ColorGradient = "Color Gradient"; Settings = "Settings"; Language = "Language"; Clear = "Clear"; Cancel = "Cancel"; OK = "OK";
+                    LayerRepeater = "LayerRepeater"; Count = "Count"; ColorGradient = "Color Gradient"; Settings = "Settings"; TransferToParentFX = "Transfer To Parent FX"; Language = "Language"; Clear = "Clear"; Cancel = "Cancel"; OK = "OK";
                     TooFewKeyframes = "Failed to generate layers! Please select an event with more than 1 Pan/Crop keyframes!";
                     LanguageChange = "UI language changes will not take effect until the script is restarted!";
                     break;
