@@ -549,16 +549,16 @@ namespace LayerRepeater
 
             switch (type)
             {
-                case 1: sourceMotion = sourceTrack.TrackMotion; targetMotion = targetTrack.ParentTrackMotion; break;
-                case 2: sourceMotion = sourceTrack.ParentTrackMotion; targetMotion = targetTrack.TrackMotion; break;
-                case 3: sourceMotion = sourceTrack.ParentTrackMotion; targetMotion = targetTrack.ParentTrackMotion; break;
+                case 1: if (!targetTrack.IsCompositingParent) return; sourceMotion = sourceTrack.TrackMotion; targetMotion = targetTrack.ParentTrackMotion; break;
+                case 2: if (!sourceTrack.IsCompositingParent) return; sourceMotion = sourceTrack.ParentTrackMotion; targetMotion = targetTrack.TrackMotion; break;
+                case 3: if (!targetTrack.IsCompositingParent || !sourceTrack.IsCompositingParent) return; sourceMotion = sourceTrack.ParentTrackMotion; targetMotion = targetTrack.ParentTrackMotion; break;
                 default: break;
             }
 
             bool motion = sourceMotion.HasMotionData && !targetMotion.HasMotionData;
             bool shadow = !is3D && sourceMotion.ShadowEnabled && sourceMotion.HasShadowData && !targetMotion.HasShadowData;
             bool glow = !is3D && sourceMotion.GlowEnabled && sourceMotion.HasGlowData && !targetMotion.HasGlowData;
-
+            
             if (motion || shadow || glow)
             {
                 VideoTrack tmpTrack1 = new VideoTrack(project, 0, null);
@@ -678,6 +678,18 @@ namespace LayerRepeater
             };
             l.Controls.Add(countBox);
 
+            countBox.MouseWheel += delegate (object o, MouseEventArgs e)
+            {
+                if (int.TryParse(countBox.Text, out int tmp))
+                {
+                    tmp += e.Delta > 0 ? 1 : -1;
+                    if (tmp > 1)
+                    {
+                        countBox.Text = tmp.ToString();
+                    }
+                }
+            };
+
             Button speedTypeButton = new Button
             {
                 Margin = new Padding(3, 8, 0, 1),
@@ -712,6 +724,18 @@ namespace LayerRepeater
 
             sp.Controls.Add(speedBox);
 
+            speedBox.MouseWheel += delegate (object o, MouseEventArgs e)
+            {
+                if (double.TryParse(speedBox.Text, out double tmp))
+                {
+                    tmp += e.Delta > 0 ? 1 : -1;
+                    if (tmp > 0)
+                    {
+                        speedBox.Text = tmp.ToString();
+                    }
+                }
+            };
+
             speedTypeButton.MouseDown += delegate (object o, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right && (int)speedTypeButton.Tag == 1)
@@ -739,7 +763,7 @@ namespace LayerRepeater
                 FlatStyle = FlatStyle.Flat
             };
             operatorButton.FlatAppearance.BorderSize = 0;
-            operatorButton.MouseDown += delegate (object o, MouseEventArgs e)
+            operatorButton.Click += delegate (object o, EventArgs e)
             {
                 operatorButton.ClickToSwitch(operatorStrs);
             };
@@ -752,6 +776,35 @@ namespace LayerRepeater
                 Text = args0.SpeedMultiplier.ToString()
             };
             sp.Controls.Add(multiplierBox);
+
+            multiplierBox.MouseWheel += delegate (object o, MouseEventArgs e)
+            {
+                if (double.TryParse(multiplierBox.Text, out double tmp))
+                {
+                    if (tmp == 0)
+                    {
+                        multiplierBox.Text = "1";
+                        return;
+                    }
+                    if (e.Delta > 0 ^ (int)operatorButton.Tag != 0)
+                    {
+                        tmp *= 2;
+                    }
+                    else
+                    {
+                        tmp /= 2;
+                    }
+                    if (Math.Abs(tmp) >= 1)
+                    {
+                        multiplierBox.Text = tmp.ToString();
+                    }
+                    else
+                    {
+                        operatorButton.PerformClick();
+                        multiplierBox.Text = (1 / tmp).ToString();
+                    }
+                }
+            };
 
             bool isCount = (int)modeTypeButton.Tag == 0;
             labelCount.Visible = isCount;
@@ -911,18 +964,19 @@ namespace LayerRepeater
             };
             panel.Controls.Add(clear);
 
-            DialogResult result = form.ShowDialog();
+            bool success = form.ShowDialog() == DialogResult.OK;
             int count = int.TryParse(countBox.Text, out int temp) && temp > 1 ? temp : 0;
             double.TryParse(speedBox.Text, out double speed);
             double.TryParse(multiplierBox.Text, out double multiplier);
             args = new LayerRepeaterArgs((int)modeTypeButton.Tag, count, rangeTypeBox.SelectedIndex, reverseBox.Checked, muteBox.Checked, parentMotionBox.Checked, parentFxBox.Checked);
-            if (args.Mode == 1)
+            args.SetSpeedParameters(speed, (int)speedTypeButton.Tag, (int)operatorButton.Tag, multiplier);
+            if (success)
             {
-                args.SetSpeedParameters(speed, (int)speedTypeButton.Tag, (int)operatorButton.Tag, multiplier);
+                args.SaveToIni();
             }
+            args.RefreshTrueSpeed();
             args.GetSettingsFromIni();
-            args.SaveToIni();
-            return result == DialogResult.OK;
+            return success;
         }
 
         public static void Settings_Click(this Vegas myVegas, object sender, EventArgs e)

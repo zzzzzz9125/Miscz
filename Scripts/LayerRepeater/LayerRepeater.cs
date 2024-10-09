@@ -21,12 +21,9 @@ namespace LayerRepeater
 
             System.Collections.Generic.List<VideoEvent> vEvents = myVegas.Project.GetSelectedVideoEvents(false);
 
-            if (!Common.CtrlMode)
+            if (!Common.CtrlMode && !myVegas.PopUpWindow(out args))
             {
-                if (!myVegas.PopUpWindow(out args))
-                {
-                    return;
-                }
+                return;
             }
 
             // to avoid problems later when creating track groups

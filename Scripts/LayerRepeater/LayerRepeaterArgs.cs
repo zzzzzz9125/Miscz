@@ -25,10 +25,22 @@ namespace LayerRepeater
             {
                 Mode = Common.IniMiscz.ReadInt("ModeType", "LayerRepeater", 0);
                 Count = Common.IniMiscz.ReadInt("Count", "LayerRepeater", 50);
+                if (Count < 2)
+                {
+                    Count = 50;
+                }
                 Speed = Common.IniMiscz.ReadDouble("Speed", "LayerRepeater", 2);
+                if (Speed <= 0)
+                {
+                    Speed = 2;
+                }
                 SpeedType = Common.IniMiscz.ReadInt("SpeedType", "LayerRepeater", 0);
                 SpeedOperatorType = Common.IniMiscz.ReadInt("SpeedOperatorType", "LayerRepeater", 0);
                 SpeedMultiplier = Common.IniMiscz.ReadDouble("SpeedMultiplier", "LayerRepeater", 1);
+                if (SpeedMultiplier <= 0)
+                {
+                    SpeedMultiplier = 1;
+                }
                 RangeType = Common.IniMiscz.ReadInt("RangeType", "LayerRepeater", 1);
                 Reverse = Common.IniMiscz.ReadBool("Reverse", "LayerRepeater", false);
                 Mute = Common.IniMiscz.ReadBool("Mute", "LayerRepeater", true);
@@ -39,12 +51,18 @@ namespace LayerRepeater
 
         public void SaveToIni()
         {
-            Common.IniMiscz.Write("ModeType", Mode.ToString(), "LayerRepeater");
-            if (Count > 1)
+            if (Count > 1 || Speed > 0)
             {
-                Common.IniMiscz.Write("Count", Count.ToString(), "LayerRepeater");
+                Common.IniMiscz.Write("ModeType", Mode.ToString(), "LayerRepeater");
+                if (Count > 1)
+                {
+                    Common.IniMiscz.Write("Count", Count.ToString(), "LayerRepeater");
+                }
+                if (Speed > 0)
+                {
+                    Common.IniMiscz.Write("Speed", Speed.ToString(), "LayerRepeater");
+                }
             }
-            Common.IniMiscz.Write("Speed", Speed.ToString(), "LayerRepeater");
             Common.IniMiscz.Write("SpeedType", SpeedType.ToString(), "LayerRepeater");
             Common.IniMiscz.Write("SpeedOperatorType", SpeedOperatorType.ToString(), "LayerRepeater");
             Common.IniMiscz.Write("SpeedMultiplier", SpeedMultiplier.ToString(), "LayerRepeater");
@@ -67,7 +85,6 @@ namespace LayerRepeater
             SpeedType = speedType;
             SpeedOperatorType = speedOperatorType;
             SpeedMultiplier = speedMultiplier;
-            RefreshTrueSpeed();
         }
 
         public void RefreshTrueSpeed()
