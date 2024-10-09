@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;MAGIX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -49,9 +49,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
+    <Compile Include="IniFile.cs" />
+    <Compile Include="LayerRepeaterCommon.cs" />
     <Compile Include="L.cs" />
     <Compile Include="LayerRepeater.cs" />
+    <Compile Include="LayerRepeaterArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /R /Y "D:\VegasPro\LayerRepeater\bin\Release\LayerRepeater.dll" "C:\ProgramData\VEGAS Pro\Script Menu\MisczTools\"
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>

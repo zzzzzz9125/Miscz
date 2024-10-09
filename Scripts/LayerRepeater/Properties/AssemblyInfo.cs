@@ -1,15 +1,22 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
+#if !Sony
 [assembly: AssemblyTitle("LayerRepeater")]
+#else
+[assembly: AssemblyTitle("LayerRepeater_13")]
+#endif
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("zzzzzz9125")]
+#if !Sony
 [assembly: AssemblyProduct("LayerRepeater")]
+#else
+[assembly: AssemblyProduct("LayerRepeater_13")]
+#endif
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

@@ -1,21 +1,14 @@
-#define Sony
-
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows.Forms;
-using MyINI;
-
-#if MAGIX
+#if !Sony
 using ScriptPortal.Vegas;
 #else
 using Sony.Vegas;
 #endif
+
+using System.IO;
+using System.Linq;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace LayerRepeater
 {
@@ -23,20 +16,20 @@ namespace LayerRepeater
     {
         public static int VegasVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileMajorPart;
         public static bool CtrlMode => (Control.ModifierKeys & Keys.Control) != 0;
-        public static string appFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        public static string appFolder = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
         public static string IniFolder = Path.Combine(VegasVersion < 14 ? Path.Combine(appFolder, "Sony") : appFolder, "VEGAS Pro", VegasVersion + ".0");
         public static IniFile IniMiscz = new IniFile(Path.Combine(IniFolder, "MisczTools.ini"));
 
         public static Color[] GetColors(this Vegas myVegas)
         {
-            int.TryParse(IniMiscz.Read("DarkModeType", "MisczTools"), out int darkModeType);
+            int darkModeType = IniMiscz.ReadInt("DarkModeType", "MisczTools", 0);
             if (darkModeType < 0 || darkModeType > 4)
             {
                 darkModeType = 0;
             }
 
-           int myVegasVersion = VegasVersion;
-#if MAGIX
+            int myVegasVersion = VegasVersion;
+#if !Sony
             if (darkModeType == 0 && myVegasVersion > 14)
             {
                 darkModeType = myVegas.GetDarkType() + 1;
@@ -47,7 +40,7 @@ namespace LayerRepeater
                 darkModeType += 4;
             }
 
-            int[,] colorValues = new int[9, 2] 
+            int[,] colorValues = new int[9, 2]
             {
               // {back, fore}
                  {153, 25} , // Earlier, for Vegas Pro 13 - 14
@@ -64,7 +57,7 @@ namespace LayerRepeater
             return new Color[] { Color.FromArgb(colorValues[darkModeType, 0], colorValues[darkModeType, 0], colorValues[darkModeType, 0]), Color.FromArgb(colorValues[darkModeType, 1], colorValues[darkModeType, 1], colorValues[darkModeType, 1]) };
         }
 
-#if MAGIX
+#if !Sony
         // not supported in older versions, so I used a single method separately
         public static int GetDarkType(this Vegas myVegas)
         {
@@ -84,87 +77,59 @@ namespace LayerRepeater
 
         public static List<VideoEvent> GetSelectedVideoEvents(this Project Project, bool SortByTime = false)
         {
-			return Project.GetSelectedEvents(MediaType.Video, SortByTime).ConvertAll<VideoEvent>(ev => ev as VideoEvent);
+            return Project.GetSelectedEvents(MediaType.Video, SortByTime).ConvertAll(ev => ev as VideoEvent);
         }
 
         public static List<AudioEvent> GetSelectedAudioEvents(this Project Project, bool SortByTime = false)
         {
-            return Project.GetSelectedEvents(MediaType.Audio, SortByTime).ConvertAll<AudioEvent>(ev => ev as AudioEvent);
+            return Project.GetSelectedEvents(MediaType.Audio, SortByTime).ConvertAll(ev => ev as AudioEvent);
         }
 
         public static List<TrackEvent> GetSelectedEvents(this Project Project, MediaType type = MediaType.Unknown, bool SortByTime = false)
-		{
-			var selectedEvents = new List<TrackEvent>();
-			foreach (Track trk in Project.Tracks)
-			{
-				if ((trk.IsAudio() && type == MediaType.Video) || (trk.IsVideo() && type == MediaType.Audio))
-				{
-					continue;
-				}
-				selectedEvents.AddRange(trk.Events.Where(ev => ev.Selected));
-			}
+        {
+            var selectedEvents = new List<TrackEvent>();
+            foreach (Track trk in Project.Tracks)
+            {
+                if ((trk.IsAudio() && type == MediaType.Video) || (trk.IsVideo() && type == MediaType.Audio))
+                {
+                    continue;
+                }
+                selectedEvents.AddRange(trk.Events.Where(ev => ev.Selected));
+            }
 
-			if (SortByTime)
-			{
-				selectedEvents = selectedEvents.SortByTime();
-			}
-			return selectedEvents;
-		}
+            if (SortByTime)
+            {
+                selectedEvents = selectedEvents.SortByTime();
+            }
+            return selectedEvents;
+        }
 
-		public static List<TrackEvent> SortByTime(this List<TrackEvent> events)
-		{
-			var sortedEvents = new List<TrackEvent>(events);
-			sortedEvents.Sort(delegate(TrackEvent a, TrackEvent b)
-			{
-				int startCompare = Comparer<Timecode>.Default.Compare(a.Start, b.Start);
-				if (startCompare != 0)
-					return startCompare;
+        public static List<TrackEvent> SortByTime(this List<TrackEvent> events)
+        {
+            var sortedEvents = new List<TrackEvent>(events);
+            sortedEvents.Sort(delegate (TrackEvent a, TrackEvent b)
+            {
+                int startCompare = Comparer<Timecode>.Default.Compare(a.Start, b.Start);
+                if (startCompare != 0)
+                    return startCompare;
 
-				int endCompare = Comparer<Timecode>.Default.Compare(a.End, b.End);
-				if (endCompare != 0)
-					return endCompare;
-				return Comparer<int>.Default.Compare(a.Track.Index, b.Track.Index);
-			});
-			return sortedEvents;
-		}
-	}
-}
+                int endCompare = Comparer<Timecode>.Default.Compare(a.End, b.End);
+                if (endCompare != 0)
+                    return endCompare;
+                return Comparer<int>.Default.Compare(a.Track.Index, b.Track.Index);
+            });
+            return sortedEvents;
+        }
 
-namespace MyINI
-{
-    public class IniFile
-    {
-        string Path;
-        string EXE = Assembly.GetExecutingAssembly().GetName().Name;
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
-        public IniFile(string IniPath = null)
+        public static List<OFXKeyframe> SortByTime(this List<OFXKeyframe> kfs)
         {
-            Path = new FileInfo(IniPath ?? EXE + ".ini").FullName;
-        }
-        public string Read(string Key, string Section = null)
-        {
-            var RetVal = new StringBuilder(255);
-            GetPrivateProfileString(Section ?? EXE, Key, "", RetVal, 255, Path);
-            return RetVal.ToString();
-        }
-        public void Write(string Key, string Value, string Section = null)
-        {
-            WritePrivateProfileString(Section ?? EXE, Key, Value, Path);
-        }
-        public void DeleteKey(string Key, string Section = null)
-        {
-            Write(Key, null, Section ?? EXE);
-        }
-        public void DeleteSection(string Section = null)
-        {
-            Write(null, null, Section ?? EXE);
-        }
-        public bool KeyExists(string Key, string Section = null)
-        {
-            return Read(Key, Section).Length > 0;
+            var sortedKfs = new List<OFXKeyframe>(kfs);
+            sortedKfs.Sort(delegate (OFXKeyframe a, OFXKeyframe b)
+            {
+                int startCompare = Comparer<Timecode>.Default.Compare(a.Time, b.Time);
+                return startCompare;
+            });
+            return sortedKfs;
         }
     }
 }
