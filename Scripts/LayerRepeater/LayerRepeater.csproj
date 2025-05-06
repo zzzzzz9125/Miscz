@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ScriptPortal.Vegas">
-      <HintPath>..\ScriptPortal.Vegas.dll\22.0.0.93\ScriptPortal.Vegas.dll</HintPath>
+      <HintPath>C:\Program Files\VEGAS\VEGAS Pro 22.0\ScriptPortal.Vegas.dll</HintPath>
     </Reference>
     <Reference Include="Sony.Vegas">
       <HintPath>C:\Program Files\Sony\Vegas Pro 13.0\Sony.Vegas.dll</HintPath>
@@ -58,7 +58,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /R /Y "D:\VegasPro\LayerRepeater\bin\Release\LayerRepeater.dll" "C:\ProgramData\VEGAS Pro\Script Menu\MisczTools\"
+    <PostBuildEvent>xcopy /R /Y "$(TargetDir)LayerRepeater.dll" "C:\ProgramData\VEGAS Pro\Script Menu\MisczTools\"
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

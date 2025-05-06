@@ -2,7 +2,7 @@ namespace LayerRepeater
 {
     public static class L
     {
-        public static string CurrentLanguage, Font, LayerRepeater, Mode, Count, Speed, BpmNote, Range, Reverse, Mute,
+        public static string CurrentLanguage, Font, LayerRepeater, Mode, Count, Speed, BpmNote, Range, Velocity, Reverse, Mute, ProgressSync,
                              Settings, RangeAdapt, TransferToParent, TrackMotion, TrackFx, Language, DarkMode,
                              Clear, Cancel, OK, UIChange, FxSplitEnable, FxSplitMessage, FxSplitCaption, LowVegasVersion,
                              RangeError1, RangeError2, RangeError3, RangeError4;
@@ -21,7 +21,7 @@ namespace LayerRepeater
             {
                 case "zh":
                     Font = "Microsoft Yahei UI";
-                    LayerRepeater = "图层重复器"; Mode = "模式";  Count = "图层数"; Speed = "速度"; Range = "范围"; Reverse = "反向"; Mute = "静音原事件";
+                    LayerRepeater = "图层重复器"; Mode = "模式";  Count = "图层数"; Speed = "速度"; Range = "范围"; Velocity = "速度包络(%)";  Reverse = "反向"; Mute = "静音原事件"; ProgressSync = "进度同步";
                     Settings = "设置"; RangeAdapt = "范围自适应"; TransferToParent = "轨道属性升级为父轨"; TrackMotion = "轨道运动"; TrackFx = "轨道 FX"; Language = "语言"; DarkMode = "界面颜色";
                     Clear = "清除"; Cancel = "取消"; OK = "确定";
                     
@@ -45,7 +45,7 @@ namespace LayerRepeater
 
                 default:
                     Font = "Arial";
-                    LayerRepeater = "LayerRepeater"; Mode = "Mode"; Count = "Count"; Speed = "Speed"; Range = "Range"; Reverse = "Reverse"; Mute = "Mute Origin";
+                    LayerRepeater = "LayerRepeater"; Mode = "Mode"; Count = "Count"; Speed = "Speed"; Range = "Range"; Velocity = "Velocity(%)"; Reverse = "Reverse"; Mute = "Mute Origin"; ProgressSync = "Progress Sync";
                     Settings = "Settings"; RangeAdapt = "Range Adapt"; TransferToParent = "Track Properties To Parent"; TrackMotion = "Motion"; TrackFx = "FX"; Language = "Language"; DarkMode = "UI Color"; 
                     Clear = "Clear"; Cancel = "Cancel"; OK = "OK";
 

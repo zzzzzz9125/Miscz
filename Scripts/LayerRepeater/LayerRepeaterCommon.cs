@@ -8,14 +8,12 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Contexts;
-using System.Runtime.CompilerServices;
 
 namespace LayerRepeater
 {
     public static class LayerRepeaterCommon
     {
-        public const string VERSION = "v1.10";
+        public const string VERSION = "v1.20";
         public static void CopyTrackKeyframe(this Project project, TrackMotionKeyframe source, TrackMotionKeyframe target, int type = 0, bool is3D = false)
         {
             project.CopyTrackKeyframeBase(source, target, type);
@@ -392,6 +390,15 @@ namespace LayerRepeater
                 if (ii != args.Count)
                 {
                     newEvent.Start += pos;
+
+                    if (args.ProgressSync)
+                    {
+                        foreach (Take t in newEvent.Takes)
+                        {
+                            t.Offset += pos;
+                        }
+                    }
+
                     VideoMotionKeyframe kf = new VideoMotionKeyframe(project, pos);
                     kfs.Add(kf);
                     kf.Type = VideoKeyframeType.Linear;
@@ -494,6 +501,7 @@ namespace LayerRepeater
 
                 newEvent.End = vEvent.End;
                 newEvent.Selected = false;
+
                 newEvent.FadeIn.Length = new Timecode(0);
                 newEvent.FadeOut.Length = new Timecode(0);
                 if (newEvent.Start < vEvent.Start + vEvent.FadeIn.Length)
@@ -506,6 +514,22 @@ namespace LayerRepeater
                     double t = (vEvent.End - newEvent.Start).ToMilliseconds() / vEvent.FadeOut.Length.ToMilliseconds();
                     newEvent.FadeIn.Gain *= FadeCurveCalculate(t, vEvent.FadeOut.Curve, true);
                 }
+
+                if (args.VelocityEnable && args.Velocity >= -100 && args.Velocity <= 1000)
+                {
+                    Envelope env;
+                    if ((env = newEvent.Envelopes.FindByType(EnvelopeType.Velocity)) != null)
+                    {
+                        newEvent.Envelopes.Remove(env);
+                    }
+                    env = new Envelope(EnvelopeType.Velocity);
+                    newEvent.Envelopes.Add(env);
+                    foreach (EnvelopePoint p in env.Points)
+                    {
+                        p.Y = args.Velocity / 100;
+                    }
+                }
+
                 grp.Add(newEvent);
             }
             vEvent.Mute = args.Mute;
@@ -607,7 +631,7 @@ namespace LayerRepeater
 
         public static bool PopUpWindow(this Vegas myVegas, out LayerRepeaterArgs args)
         {
-            LayerRepeaterArgs args0 = new LayerRepeaterArgs(true);
+            LayerRepeaterArgs args0 = LayerRepeaterArgs.LoadFromIni();
             
             Color[] colors = myVegas.GetColors();
             Form form = new Form
@@ -637,7 +661,7 @@ namespace LayerRepeater
                 GrowStyle = TableLayoutPanelGrowStyle.AddRows,
                 ColumnCount = 2
             };
-            l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+            l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             l.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             p.Controls.Add(l);
 
@@ -678,7 +702,7 @@ namespace LayerRepeater
             };
             l.Controls.Add(countBox);
 
-            countBox.MouseWheel += delegate (object o, MouseEventArgs e)
+            countBox.MouseWheel += (o, e) =>
             {
                 if (int.TryParse(countBox.Text, out int tmp))
                 {
@@ -724,7 +748,7 @@ namespace LayerRepeater
 
             sp.Controls.Add(speedBox);
 
-            speedBox.MouseWheel += delegate (object o, MouseEventArgs e)
+            speedBox.MouseWheel += (o, e) =>
             {
                 if (double.TryParse(speedBox.Text, out double tmp))
                 {
@@ -736,7 +760,7 @@ namespace LayerRepeater
                 }
             };
 
-            speedTypeButton.MouseDown += delegate (object o, MouseEventArgs e)
+            speedTypeButton.MouseDown += (o, e) =>
             {
                 if (e.Button == MouseButtons.Right && (int)speedTypeButton.Tag == 1)
                 {
@@ -763,7 +787,7 @@ namespace LayerRepeater
                 FlatStyle = FlatStyle.Flat
             };
             operatorButton.FlatAppearance.BorderSize = 0;
-            operatorButton.Click += delegate (object o, EventArgs e)
+            operatorButton.Click += (o, e) =>
             {
                 operatorButton.ClickToSwitch(operatorStrs);
             };
@@ -777,7 +801,7 @@ namespace LayerRepeater
             };
             sp.Controls.Add(multiplierBox);
 
-            multiplierBox.MouseWheel += delegate (object o, MouseEventArgs e)
+            multiplierBox.MouseWheel += (o, e) =>
             {
                 if (double.TryParse(multiplierBox.Text, out double tmp))
                 {
@@ -815,7 +839,7 @@ namespace LayerRepeater
             operatorButton.Visible = !isCount;
             multiplierBox.Visible = !isCount;
 
-            modeTypeButton.MouseDown += delegate (object o, MouseEventArgs e) 
+            modeTypeButton.MouseDown += (o, e) =>
             {
                 ClickToSwitch(modeTypeButton, L.ModeType);
                 isCount = (int)modeTypeButton.Tag == 0;
@@ -849,9 +873,45 @@ namespace LayerRepeater
             l.Controls.Add(rangeTypeBox);
 
             int rangeTypeIndex = args0.RangeType;
-            form.Load += delegate (object o, EventArgs ea)
+            form.Load += (o, ea) =>
             {
                 rangeTypeBox.SelectedIndex = rangeTypeIndex;
+            };
+
+            CheckBox velocityEnableBox = new CheckBox
+            {
+                Text = L.Velocity,
+                Margin = new Padding(6, 6, 0, 3),
+                AutoSize = true,
+                Checked = args0.VelocityEnable
+            };
+
+            l.Controls.Add(velocityEnableBox);
+
+            TextBox velocityBox = new TextBox
+            {
+                AutoSize = true,
+                Margin = new Padding(9, 6, 0, 6),
+                Text = args0.Velocity.ToString(),
+                Enabled = velocityEnableBox.Checked
+            };
+            l.Controls.Add(velocityBox);
+
+            velocityEnableBox.CheckedChanged += (o, e) =>
+            {
+                velocityBox.Enabled = velocityEnableBox.Checked;
+            };
+
+            velocityBox.MouseWheel += (o, e) =>
+            {
+                if (double.TryParse(velocityBox.Text, out double tmp))
+                {
+                    tmp += e.Delta > 0 ? 100 : -100;
+                    if (tmp >= -100 && tmp <= 1000)
+                    {
+                        velocityBox.Text = tmp.ToString();
+                    }
+                }
             };
 
             CheckBox reverseBox = new CheckBox
@@ -873,6 +933,17 @@ namespace LayerRepeater
             };
 
             l.Controls.Add(muteBox);
+
+            CheckBox progressSyncBox = new CheckBox
+            {
+                Text = L.ProgressSync,
+                Margin = new Padding(6, 3, 0, 3),
+                AutoSize = true,
+                Checked = args0.ProgressSync
+            };
+
+            l.Controls.Add(progressSyncBox);
+            l.SetColumnSpan(progressSyncBox, 2);
 
             GroupBox transferToParentBox = new GroupBox
             {
@@ -957,7 +1028,7 @@ namespace LayerRepeater
                 Text = L.Clear,
                 DialogResult = DialogResult.OK
             };
-            clear.Click += delegate (object o, EventArgs e)
+            clear.Click += (o, e) =>
             {
                 modeTypeButton.Tag = 0;
                 countBox.Text = "0";
@@ -968,7 +1039,8 @@ namespace LayerRepeater
             int count = int.TryParse(countBox.Text, out int temp) && temp > 1 ? temp : 0;
             double.TryParse(speedBox.Text, out double speed);
             double.TryParse(multiplierBox.Text, out double multiplier);
-            args = new LayerRepeaterArgs((int)modeTypeButton.Tag, count, rangeTypeBox.SelectedIndex, reverseBox.Checked, muteBox.Checked, parentMotionBox.Checked, parentFxBox.Checked);
+            double.TryParse(velocityBox.Text, out double velocity);
+            args = new LayerRepeaterArgs((int)modeTypeButton.Tag, count, rangeTypeBox.SelectedIndex, velocityEnableBox.Checked, velocity, reverseBox.Checked, muteBox.Checked, progressSyncBox.Checked, parentMotionBox.Checked, parentFxBox.Checked);
             args.SetSpeedParameters(speed, (int)speedTypeButton.Tag, (int)operatorButton.Tag, multiplier);
             if (success)
             {
@@ -1065,7 +1137,7 @@ namespace LayerRepeater
             l.Controls.Add(fxSplitBox);
             int fxSplitType = Common.IniMiscz.ReadInt("FxSplitType", "LayerRepeater", 0);
 
-            form.Load += delegate (object o, EventArgs ea)
+            form.Load += (o, ea) =>
             {
                 languageBox.SelectedIndex = languageIndex;
                 darkModeBox.SelectedIndex = darkModeType;
