@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Diagnostics;
 using System.Collections;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using ScriptPortal.Vegas;  // "ScriptPortal.Vegas" for Magix Vegas Pro 14 or above, "Sony.Vegas" for Sony Vegas Pro 13 or below
@@ -26,7 +27,7 @@ namespace Test_Script
             Project project = myVegas.Project;
             bool ctrlMode = ((Control.ModifierKeys & Keys.Control) != 0) ? true : false, isRevise = false;
             double scaleFactor = 0;
-            ArrayList mediaList = new ArrayList();
+            List<Media> mediaList = new List<Media>();
             string ffmpegPath = null;
 
             algorithmsList = new string[]{"neighbor", "bicubic", "fast_bilinear", "bilinear", "experimental", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"};
@@ -124,6 +125,7 @@ namespace Test_Script
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = false;
             p.StartInfo.CreateNoWindow = true;
+            // p.StartInfo.StandardOutputEncoding = Encoding.UTF8; // Not supported in legacy .NET Framework
 
             string logText = "";
             try
@@ -132,11 +134,11 @@ namespace Test_Script
                 {
                     VideoStream vStream = arrMedia.GetVideoStreamByIndex(0);
                     double scaleValue = Math.Ceiling(Math.Min((double)project.Video.Width / vStream.Width, (double)project.Video.Height / vStream.Height));
+                    scaleValue = scaleFactor >= 1 ? scaleFactor : scaleValue;
                     if (scaleValue <= 1)
                     {
                         continue;
                     }
-                    scaleValue = scaleFactor >= 1 ? scaleFactor : scaleValue;
 
                     string filePath = arrMedia.FilePath;
                     string[] speFormat = SpecialFormat(Path.GetExtension(filePath), arrMedia.IsImageSequence() || arrMedia.Length.Nanos == 0);
@@ -161,7 +163,10 @@ namespace Test_Script
 
                     p.Start();
                     while (!string.IsNullOrEmpty(p.StandardOutput.ReadLine())) { }
-                    p.StandardInput.WriteLine(string.Format("echo off & ({0}) 2>&1 & exit", renderCommand));
+                    string str = string.Format("echo off & ({0}) 2>&1 & exit", renderCommand);
+                    byte[] bytes = Encoding.Default.GetBytes(str + Environment.NewLine);
+                    p.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
+                    p.StandardInput.BaseStream.Flush();
                     logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
                     p.WaitForExit();
 
