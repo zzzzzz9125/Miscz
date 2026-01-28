@@ -10,11 +10,11 @@ using System.Text.RegularExpressions;
 
 using ScriptPortal.Vegas;  // "ScriptPortal.Vegas" for Magix Vegas Pro 14 or above, "Sony.Vegas" for Sony Vegas Pro 13 or below
 
-namespace Test_Script
+namespace PixcelScalingTool
 {
-    public class Class
+    public class PixcelScalingTool_Class
     {
-        public const string VERSION = "v.1.2.8";
+        public const string VERSION = "v.1.2.9";
         public Vegas myVegas;
         TextBox scaleBox;
         TrackBar scaleBar;
@@ -119,13 +119,11 @@ namespace Test_Script
             }
 
             Process p = new Process();
-            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.FileName = ffmpegPath;
             p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardInput = true;
             p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = false;
+            p.StartInfo.RedirectStandardError = true;
             p.StartInfo.CreateNoWindow = true;
-            // p.StartInfo.StandardOutputEncoding = Encoding.UTF8; // Not supported in legacy .NET Framework
 
             string logText = "";
             try
@@ -143,7 +141,6 @@ namespace Test_Script
                     string filePath = arrMedia.FilePath;
                     string[] speFormat = SpecialFormat(Path.GetExtension(filePath), arrMedia.IsImageSequence() || arrMedia.Length.Nanos == 0);
                     string outputPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + "_Scaled" + Path.GetExtension(filePath) + speFormat[1]);
-                    string renderCommand = string.Format("\"{0}\" -y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\"", ffmpegPath, filePath, scaleValue, algorithmsList[indexAL], speFormat[0], outputPath);
 
                     if (arrMedia.IsImageSequence())
                     {
@@ -157,18 +154,28 @@ namespace Test_Script
                         Directory.CreateDirectory(outputPath);
 
                         string tmpExt = string.IsNullOrEmpty(speFormat[1]) ? Path.GetExtension(filePath) : speFormat[1];
-                        renderCommand = string.Format("cd /d \"{1}\" & (for %i in (*{6}) do (\"{0}\" -y -loglevel 32 -i \"%i\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\\%~ni{7}\" ))", ffmpegPath, Path.GetDirectoryName(filePath), scaleValue, algorithmsList[indexAL], speFormat[0], outputPath, Path.GetExtension(filePath), tmpExt); 
+                        string inputDir = Path.GetDirectoryName(filePath);
+                        string inputExt = Path.GetExtension(filePath);
+                        string[] inputFiles = Directory.GetFiles(inputDir, "*" + inputExt);
+                        foreach (string inputFile in inputFiles)
+                        {
+                            string outputFile = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(inputFile) + tmpExt);
+                            string sequenceCommand = string.Format("-y -loglevel 32 -i \"{0}\" -vf scale=iw*{1}:ih*{1} -sws_flags {2} {3} \"{4}\"", inputFile, scaleValue, algorithmsList[indexAL], speFormat[0], outputFile);
+                            p.StartInfo.Arguments = sequenceCommand;
+                            p.Start();
+                            logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", sequenceCommand, Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardError.ReadToEnd())));
+                            p.WaitForExit();
+                        }
                         outputPath = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(filePath) + tmpExt);
                     }
-
-                    p.Start();
-                    while (!string.IsNullOrEmpty(p.StandardOutput.ReadLine())) { }
-                    string str = string.Format("echo off & ({0}) 2>&1 & exit", renderCommand);
-                    byte[] bytes = Encoding.Default.GetBytes(str + Environment.NewLine);
-                    p.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
-                    p.StandardInput.BaseStream.Flush();
-                    logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", p.StandardOutput.ReadLine(), Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardOutput.ReadToEnd())));
-                    p.WaitForExit();
+                    else
+                    {
+                        string renderCommand = string.Format("-y -loglevel 32 -i \"{1}\" -vf scale=iw*{2}:ih*{2} -sws_flags {3} {4} \"{5}\"", ffmpegPath, filePath, scaleValue, algorithmsList[indexAL], speFormat[0], outputPath);
+                        p.StartInfo.Arguments = renderCommand;
+                        p.Start();
+                        logText += string.Format("\r\nInput Command:\r\n{0}\r\n\r\nOutput Logs:\r\n{1}", renderCommand, Encoding.UTF8.GetString(Encoding.Default.GetBytes(p.StandardError.ReadToEnd())));
+                        p.WaitForExit();
+                    }
 
                     Media newMedia = arrMedia.IsImageSequence() ? project.MediaPool.AddImageSequence(outputPath, GetFramesCount(vStream), vStream.FrameRate) : Media.CreateInstance(project, outputPath);
                     vStream = newMedia.GetVideoStreamByIndex(0);
@@ -347,7 +354,7 @@ public class EntryPoint
     public void FromVegas(Vegas vegas)
     //public void FromVegas(Vegas vegas, String scriptFile, XmlDocument scriptSettings, ScriptArgs args)
     {
-        Test_Script.Class test = new Test_Script.Class();
+        PixcelScalingTool.PixcelScalingTool_Class test = new PixcelScalingTool.PixcelScalingTool_Class();
         test.Main(vegas);
         Application.Exit();
     }
